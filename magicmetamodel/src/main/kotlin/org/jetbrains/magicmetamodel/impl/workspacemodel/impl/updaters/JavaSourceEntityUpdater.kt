@@ -19,7 +19,7 @@ internal data class JavaSourceRoot(
   val sourceDir: Path,
   val generated: Boolean,
   val packagePrefix: String,
-  val excludedFiles: List<Path> = emptyList(),
+  val excludedFiles: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 
 internal class JavaSourceEntityUpdater(

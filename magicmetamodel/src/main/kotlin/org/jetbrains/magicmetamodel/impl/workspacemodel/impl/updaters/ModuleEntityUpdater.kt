@@ -26,7 +26,7 @@ internal data class Module(
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  private val defaultDependencies: List<ModuleDependencyItem> = emptyList(),
+  private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<Module, ModuleEntity> {
 
   override fun addEntity(entityToAdd: Module): ModuleEntity =

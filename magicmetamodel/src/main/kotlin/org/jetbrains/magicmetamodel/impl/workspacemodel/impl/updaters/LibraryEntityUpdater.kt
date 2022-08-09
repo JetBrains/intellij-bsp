@@ -31,7 +31,7 @@ internal class LibraryEntityUpdater(
       name = entityToAdd.displayName,
       tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
       listOf(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
-      emptyList(),
+      ArrayList(),
       workspaceModelEntityUpdaterConfig.projectConfigSource
     )
 
