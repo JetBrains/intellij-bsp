@@ -8,7 +8,6 @@ import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.*
@@ -66,6 +65,7 @@ public class BspInitializer : StartupActivity {
           statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
           ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
             icon = BspPluginIcons.bsp
+            canCloseContent = false
             anchor = ToolWindowAnchor.RIGHT
             contentFactory = BspAllTargetsWidgetFactory()
           }

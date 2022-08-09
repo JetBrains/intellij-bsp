@@ -97,7 +97,7 @@ public class BspConnectionService(private val project: Project) {
 
   public fun reconnect(locationHash: String) {
     val bspService = BspUtilService.getInstance()
-    bspService.connectionFile[locationHash]?.let {
+    bspService.bspConnectionDetails[locationHash]?.let {
       connect(it)
     }
   }

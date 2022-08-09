@@ -15,8 +15,10 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.services.BspConnectionService
+import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.BspConnectionFilesProvider
+import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -48,17 +50,23 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
     return if (dialog.showAndGet()) {
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
+      val bspUtilService = BspUtilService.getInstance()
 
       if (project != null) {
         val connectionService = BspConnectionService.getInstance(project)
 
-        connectionService.bspConnectionDetailsGeneratorProvider = bspConnectionDetailsGeneratorProvider
         if (dialog.buildToolUsed.selected()) {
-          connectionService.dialogBuildToolUsed = true
-          connectionService.dialogBuildToolName = dialog.buildTool
+          val xd = dialog.buildTool
+          val xd1 = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(xd)
+          val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
+          bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
+          bspUtilService.loadedViaBspFile.remove(project.locationHash)
+          connectionService.connect(xd2)
         } else {
-          connectionService.dialogBuildToolUsed = false
-          connectionService.dialogConnectionFile = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
+          val xd = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
+          bspUtilService.bspConnectionDetails[project.locationHash] = xd
+          bspUtilService.loadedViaBspFile.add(project.locationHash)
+          connectionService.connect(xd)
         }
 
         project
