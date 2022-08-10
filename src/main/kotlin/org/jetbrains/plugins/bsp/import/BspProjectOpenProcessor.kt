@@ -53,14 +53,13 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
       if (project != null) {
         val connectionService = BspConnectionService.getInstance(project)
 
+        connectionService.bspConnectionDetailsGeneratorProvider = bspConnectionDetailsGeneratorProvider
         if (dialog.buildToolUsed.selected()) {
-          val xd = dialog.buildTool
-          val xd1 = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(xd)
-          val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
-          connectionService.connect(xd2!!)
+          connectionService.dialogBuildToolUsed = true
+          connectionService.dialogBuildToolName = dialog.buildTool
         } else {
-          val xd = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
-          connectionService.connect(xd)
+          connectionService.dialogBuildToolUsed = false
+          connectionService.dialogConnectionFile = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
         }
 
         project

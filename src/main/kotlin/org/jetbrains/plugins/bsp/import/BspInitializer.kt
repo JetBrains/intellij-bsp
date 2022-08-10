@@ -12,7 +12,7 @@ import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
 
 /**
- * Runs actions after the project has started up and the index is up-to-date.
+ * Runs actions after the project has started up and the index is up-to-date?
  *
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
@@ -28,6 +28,9 @@ public class BspInitializer : StartupActivity {
 
       override fun run(indicator: ProgressIndicator) {
         val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
+
+//        connectionService.connectFromDialog(bspSyncConsoleService.bspSyncConsole)
+        connectionService.connectFromDialog(project)
 
         val bspResolver =
           VeryTemporaryBspResolver(project.stateStore.projectBasePath, connectionService.server!!, bspSyncConsoleService.bspSyncConsole)

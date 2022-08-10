@@ -1,5 +1,6 @@
 package org.jetbrains.protocol.connection
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
 public interface BspConnectionDetailsGenerator {
@@ -8,7 +9,7 @@ public interface BspConnectionDetailsGenerator {
 
   public fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean
 
-  public fun generateBspConnectionDetailsFile(projectPath: VirtualFile): VirtualFile
+  public fun generateBspConnectionDetailsFile(project: Project, projectPath: VirtualFile): VirtualFile
 }
 
 public class BspConnectionDetailsGeneratorProvider(
@@ -26,8 +27,8 @@ public class BspConnectionDetailsGeneratorProvider(
   public fun availableGeneratorsNames(): List<String> =
     availableBspConnectionDetailsGenerators.map { it.name() }
 
-  public fun generateBspConnectionDetailFileForGeneratorWithName(generatorName: String): VirtualFile? =
+  public fun generateBspConnectionDetailFileForGeneratorWithName(project: Project, generatorName: String): VirtualFile? =
     availableBspConnectionDetailsGenerators
       .find { it.name() == generatorName }
-      ?.generateBspConnectionDetailsFile(projectPath)
+      ?.generateBspConnectionDetailsFile(project, projectPath)
 }

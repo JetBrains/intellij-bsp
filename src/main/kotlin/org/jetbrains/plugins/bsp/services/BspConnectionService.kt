@@ -20,13 +20,16 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
+import com.intellij.ui.dsl.builder.selected
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.io.InputStream
 import java.io.OutputStream
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
+import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import java.nio.file.Path
 
 public interface BspServer : BuildServer
@@ -38,6 +41,12 @@ public class BspConnectionService(private val project: Project) {
 
   public var server: BspServer? = null
   private var cancelActions: List<Cancelable> ? = null
+
+  // consider enclosing nicely in an object
+  public var dialogBuildToolUsed: Boolean? = null
+  public var dialogBuildToolName: String? = null
+  public var dialogConnectionFile: LocatedBspConnectionDetails? = null
+  public var bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider? = null
 
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
@@ -58,6 +67,19 @@ public class BspConnectionService(private val project: Project) {
       Cancelable { listening.cancel(true) },
       Cancelable { process.destroy() }
     )
+  }
+
+  public fun connectFromDialog(project: Project) {
+    val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startImport("bsp-obtain-config", "BSP: Obtain config", "Obtaining...")
+    if (dialogBuildToolUsed!!) {
+      val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(project, dialogBuildToolName!!)
+      val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
+      connect(xd2!!)
+    } else {
+      connect(dialogConnectionFile!!)
+    }
+    bspSyncConsole.finishImport("Config obtained!")
   }
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
