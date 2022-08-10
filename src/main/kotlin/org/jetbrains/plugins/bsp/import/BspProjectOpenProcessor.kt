@@ -50,6 +50,8 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
     return if (dialog.showAndGet()) {
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
+      project?.putUserData(BspUtilService.key, virtualFile)
+
       val bspUtilService = BspUtilService.getInstance()
 
       if (project != null) {
@@ -59,11 +61,13 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
           val xd = dialog.buildTool
           val xd1 = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(xd)
           val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
+          bspUtilService.selectedBuildTool[project.locationHash] = xd
           bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
           bspUtilService.loadedViaBspFile.remove(project.locationHash)
           connectionService.connect(xd2)
         } else {
           val xd = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
+          bspUtilService.selectedBuildTool.remove(project.locationHash)
           bspUtilService.bspConnectionDetails[project.locationHash] = xd
           bspUtilService.loadedViaBspFile.add(project.locationHash)
           connectionService.connect(xd)
