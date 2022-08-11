@@ -1,13 +1,9 @@
 package org.jetbrains.plugins.bsp.extension.points
 
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
 import org.jetbrains.protocol.connection.BspConnectionDetailsGenerator
+import java.io.OutputStream
 
 public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGenerator {
 
@@ -28,7 +24,7 @@ public class TemporaryBazelBspConnectionDetailsGenerator : BspConnectionDetailsG
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "WORKSPACE" }
 
-  override fun generateBspConnectionDetailsFile(project: Project, projectPath: VirtualFile): VirtualFile {
+  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile {
     Runtime.getRuntime().exec(
       "cs launch org.jetbrains.bsp:bazel-bsp:2.1.0 -M org.jetbrains.bsp.bazel.install.Install",
       emptyArray(),
@@ -45,28 +41,8 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "build.sbt" }
 
-  override fun generateBspConnectionDetailsFile(project: Project, projectPath: VirtualFile): VirtualFile {
-    val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-//    Runtime.getRuntime().exec(
-//      "cs launch sbt -- bspConfig",
-//      emptyArray(),
-//      projectPath.toNioPath().toFile()
-//    ).waitFor()
-
-    val consoleProcess =
-      GeneralCommandLine()
-        .withWorkDirectory(projectPath.path)
-        .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.SYSTEM)
-        .withExePath("cs")
-        .withParameters(listOf("launch", "sbt", "--", "bspConfig"))
-        .createProcess()
-    consoleProcess.inputStream.transferTo(ConsoleOutputStream("bsp-obtain-config", bspSyncConsole))
-    consoleProcess.waitFor()
-
-    projectPath.refresh(false, false)
-    val bspFolder = projectPath.findChild(".bsp")
-    bspFolder?.refresh(false, true)   // only .bsp gets refreshed recursively
-    return bspFolder?.findChild("sbt.json")!!
+  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile {
+    executeAndWait("cs launch sbt -- bspConfig", projectPath, outputStream)
+    return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }
-
 }

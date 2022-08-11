@@ -20,13 +20,13 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
-import com.intellij.ui.dsl.builder.selected
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.io.InputStream
 import java.io.OutputStream
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
+import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
@@ -73,7 +73,10 @@ public class BspConnectionService(private val project: Project) {
     val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.startImport("bsp-obtain-config", "BSP: Obtain config", "Obtaining...")
     if (dialogBuildToolUsed!!) {
-      val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(project, dialogBuildToolName!!)
+      val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(
+        dialogBuildToolName!!,
+        ConsoleOutputStream("bsp-obtain-config", bspSyncConsole)
+      )
       val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
       connect(xd2!!)
     } else {
