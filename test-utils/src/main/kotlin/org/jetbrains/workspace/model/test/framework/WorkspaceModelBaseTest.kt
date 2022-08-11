@@ -8,6 +8,8 @@ import com.intellij.workspaceModel.ide.JpsFileEntitySource
 import com.intellij.workspaceModel.ide.JpsProjectConfigLocation
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.workspaceModel.storage.DummyParentEntitySource
+import com.intellij.workspaceModel.storage.EntitySource
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.WorkspaceEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
@@ -25,7 +27,7 @@ public open class WorkspaceModelBaseTest {
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
 
   protected lateinit var projectBaseDirPath: Path
-  protected lateinit var projectConfigSource: JpsFileEntitySource
+  protected lateinit var projectConfigSource: EntitySource
 
   @BeforeEach
   protected open fun beforeEach() {
@@ -35,7 +37,7 @@ public open class WorkspaceModelBaseTest {
     virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
 
     projectBaseDirPath = project.stateStore.projectBasePath
-    projectConfigSource = calculateProjectConfigSource(projectBaseDirPath, virtualFileUrlManager)
+    projectConfigSource = object : DummyParentEntitySource {}
   }
 
   private fun emptyProjectTestMock(): Project {
