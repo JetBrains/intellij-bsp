@@ -22,7 +22,6 @@ import com.intellij.ui.components.JBScrollPane
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetBundle
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
@@ -31,6 +30,7 @@ import javax.swing.ListSelectionModel
 import javax.swing.SwingConstants
 import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.RestartAction
+import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetBundle
 
 private class ListsUpdater(
   val magicMetaModel: MagicMetaModel,
@@ -176,7 +176,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
       }
     }
 
-    if(!bspUtilService.loadedViaBspFile.contains(project.locationHash)) {
+    if (!bspUtilService.loadedViaBspFile.contains(project.locationHash)) {
       actionGroup.add(RestartAction(restartActionName, BspPluginIcons.restart), Constraints(Anchor.AFTER, "Bsp.ReloadAction"))
     }
 

@@ -11,11 +11,9 @@ public class BspUtilService {
   public var selectedBuildTool: HashMap<String, String> = hashMapOf()
   public val loadedViaBspFile: MutableSet<String> = mutableSetOf()
 
-
   public companion object {
 
-    public var key : Key<VirtualFile> = Key<VirtualFile>("projectPath")
-    public const val coursierInstallCommand: String = "cs launch org.jetbrains.bsp:bazel-bsp:2.1.0 -M org.jetbrains.bsp.bazel.install.Install"
+    public var key: Key<VirtualFile> = Key<VirtualFile>("projectPath")
     public fun getInstance(): BspUtilService =
       ApplicationManager.getApplication().getService(BspUtilService::class.java)
   }
