@@ -10,7 +10,6 @@
                     interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
                     dynamic="true"/>
   </extensionPoints>
-
   <extensions defaultExtensionNs="com.intellij">
     <bspConnectionDetailsGeneratorExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporarySbtBspConnectionDetailsGenerator"

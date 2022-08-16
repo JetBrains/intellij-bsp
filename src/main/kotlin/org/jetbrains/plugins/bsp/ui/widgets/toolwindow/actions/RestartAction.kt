@@ -13,6 +13,8 @@ import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
+import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
+import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 
 public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionName }, icon) {
   override fun actionPerformed(e: AnActionEvent) {
@@ -27,8 +29,10 @@ public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionNa
         override fun run(indicator: ProgressIndicator) {
           bspConnectionService.disconnect()
 
+          val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+          bspSyncConsole.startImport("bsp-obtain-config", "BSP: Obtain config", "Obtaining...")
           val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(projectPath, BspConnectionDetailsGeneratorExtension.extensions())
-          val generatedConnectionDetailsFile = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(selectedBuildTool)
+          val generatedConnectionDetailsFile = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(selectedBuildTool, ConsoleOutputStream("bsp-obtain-config", bspSyncConsole))
           generatedConnectionDetailsFile?.let {
             bspConnectionService.connect(LocatedBspConnectionDetailsParser.parseFromFile(it)!!)
 
