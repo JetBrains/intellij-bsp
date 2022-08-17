@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions
+package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -10,11 +10,12 @@ import org.jetbrains.plugins.bsp.services.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
+import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
-import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
-import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
+import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 
 public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionName }, icon) {
   override fun actionPerformed(e: AnActionEvent) {
@@ -37,7 +38,8 @@ public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionNa
             bspConnectionService.connect(LocatedBspConnectionDetailsParser.parseFromFile(it)!!)
 
             val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-            val bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspSyncConsoleService.bspSyncConsole)
+            val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+            val bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
             bspResolver.collectModel()
           }
         }

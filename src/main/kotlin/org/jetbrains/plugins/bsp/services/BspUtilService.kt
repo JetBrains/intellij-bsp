@@ -14,6 +14,7 @@ public class BspUtilService {
   public companion object {
 
     public var key: Key<VirtualFile> = Key<VirtualFile>("projectPath")
+    public var buildOriginId: String = "build-target"
     public fun getInstance(): BspUtilService =
       ApplicationManager.getApplication().getService(BspUtilService::class.java)
   }
