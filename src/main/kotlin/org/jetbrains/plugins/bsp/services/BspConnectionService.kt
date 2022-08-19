@@ -15,6 +15,7 @@ import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
@@ -33,6 +34,7 @@ import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 
@@ -152,13 +154,19 @@ public class VeryTemporaryBspResolver(
 ) {
 
   public fun buildTarget(targetId: BuildTargetIdentifier) {
-    bspBuildConsole.startBuild("bsp-single-target-build", "BSP: Build", "Building...")
+    val uuid = "build-" + UUID.randomUUID().toString()
+    bspBuildConsole.startBuild(uuid, "BSP: Build", "Building " + targetId.uri)
 
     println("buildTargetCompile")
-    val compileParams = CompileParams(listOf(targetId)).apply { originId = "build-target" }
-    server.buildTargetCompile(compileParams).get()
+    val compileParams = CompileParams(listOf(targetId)).apply { originId = uuid }
+    val compileResult = server.buildTargetCompile(compileParams).get()
 
-    bspBuildConsole.finishBuild("Build done!")
+    when (compileResult.statusCode) {
+      StatusCode.OK -> bspBuildConsole.finishBuild("Build is successfully done!", uuid)
+      StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Build is cancelled!", uuid)
+      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid)
+      else -> bspBuildConsole.finishBuild("Build is finished!", uuid)
+    }
   }
 
   public fun collectModel(): ProjectDetails {
@@ -252,8 +260,8 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole, private val 
   }
 
   private fun addMessageToConsole(id: Any?, message: String, originId: String?){
-    if(originId == BspUtilService.buildOriginId) {
-      bspBuildConsole.addMessage(id, message)
+    if(originId?.startsWith("build") == true) {
+      bspBuildConsole.addMessage(id, message, originId)
     } else {
       bspSyncConsole.addMessage(id, message)
     }

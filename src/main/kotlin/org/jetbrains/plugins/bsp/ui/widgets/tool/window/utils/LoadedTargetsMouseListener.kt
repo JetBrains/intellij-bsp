@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
@@ -9,6 +8,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.services.BspConnectionService
@@ -26,14 +26,20 @@ private class BuildTargetAction(
 ) : AnAction(text) {
 
   override fun actionPerformed(e: AnActionEvent) {
-
     val project = e.project!!
     val bspConnectionService = project.getService(BspConnectionService::class.java)
     val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
     val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
 
-    val bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
-    bspResolver.buildTarget(target)
+    val bspResolver = VeryTemporaryBspResolver(
+      project.stateStore.projectBasePath,
+      bspConnectionService.server!!,
+      bspSyncConsoleService.bspSyncConsole,
+      bspBuildConsoleService.bspBuildConsole
+    )
+    runBackgroundableTask("Build single target", project) {
+      bspResolver.buildTarget(target)
+    }
   }
 }
 

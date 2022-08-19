@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 import org.jetbrains.plugins.bsp.services.BspConnectionService
@@ -20,7 +21,9 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
     val bspResolver =
       VeryTemporaryBspResolver(project.stateStore.projectBasePath, connectionService.server!!, bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
 
-    bspResolver.collectModel()
+    runBackgroundableTask("Reload action", project) {
+      bspResolver.collectModel()
+    }
   }
 
   public override fun update(e: AnActionEvent) {
