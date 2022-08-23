@@ -162,12 +162,12 @@ public class VeryTemporaryBspResolver(
 
     println("buildTargetCompile")
     val compileParams = CompileParams(listOf(targetId)).apply { originId = uuid }
-    val compileResult = server.buildTargetCompile(compileParams).get()
+    val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
 
     when (compileResult.statusCode) {
       StatusCode.OK -> bspBuildConsole.finishBuild("Build is successfully done!", uuid)
       StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Build is cancelled!", uuid)
-      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid)
+      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid, FailureResultImpl())
       else -> bspBuildConsole.finishBuild("Build is finished!", uuid)
     }
   }
@@ -227,7 +227,17 @@ public class VeryTemporaryBspResolver(
       .whenComplete { _, exception ->
         exception?.let {
           bspSyncConsole.addMessage("bsp-import", "Sync failed")
-          bspSyncConsole.finishImport( "Sync failed", FailureResultImpl(exception))
+          bspSyncConsole.finishImport( "Failed", FailureResultImpl(exception))
+        }
+      }
+  }
+
+  private fun <T> CompletableFuture<T>.catchBuildErrors(buildId: String): CompletableFuture<T> {
+    return this
+      .whenComplete { _, exception ->
+        exception?.let {
+          bspBuildConsole.addMessage("bsp-build", "Build failed", buildId)
+          bspBuildConsole.finishBuild( "Failed", buildId, FailureResultImpl(exception))
         }
       }
   }
