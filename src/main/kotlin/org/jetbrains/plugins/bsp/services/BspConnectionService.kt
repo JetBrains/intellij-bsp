@@ -146,6 +146,15 @@ public class VeryTemporaryBspResolver(
   private val bspSyncConsole: BspSyncConsole,
   private val bspBuildConsole: BspBuildConsole
 ) {
+
+  //TODO need to implement
+  public fun runTarget(targetId: BuildTargetIdentifier) {
+
+    println("buildTargetRun")
+    server.buildTargetRun(RunParams(targetId)).get()
+
+  }
+
   public fun buildTargets(targetIds: List<BuildTargetIdentifier>): CompileResult {
 
     val uuid = "build-" + UUID.randomUUID().toString()
@@ -157,7 +166,7 @@ public class VeryTemporaryBspResolver(
 
     println("buildTargetCompile")
     val compileParams = CompileParams(targetIds).apply { originId = uuid }
-    val compileResult = server.buildTargetCompile(compileParams).get()
+    val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
 
     when (compileResult.statusCode) {
       StatusCode.OK -> bspBuildConsole.finishBuild("Successfully completed!", uuid)
@@ -169,6 +178,11 @@ public class VeryTemporaryBspResolver(
     return compileResult
   }
 
+  public fun testTarget(targetId: BuildTargetIdentifier): TestResult {
+    val params = TestParams(listOf(targetId))
+    params.arguments = emptyList()
+    return server.buildTargetTest(params).get()
+  }
   public fun buildTarget(targetId: BuildTargetIdentifier): CompileResult {
     return buildTargets(listOf(targetId))
   }
