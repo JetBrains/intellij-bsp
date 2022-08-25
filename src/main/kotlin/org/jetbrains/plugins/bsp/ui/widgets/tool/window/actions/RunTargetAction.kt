@@ -27,7 +27,6 @@ public class RunTargetAction(
       bspSyncConsoleService.bspSyncConsole,
       bspBuildConsoleService.bspBuildConsole
     )
-    bspResolver.runTarget(target)
     runBackgroundableTask("Run single target", project) {
     }
   }
