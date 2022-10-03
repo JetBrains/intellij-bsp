@@ -29,14 +29,12 @@ public class LoadedTargetsMouseListener(
 
   private fun showPopup(mouseEvent: MouseEvent) {
     val actionGroup = calculatePopupGroup()
-    if (actionGroup != null) {
-      val context = DataManager.getInstance().getDataContext(mouseEvent.component)
-      val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
+    val context = DataManager.getInstance().getDataContext(mouseEvent.component)
+    val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
 
-      JBPopupFactory.getInstance()
-        .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
-        .showInBestPositionFor(context)
-    }
+    JBPopupFactory.getInstance()
+      .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
+      .showInBestPositionFor(context)
   }
 
   private fun calculatePopupGroup(): ActionGroup {

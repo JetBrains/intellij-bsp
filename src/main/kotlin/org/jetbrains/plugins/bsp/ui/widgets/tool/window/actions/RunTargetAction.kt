@@ -1,33 +1,42 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import com.intellij.execution.RunManager
+import com.intellij.execution.RunManagerEx
+import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.progress.runBackgroundableTask
-import com.intellij.project.stateStore
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import com.intellij.openapi.ui.Messages
+import org.jetbrains.plugins.bsp.services.BspUtilService
+import org.jetbrains.plugins.bsp.ui.run.configuration.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class RunTargetAction(
   private val target: BuildTargetIdentifier
-  ) : AnAction(BspAllTargetsWidgetBundle.message("widget.run.target.popup.message")) {
+) : AnAction(BspAllTargetsWidgetBundle.message("widget.run.target.popup.message")) {
 
   override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project!!
-    val bspConnectionService = project.getService(BspConnectionService::class.java)
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+    e.project?.let { project ->
 
-    val bspResolver = VeryTemporaryBspResolver(
-      project.stateStore.projectBasePath,
-      bspConnectionService.server!!,
-      bspSyncConsoleService.bspSyncConsole,
-      bspBuildConsoleService.bspBuildConsole
-    )
-    runBackgroundableTask("Run single target", project) {
+      val factory = BspRunConfigurationType().configurationFactories.first()
+      val setting = RunManager.getInstance(project).createConfiguration("run ${target.uri}", factory)
+      val runManagerEx = RunManagerEx.getInstanceEx(project)
+      runManagerEx.setTemporaryConfiguration(setting)
+      val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
+      ProgramRunner.getRunner(runExecutor.id, setting.configuration)?.let {
+        try {
+          val executionEnvironment = ExecutionEnvironmentBuilder(project, runExecutor)
+            .runnerAndSettings(it, setting)
+            .build()
+          executionEnvironment.putUserData(BspUtilService.targetIdKey, target)
+          it.execute(executionEnvironment)
+        }
+        catch (e: Exception) {
+          Messages.showErrorDialog(project, e.message, "error")
+        }
+      }
     }
   }
 }
