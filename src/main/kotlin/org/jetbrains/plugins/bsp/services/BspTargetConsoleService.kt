@@ -5,7 +5,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConsole
 
 
-public open class BspConsoleService<T : BspConsolePrinter> {
+public open class BspTargetConsoleService<T : BspConsolePrinter> {
 
   protected val consoleListeners: MutableSet<T> = mutableSetOf()
 
@@ -22,7 +22,7 @@ public open class BspConsoleService<T : BspConsolePrinter> {
   }
 }
 
-public class BspRunConsoleService : BspConsoleService<BspConsolePrinter>() {
+public class BspRunConsoleService : BspTargetConsoleService<BspConsolePrinter>() {
 
   public companion object {
     public fun getInstance(project: Project): BspRunConsoleService =
@@ -30,7 +30,7 @@ public class BspRunConsoleService : BspConsoleService<BspConsolePrinter>() {
   }
 }
 
-public class BspTestConsoleService : BspConsoleService<BspTestConsole>() {
+public class BspTestConsoleService : BspTargetConsoleService<BspTestConsole>() {
 
   public fun startTest(suite: Boolean, displayName: String) {
     consoleListeners.forEach{ it.startTest(suite, displayName) }

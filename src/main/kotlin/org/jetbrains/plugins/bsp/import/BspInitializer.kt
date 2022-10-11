@@ -18,12 +18,7 @@ import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzard
 import org.jetbrains.plugins.bsp.import.wizzard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.BspUtilService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
@@ -77,8 +72,7 @@ public class BspInitializer : StartupActivity {
         private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
         override fun run(indicator: ProgressIndicator) {
-          val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-          val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+          val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
 
           connectionService.connectFromDialog(project)
 
@@ -86,8 +80,8 @@ public class BspInitializer : StartupActivity {
             VeryTemporaryBspResolver(
               project.stateStore.projectBasePath,
               connectionService.server!!,
-              bspSyncConsoleService.bspSyncConsole,
-              bspBuildConsoleService.bspBuildConsole
+              bspProcessConsoleService.bspSyncConsole,
+              bspProcessConsoleService.bspBuildConsole
             )
 
           val projectDetails = bspResolver.collectModel()

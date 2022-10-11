@@ -14,8 +14,7 @@ import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
-import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
+import org.jetbrains.plugins.bsp.ui.console.BspProcessConsole
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -47,16 +46,15 @@ public class BspConnectionService(private val project: Project) {
 
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
     val bspRunConsoleService = BspRunConsoleService.getInstance(project)
     val bspTestConsoleService = BspTestConsoleService.getInstance(project)
 
     val client = BspClient(
-      bspSyncConsoleService.bspSyncConsole,
-      bspBuildConsoleService.bspBuildConsole,
+      bspProcessConsoleService.bspSyncConsole,
+      bspProcessConsoleService.bspBuildConsole,
       bspRunConsoleService,
-      bspTestConsoleService,
+      bspTestConsoleService
     )
 
     val bspIn = process.inputStream
@@ -82,8 +80,8 @@ public class BspConnectionService(private val project: Project) {
 
   public fun connectFromDialog(project: Project) {
     val bspUtilService = BspUtilService.getInstance()
-    val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startImport("bsp-obtain-config", "BSP: Obtain config", "Obtaining...")
+    val bspSyncConsole: BspProcessConsole = BspProcessConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startProcess("BSP: Obtain config", "Obtaining...", "bsp-obtain-config")
     if (dialogBuildToolUsed != null) {
       if (dialogBuildToolUsed!!) {
         val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(
@@ -99,7 +97,7 @@ public class BspConnectionService(private val project: Project) {
         bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
         connect(dialogConnectionFile!!)
       }
-      bspSyncConsole.finishImport("Config obtained!", SuccessResultImpl())
+      bspSyncConsole.finishProcess("Config obtained!", SuccessResultImpl())
     }
   }
 
@@ -151,8 +149,8 @@ public class BspConnectionService(private val project: Project) {
 public class VeryTemporaryBspResolver(
   private val projectBaseDir: Path,
   private val server: BspServer,
-  private val bspSyncConsole: BspSyncConsole,
-  private val bspBuildConsole: BspBuildConsole
+  private val bspSyncConsole: BspProcessConsole,
+  private val bspBuildConsole: BspProcessConsole
 ) {
 
   public fun runTarget(targetId: BuildTargetIdentifier): RunResult {
@@ -173,17 +171,17 @@ public class VeryTemporaryBspResolver(
       if (targetIds.size == 1) "Building ${targetIds.first().uri}"
 //      else if (targetIds.isEmpty()) "?"  // consider implementing
       else "Building ${targetIds.size} target(s)"
-    bspBuildConsole.startBuild(uuid, "BSP: Build", startBuildMessage)
+    bspBuildConsole.startProcess("BSP: Build", startBuildMessage, uuid)
 
     println("buildTargetCompile")
     val compileParams = CompileParams(targetIds).apply { originId = uuid }
     val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
 
     when (compileResult.statusCode) {
-      StatusCode.OK -> bspBuildConsole.finishBuild("Successfully completed!", uuid)
-      StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Cancelled!", uuid)
-      StatusCode.ERROR -> bspBuildConsole.finishBuild("Ended with an error!", uuid, FailureResultImpl())
-      else -> bspBuildConsole.finishBuild("Finished!", uuid)
+      StatusCode.OK -> bspBuildConsole.finishProcess("Successfully completed!", processId = uuid)
+      StatusCode.CANCELLED -> bspBuildConsole.finishProcess("Cancelled!", processId = uuid)
+      StatusCode.ERROR -> bspBuildConsole.finishProcess("Ended with an error!", FailureResultImpl(), uuid)
+      else -> bspBuildConsole.finishProcess("Finished!", processId = uuid)
     }
 
     return compileResult
@@ -201,7 +199,7 @@ public class VeryTemporaryBspResolver(
   }
 
   public fun collectModel(): ProjectDetails {
-    bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
+    bspSyncConsole.startProcess("BSP: Import", "Importing...", "bsp-import")
 
     println("buildInitialize")
     val initializeBuildResult = server.buildInitialize(createInitializeBuildParams()).catchSyncErrors().get()
@@ -212,7 +210,7 @@ public class VeryTemporaryBspResolver(
     server.onBuildInitialized()
     val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities)
 
-    bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
+    bspSyncConsole.finishProcess("Import done!", SuccessResultImpl())
 
     println("done done!")
     return projectDetails
@@ -241,7 +239,7 @@ public class VeryTemporaryBspResolver(
     val buildTargetJavacOptionsResult =
       server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors().get()
 
-    bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
+    bspSyncConsole.finishProcess("Import done!", SuccessResultImpl())
 
     println("done done!")
     return ProjectDetails(
@@ -275,7 +273,7 @@ public class VeryTemporaryBspResolver(
       .whenComplete { _, exception ->
         exception?.let {
           bspSyncConsole.addMessage("bsp-import", "Sync failed")
-          bspSyncConsole.finishImport("Failed", FailureResultImpl(exception))
+          bspSyncConsole.finishProcess("Failed", FailureResultImpl(exception))
         }
       }
   }
@@ -285,15 +283,15 @@ public class VeryTemporaryBspResolver(
       .whenComplete { _, exception ->
         exception?.let {
           bspBuildConsole.addMessage("bsp-build", "Build failed", buildId)
-          bspBuildConsole.finishBuild("Failed", buildId, FailureResultImpl(exception))
+          bspBuildConsole.finishProcess("Failed", FailureResultImpl(exception), buildId)
         }
       }
   }
 }
 
 private class BspClient(
-  private val bspSyncConsole: BspSyncConsole,
-  private val bspBuildConsole: BspBuildConsole,
+  private val bspSyncConsole: BspProcessConsole,
+  private val bspBuildConsole: BspProcessConsole,
   private val bspRunConsole: BspRunConsoleService,
   private val bspTestConsole: BspTestConsoleService,
   ) : BuildClient {

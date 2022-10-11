@@ -57,14 +57,13 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
       val bspConnectionService = project.getService(BspConnectionService::class.java)
-      val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-      val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+      val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
       val bspConsoleService = BspRunConsoleService.getInstance(project)
       val bspResolver = VeryTemporaryBspResolver(
         project.stateStore.projectBasePath,
         bspConnectionService.server!!,
-        bspSyncConsoleService.bspSyncConsole,
-        bspBuildConsoleService.bspBuildConsole,
+        bspProcessConsoleService.bspSyncConsole,
+        bspProcessConsoleService.bspBuildConsole,
       )
       val processHandler = startProcess()
       val console = createConsole(executor)?.apply {

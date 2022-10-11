@@ -5,11 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.project.stateStore
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect.action.text")) {
@@ -17,14 +13,13 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project!!
     val bspConnectionService = project.getService(BspConnectionService::class.java)
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
     runBackgroundableTask("Connect action", project) {
       bspConnectionService.reconnect(project.locationHash)
       val bspResolver =
-        VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
+        VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspProcessConsoleService.bspSyncConsole, bspProcessConsoleService.bspBuildConsole)
       val projectDetails = bspResolver.collectModel()
 
       magicMetaModelService.initializeMagicModel(projectDetails)

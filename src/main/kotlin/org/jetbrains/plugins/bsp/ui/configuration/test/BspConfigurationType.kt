@@ -49,15 +49,14 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
     return RunProfileState { executor2, _ ->
 
       val bspConnectionService = project.getService(BspConnectionService::class.java)
-      val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-      val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+      val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
       val bspTestConsoleService = BspTestConsoleService.getInstance(project)
 
       val bspResolver = VeryTemporaryBspResolver(
         project.stateStore.projectBasePath,
         bspConnectionService.server!!,
-        bspSyncConsoleService.bspSyncConsole,
-        bspBuildConsoleService.bspBuildConsole
+        bspProcessConsoleService.bspSyncConsole,
+        bspProcessConsoleService.bspBuildConsole
       )
 
       val processHandler = BspProcessHandler()
