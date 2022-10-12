@@ -55,6 +55,9 @@ public class BspConnectionDetailsGeneratorProvider(
   public fun availableGeneratorsNames(): List<String> =
     availableBspConnectionDetailsGenerators.map { it.name() }
 
+  public fun firstGeneratorTEMPORARY(): String? =
+    availableGeneratorsNames().firstOrNull()
+
   public fun calulateWizzardSteps(
     generatorName: String,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>

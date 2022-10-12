@@ -36,7 +36,7 @@ public class ImportProjectWizzard(
     addStep(firstStep)
 
     val externalSteps = bspConnectionDetailsGeneratorProvider.calulateWizzardSteps(
-      "bazel",
+      bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()!!,
       connectionFileOrNewConnectionProperty
     )
     externalSteps.forEach { addStep(it) }

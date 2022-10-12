@@ -57,9 +57,9 @@ public class BspInitializer : StartupActivity {
         connectionService.bspConnectionDetailsGeneratorProvider = bspConnectionDetailsGeneratorProvider
         if (wizzard.connectionFileOrNewConnectionProperty.get() is NewConnection) {
           connectionService.dialogBuildToolUsed = true
-          connectionService.dialogBuildToolName = "bazel"
+          connectionService.dialogBuildToolName = bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()
 
-          bspUtilService.selectedBuildTool[project.locationHash] = "bazel"
+          bspUtilService.selectedBuildTool[project.locationHash] = bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY() ?: ""
           bspUtilService.loadedViaBspFile.remove(project.locationHash)
         } else {
           bspUtilService.selectedBuildTool.remove(project.locationHash)
