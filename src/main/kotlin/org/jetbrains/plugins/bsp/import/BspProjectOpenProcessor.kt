@@ -32,40 +32,10 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     projectToClose: Project?,
     forceOpenInNewFrame: Boolean
   ): Project? {
-//    val bspConnectionFilesProvider = BspConnectionFilesProvider(virtualFile)
-//    val bspConnectionDetailsGeneratorProvider =
-//      BspConnectionDetailsGeneratorProvider(virtualFile, BspConnectionDetailsGeneratorExtension.extensions())
     val project =
       PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
     project?.putUserData(BspUtilService.projectPathKey, virtualFile)
 
     return project
-//    return if (dialog.showAndGet()) {
-//      val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
-//      project?.putUserData(BspUtilService.projectPathKey, virtualFile)
-//
-//      val bspUtilService = BspUtilService.getInstance()
-//
-//      if (project != null) {
-//        val connectionService = BspConnectionService.getInstance(project)
-//
-//        connectionService.bspConnectionDetailsGeneratorProvider = bspConnectionDetailsGeneratorProvider
-//        if (dialog.buildToolUsed.selected()) {
-//          connectionService.dialogBuildToolUsed = true
-//          connectionService.dialogBuildToolName = dialog.buildTool
-//
-//          bspUtilService.selectedBuildTool[project.locationHash] = dialog.buildTool
-//          bspUtilService.loadedViaBspFile.remove(project.locationHash)
-//        } else {
-//          bspUtilService.selectedBuildTool.remove(project.locationHash)
-//          bspUtilService.loadedViaBspFile.add(project.locationHash)
-//
-//          connectionService.dialogBuildToolUsed = false
-//          connectionService.dialogConnectionFile = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
-//        }
-//
-//        project
-//      } else null
-//    } else null
   }
 }
