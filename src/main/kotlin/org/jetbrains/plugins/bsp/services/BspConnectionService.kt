@@ -15,6 +15,8 @@ import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerat
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.ui.console.BspProcessConsole
+import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
+import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -46,15 +48,13 @@ public class BspConnectionService(private val project: Project) {
 
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
-    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
-    val bspRunConsoleService = BspRunConsoleService.getInstance(project)
-    val bspTestConsoleService = BspTestConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
 
     val client = BspClient(
-      bspProcessConsoleService.bspSyncConsole,
-      bspProcessConsoleService.bspBuildConsole,
-      bspRunConsoleService,
-      bspTestConsoleService
+      bspConsoleService.bspSyncConsole,
+      bspConsoleService.bspBuildConsole,
+      bspConsoleService.bspRunConsole,
+      bspConsoleService.bspTestConsole
     )
 
     val bspIn = process.inputStream
@@ -80,7 +80,7 @@ public class BspConnectionService(private val project: Project) {
 
   public fun connectFromDialog(project: Project) {
     val bspUtilService = BspUtilService.getInstance()
-    val bspSyncConsole: BspProcessConsole = BspProcessConsoleService.getInstance(project).bspSyncConsole
+    val bspSyncConsole: BspProcessConsole = BspConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.startTask("BSP: Obtain config", "Obtaining...", "bsp-obtain-config")
     if (dialogBuildToolUsed != null) {
       if (dialogBuildToolUsed!!) {
@@ -292,8 +292,8 @@ public class VeryTemporaryBspResolver(
 private class BspClient(
   private val bspSyncConsole: BspProcessConsole,
   private val bspBuildConsole: BspProcessConsole,
-  private val bspRunConsole: BspRunConsoleService,
-  private val bspTestConsole: BspTestConsoleService,
+  private val bspRunConsole: BspTargetRunConsole,
+  private val bspTestConsole: BspTargetTestConsole,
   ) : BuildClient {
 
   override fun onBuildShowMessage(params: ShowMessageParams) {

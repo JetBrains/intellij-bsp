@@ -1,12 +1,9 @@
-package org.jetbrains.plugins.bsp.services
+package org.jetbrains.plugins.bsp.ui.console
 
-import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
-import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConsole
+import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConsolePrinter
 
-
-public open class BspTargetConsoleService<T : BspConsolePrinter> {
-
+public open class BspTargetConsole<T : BspConsolePrinter> {
   protected val consoleListeners: MutableSet<T> = mutableSetOf()
 
   public fun registerPrinter(printer: T) {
@@ -22,16 +19,9 @@ public open class BspTargetConsoleService<T : BspConsolePrinter> {
   }
 }
 
-public class BspRunConsoleService : BspTargetConsoleService<BspConsolePrinter>() {
+public class BspTargetRunConsole : BspTargetConsole<BspConsolePrinter>()
 
-  public companion object {
-    public fun getInstance(project: Project): BspRunConsoleService =
-      project.getService(BspRunConsoleService::class.java)
-  }
-}
-
-public class BspTestConsoleService : BspTargetConsoleService<BspTestConsole>() {
-
+public class BspTargetTestConsole : BspTargetConsole<BspTestConsolePrinter>() {
   public fun startTest(suite: Boolean, displayName: String) {
     consoleListeners.forEach{ it.startTest(suite, displayName) }
   }
@@ -46,10 +36,5 @@ public class BspTestConsoleService : BspTargetConsoleService<BspTestConsole>() {
 
   public fun ignoreTest(displayName: String) {
     consoleListeners.forEach{ it.ignoreTest(displayName) }
-  }
-
-  public companion object {
-    public fun getInstance(project: Project): BspTestConsoleService =
-      project.getService(BspTestConsoleService::class.java)
   }
 }

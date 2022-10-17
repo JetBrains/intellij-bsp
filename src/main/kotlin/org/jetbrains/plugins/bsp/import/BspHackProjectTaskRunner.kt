@@ -28,19 +28,19 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
   private fun buildAllBspTargets(project: Project): Promise<Result> {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     val bspConnectionService = BspConnectionService.getInstance(project)
-    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
 
     val magicMetaModel: MagicMetaModel = magicMetaModelService.magicMetaModel
     val targets: List<BuildTarget> = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
 
-    val bspBuildConsole: BspProcessConsole = bspProcessConsoleService.bspBuildConsole
+    val bspBuildConsole: BspProcessConsole = bspConsoleService.bspBuildConsole
 
     val promiseResult = AsyncPromise<Result>()
 
     val bspResolver = VeryTemporaryBspResolver(
       project.stateStore.projectBasePath,
       bspConnectionService.server!!,
-      BspProcessConsoleService.getInstance(project).bspSyncConsole,
+      BspConsoleService.getInstance(project).bspSyncConsole,
       bspBuildConsole
     )
 

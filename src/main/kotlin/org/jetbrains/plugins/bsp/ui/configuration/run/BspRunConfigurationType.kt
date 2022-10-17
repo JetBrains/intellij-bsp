@@ -57,20 +57,20 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
       val bspConnectionService = project.getService(BspConnectionService::class.java)
-      val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
-      val bspConsoleService = BspRunConsoleService.getInstance(project)
+      val bspConsoleService = BspConsoleService.getInstance(project)
+      val bspRunConsole = bspConsoleService.bspRunConsole
       val bspResolver = VeryTemporaryBspResolver(
         project.stateStore.projectBasePath,
         bspConnectionService.server!!,
-        bspProcessConsoleService.bspSyncConsole,
-        bspProcessConsoleService.bspBuildConsole,
+        bspConsoleService.bspSyncConsole,
+        bspConsoleService.bspBuildConsole,
       )
       val processHandler = startProcess()
       val console = createConsole(executor)?.apply {
         attachToProcess(processHandler)
       }
       environment.getUserData(BspUtilService.targetIdKey)?.uri?.let { uri ->
-        bspConsoleService.registerPrinter(processHandler)
+        bspRunConsole.registerPrinter(processHandler)
         processHandler.execute {
           val startRunMessage = "Running target $uri"
           processHandler.printOutput(startRunMessage)
@@ -84,7 +84,7 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
               }
             }
           } finally {
-            bspConsoleService.deregisterPrinter(processHandler)
+            bspRunConsole.deregisterPrinter(processHandler)
             processHandler.shutdown()
           }
         }

@@ -13,13 +13,13 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project!!
     val bspConnectionService = project.getService(BspConnectionService::class.java)
-    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
     runBackgroundableTask("Connect action", project) {
       bspConnectionService.reconnect(project.locationHash)
       val bspResolver =
-        VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspProcessConsoleService.bspSyncConsole, bspProcessConsoleService.bspBuildConsole)
+        VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspConsoleService.bspSyncConsole, bspConsoleService.bspBuildConsole)
       val projectDetails = bspResolver.collectModel()
 
       magicMetaModelService.initializeMagicModel(projectDetails)

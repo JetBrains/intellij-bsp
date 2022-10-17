@@ -12,10 +12,10 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project!!
     val connectionService = project.getService(BspConnectionService::class.java)
-    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
 
     val bspResolver =
-      VeryTemporaryBspResolver(project.stateStore.projectBasePath, connectionService.server!!, bspProcessConsoleService.bspSyncConsole, bspProcessConsoleService.bspBuildConsole)
+      VeryTemporaryBspResolver(project.stateStore.projectBasePath, connectionService.server!!, bspConsoleService.bspSyncConsole, bspConsoleService.bspBuildConsole)
 
     runBackgroundableTask("Reload action", project) {
       bspResolver.collectModel()

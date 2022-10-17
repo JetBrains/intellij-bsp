@@ -49,26 +49,26 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
     return RunProfileState { executor2, _ ->
 
       val bspConnectionService = project.getService(BspConnectionService::class.java)
-      val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
-      val bspTestConsoleService = BspTestConsoleService.getInstance(project)
+      val bspConsoleService = BspConsoleService.getInstance(project)
+      val bspTestConsole = bspConsoleService.bspTestConsole
 
       val bspResolver = VeryTemporaryBspResolver(
         project.stateStore.projectBasePath,
         bspConnectionService.server!!,
-        bspProcessConsoleService.bspSyncConsole,
-        bspProcessConsoleService.bspBuildConsole
+        bspConsoleService.bspSyncConsole,
+        bspConsoleService.bspBuildConsole
       )
 
       val processHandler = BspProcessHandler()
-      val testConsole = BspTestConsole(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
+      val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
       environment.getUserData(BspUtilService.targetIdKey)?.let {
-        bspTestConsoleService.registerPrinter(testConsole)
+        bspTestConsole.registerPrinter(testConsole)
         processHandler.execute {
           try {
             bspResolver.testTarget(it)
           } finally {
             testConsole.endTesting()
-            bspTestConsoleService.deregisterPrinter(testConsole)
+            bspTestConsole.deregisterPrinter(testConsole)
           }
         }
       } ?: processHandler.shutdown()

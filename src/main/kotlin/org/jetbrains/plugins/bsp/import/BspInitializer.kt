@@ -72,7 +72,7 @@ public class BspInitializer : StartupActivity {
         private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
         override fun run(indicator: ProgressIndicator) {
-          val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
+          val bspConsoleService = BspConsoleService.getInstance(project)
 
           connectionService.connectFromDialog(project)
 
@@ -80,8 +80,8 @@ public class BspInitializer : StartupActivity {
             VeryTemporaryBspResolver(
               project.stateStore.projectBasePath,
               connectionService.server!!,
-              bspProcessConsoleService.bspSyncConsole,
-              bspProcessConsoleService.bspBuildConsole
+              bspConsoleService.bspSyncConsole,
+              bspConsoleService.bspBuildConsole
             )
 
           val projectDetails = bspResolver.collectModel()

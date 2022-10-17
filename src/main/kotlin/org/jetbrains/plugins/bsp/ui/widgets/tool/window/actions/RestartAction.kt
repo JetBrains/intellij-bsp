@@ -8,7 +8,7 @@ import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorE
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspProcessConsoleService
+import org.jetbrains.plugins.bsp.services.BspConsoleService
 import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
 import org.jetbrains.plugins.bsp.ui.console.BspProcessConsole
@@ -27,15 +27,15 @@ public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionNa
       runBackgroundableTask("Restart action", project) {
         bspConnectionService.disconnect()
 
-        val bspSyncConsole: BspProcessConsole = BspProcessConsoleService.getInstance(project).bspSyncConsole
+        val bspSyncConsole: BspProcessConsole = BspConsoleService.getInstance(project).bspSyncConsole
         bspSyncConsole.startTask("BSP: Obtain config", "Obtaining...", "bsp-obtain-config")
         val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(projectPath, BspConnectionDetailsGeneratorExtension.extensions())
         val generatedConnectionDetailsFile = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(selectedBuildTool, ConsoleOutputStream("bsp-obtain-config", bspSyncConsole))
         generatedConnectionDetailsFile?.let {
           bspConnectionService.connect(LocatedBspConnectionDetailsParser.parseFromFile(it)!!)
 
-          val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
-          val bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspProcessConsoleService.bspSyncConsole, bspProcessConsoleService.bspBuildConsole)
+          val bspConsoleService = BspConsoleService.getInstance(project)
+          val bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspConsoleService.bspSyncConsole, bspConsoleService.bspBuildConsole)
           bspResolver.collectModel()
         }
       }

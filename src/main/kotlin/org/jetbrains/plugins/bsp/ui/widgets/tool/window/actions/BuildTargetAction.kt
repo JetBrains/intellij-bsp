@@ -15,13 +15,13 @@ public class BuildTargetAction(
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project!!
     val bspConnectionService = project.getService(BspConnectionService::class.java)
-    val bspProcessConsoleService = BspProcessConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
 
     val bspResolver = VeryTemporaryBspResolver(
       project.stateStore.projectBasePath,
       bspConnectionService.server!!,
-      bspProcessConsoleService.bspSyncConsole,
-      bspProcessConsoleService.bspBuildConsole
+      bspConsoleService.bspSyncConsole,
+      bspConsoleService.bspBuildConsole
     )
     runBackgroundableTask("Build single target", project) {
       bspResolver.buildTarget(target)
