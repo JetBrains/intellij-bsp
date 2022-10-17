@@ -58,7 +58,7 @@ class BspProcessConsoleTest {
 
     bspProcessConsole.addMessage("task before start", "message before start - should be omitted")
 
-    bspProcessConsole.startProcess("Import", "Importing...", "import")
+    bspProcessConsole.startTask("Import", "Importing...", "import")
 
     bspProcessConsole.startSubtask("subtask 1", "Starting subtask 1")
     bspProcessConsole.addMessage("subtask 1", "message 1\n")
@@ -81,7 +81,7 @@ class BspProcessConsoleTest {
     bspProcessConsole.finishSubtask("subtask 2", "Subtask 2 finished")
     bspProcessConsole.finishSubtask("subtask 3", "Subtask 3 finished")
 
-    bspProcessConsole.finishProcess("finitio!", SuccessResultImpl())
+    bspProcessConsole.finishTask("finitio!", SuccessResultImpl())
 
     bspProcessConsole.addMessage("task after finish", "message after finish - should be omitted")
 
@@ -122,12 +122,12 @@ class BspProcessConsoleTest {
     // when
     val bspProcessConsole = BspProcessConsole(buildProcessListener, basePath)
 
-    bspProcessConsole.startProcess("Process 1", "Processing...", "process-1")
-    bspProcessConsole.startProcess("Process 2", "Processing...", "process-2")
-    bspProcessConsole.startProcess("Process 3", "Processing...", "process-3")
-    bspProcessConsole.finishProcess("Process 2 done!", SuccessResultImpl(), "process-2")
-    bspProcessConsole.finishProcess("Process 3 done!", SuccessResultImpl())
-    bspProcessConsole.finishProcess("Process 1 done!", SuccessResultImpl())
+    bspProcessConsole.startTask("Process 1", "Processing...", "process-1")
+    bspProcessConsole.startTask("Process 2", "Processing...", "process-2")
+    bspProcessConsole.startTask("Process 3", "Processing...", "process-3")
+    bspProcessConsole.finishTask("Process 2 done!", SuccessResultImpl(), "process-2")
+    bspProcessConsole.finishTask("Process 3 done!", SuccessResultImpl())
+    bspProcessConsole.finishTask("Process 1 done!", SuccessResultImpl())
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(
@@ -154,12 +154,12 @@ class BspProcessConsoleTest {
     // when
     val bspProcessConsole = BspProcessConsole(buildProcessListener, basePath)
 
-    bspProcessConsole.startProcess("Process 1", "Processing...", "process-1")
-    bspProcessConsole.startProcess("Process 1", "This event should be ignored", "process-1")
-    bspProcessConsole.finishProcess("This event should be ignored", SuccessResultImpl(), "process-77")
-    bspProcessConsole.finishProcess("Process 1 done!", SuccessResultImpl(), "process-1")
-    bspProcessConsole.finishProcess("This event should be ignored", SuccessResultImpl(), "process-1")
-    bspProcessConsole.finishProcess("This event should be ignored", SuccessResultImpl())
+    bspProcessConsole.startTask("Process 1", "Processing...", "process-1")
+    bspProcessConsole.startTask("Process 1", "This event should be ignored", "process-1")
+    bspProcessConsole.finishTask("This event should be ignored", SuccessResultImpl(), "process-77")
+    bspProcessConsole.finishTask("Process 1 done!", SuccessResultImpl(), "process-1")
+    bspProcessConsole.finishTask("This event should be ignored", SuccessResultImpl(), "process-1")
+    bspProcessConsole.finishTask("This event should be ignored", SuccessResultImpl())
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(

@@ -28,7 +28,7 @@ public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionNa
         bspConnectionService.disconnect()
 
         val bspSyncConsole: BspProcessConsole = BspProcessConsoleService.getInstance(project).bspSyncConsole
-        bspSyncConsole.startProcess("BSP: Obtain config", "Obtaining...", "bsp-obtain-config")
+        bspSyncConsole.startTask("BSP: Obtain config", "Obtaining...", "bsp-obtain-config")
         val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(projectPath, BspConnectionDetailsGeneratorExtension.extensions())
         val generatedConnectionDetailsFile = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(selectedBuildTool, ConsoleOutputStream("bsp-obtain-config", bspSyncConsole))
         generatedConnectionDetailsFile?.let {

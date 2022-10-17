@@ -31,13 +31,13 @@ public class BspProcessConsole (
    * @param processId ID of the newly started process
    */
   @Synchronized
-  public fun startProcess(title: String, message: String, processId: String): Unit =
+  public fun startTask(title: String, message: String, processId: String): Unit =
     doUnlessProcessInProgress(processId) {
       processesInProgress.add(processId)
-      doStartProcess(title, message, processId)
+      doStartTask(title, message, processId)
     }
 
-  private fun doStartProcess(title: String, message: String, processId: String) {
+  private fun doStartTask(title: String, message: String, processId: String) {
     val processDescriptor = DefaultBuildDescriptor(processId, title, basePath, System.currentTimeMillis())
     // TODO one day
     //  .withRestartActions(restartAction)
@@ -55,17 +55,17 @@ public class BspProcessConsole (
    * @param processId ID of the finished process (last started process by default, if nothing passed)
    */
   @Synchronized
-  public fun finishProcess(
+  public fun finishTask(
     message: String,
     result: EventResult = SuccessResultImpl(),
     processId: String? = processesInProgress.lastOrNull()
   ): Unit =
     doIfProcessInProgress(processId) {
       processesInProgress.remove(processId)
-      doFinishProcess(message, result, processId!!)
+      doFinishTask(message, result, processId!!)
     }
 
-  private fun doFinishProcess(message: String, result: EventResult, processId: String) {
+  private fun doFinishTask(message: String, result: EventResult, processId: String) {
     val event = FinishBuildEventImpl(processId, null, System.currentTimeMillis(), message, result)
     processView.onEvent(processId, event)
   }
