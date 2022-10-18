@@ -39,7 +39,7 @@
 
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspConsoleService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
 
     <applicationService serviceImplementation="org.jetbrains.plugins.bsp.services.BspUtilService"/>
 

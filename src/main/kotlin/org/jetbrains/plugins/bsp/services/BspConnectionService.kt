@@ -14,10 +14,7 @@ import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.ui.console.BspProcessConsole
-import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
-import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
-import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
+import org.jetbrains.plugins.bsp.ui.console.*
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
@@ -26,6 +23,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 public interface BspServer : BuildServer, JavaBuildServer
+
+private fun syncId(): String = "bsp-import"  // TODO - temporary
 
 public fun interface Cancelable {
   public fun cancel()
@@ -80,8 +79,8 @@ public class BspConnectionService(private val project: Project) {
 
   public fun connectFromDialog(project: Project) {
     val bspUtilService = BspUtilService.getInstance()
-    val bspSyncConsole: BspProcessConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("BSP: Obtain config", "Obtaining...", "bsp-obtain-config")
+    val bspSyncConsole: TaskConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startTask("bsp-obtain-config", "Obtain config", "Obtaining...")
     if (dialogBuildToolUsed != null) {
       if (dialogBuildToolUsed!!) {
         val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(
@@ -97,7 +96,7 @@ public class BspConnectionService(private val project: Project) {
         bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
         connect(dialogConnectionFile!!)
       }
-      bspSyncConsole.finishTask("Config obtained!", SuccessResultImpl())
+      bspSyncConsole.finishTask("bsp-obtain-config", "Config obtained!", SuccessResultImpl())
     }
   }
 
@@ -149,8 +148,8 @@ public class BspConnectionService(private val project: Project) {
 public class VeryTemporaryBspResolver(
   private val projectBaseDir: Path,
   private val server: BspServer,
-  private val bspSyncConsole: BspProcessConsole,
-  private val bspBuildConsole: BspProcessConsole
+  private val bspSyncConsole: TaskConsole,
+  private val bspBuildConsole: TaskConsole
 ) {
 
   public fun runTarget(targetId: BuildTargetIdentifier): RunResult {
@@ -171,17 +170,17 @@ public class VeryTemporaryBspResolver(
       if (targetIds.size == 1) "Building ${targetIds.first().uri}"
 //      else if (targetIds.isEmpty()) "?"  // consider implementing
       else "Building ${targetIds.size} target(s)"
-    bspBuildConsole.startTask("BSP: Build", startBuildMessage, uuid)
+    bspBuildConsole.startTask(uuid, "BSP: Build", startBuildMessage)
 
     println("buildTargetCompile")
     val compileParams = CompileParams(targetIds).apply { originId = uuid }
     val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
 
     when (compileResult.statusCode) {
-      StatusCode.OK -> bspBuildConsole.finishTask("Successfully completed!", processId = uuid)
-      StatusCode.CANCELLED -> bspBuildConsole.finishTask("Cancelled!", processId = uuid)
-      StatusCode.ERROR -> bspBuildConsole.finishTask("Ended with an error!", FailureResultImpl(), uuid)
-      else -> bspBuildConsole.finishTask("Finished!", processId = uuid)
+      StatusCode.OK -> bspBuildConsole.finishTask(taskId = uuid, "Successfully completed!")
+      StatusCode.CANCELLED -> bspBuildConsole.finishTask(taskId = uuid, "Cancelled!")
+      StatusCode.ERROR -> bspBuildConsole.finishTask(uuid, "Ended with an error!", FailureResultImpl())
+      else -> bspBuildConsole.finishTask(taskId = uuid, "Finished!")
     }
 
     return compileResult
@@ -199,47 +198,52 @@ public class VeryTemporaryBspResolver(
   }
 
   public fun collectModel(): ProjectDetails {
-    bspSyncConsole.startTask("BSP: Import", "Importing...", "bsp-import")
+    val syncId = syncId()
+    bspSyncConsole.startTask(syncId, "Import", "Importing...")
 
     println("buildInitialize")
-    val initializeBuildResult = server.buildInitialize(createInitializeBuildParams()).catchSyncErrors().get()
+    val initializeBuildResult =
+      server.buildInitialize(createInitializeBuildParams()).catchSyncErrors(syncId).get()
 
     println("onBuildInitialized")
     server.onBuildInitialized()
 
     server.onBuildInitialized()
-    val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities)
+    val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities, syncId)
 
-    bspSyncConsole.finishTask("Import done!", SuccessResultImpl())
+    bspSyncConsole.finishTask(syncId, "Import done!", SuccessResultImpl())
 
     println("done done!")
     return projectDetails
   }
 
-  private fun collectModelWithCapabilities(buildServerCapabilities: BuildServerCapabilities): ProjectDetails {
+  private fun collectModelWithCapabilities(
+    buildServerCapabilities: BuildServerCapabilities,
+    syncId: String
+  ): ProjectDetails {
     println("workspaceBuildTargets")
-    val workspaceBuildTargetsResult = server.workspaceBuildTargets().catchSyncErrors().get()
+    val workspaceBuildTargetsResult = server.workspaceBuildTargets().catchSyncErrors(syncId).get()
     val allTargetsIds = workspaceBuildTargetsResult!!.targets.map(BuildTarget::getId)
 
     println("buildTargetSources")
-    val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).catchSyncErrors().get()
+    val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).catchSyncErrors(syncId).get()
 
     println("buildTargetResources")
     val resourcesResult =
       if (buildServerCapabilities.resourcesProvider) server.buildTargetResources(ResourcesParams(allTargetsIds))
-        .catchSyncErrors().get() else null
+        .catchSyncErrors(syncId).get() else null
 
     println("buildTargetDependencySources")
     val dependencySourcesResult =
       if (buildServerCapabilities.dependencySourcesProvider) server.buildTargetDependencySources(
         DependencySourcesParams(allTargetsIds)
-      ).catchSyncErrors().get() else null
+      ).catchSyncErrors(syncId).get() else null
 
     println("buildTargetJavacOptions")
     val buildTargetJavacOptionsResult =
-      server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors().get()
+      server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors(syncId).get()
 
-    bspSyncConsole.finishTask("Import done!", SuccessResultImpl())
+    bspSyncConsole.finishTask(syncId, "Import done!", SuccessResultImpl())
 
     println("done done!")
     return ProjectDetails(
@@ -268,12 +272,12 @@ public class VeryTemporaryBspResolver(
     return params
   }
 
-  private fun <T> CompletableFuture<T>.catchSyncErrors(): CompletableFuture<T> {
+  private fun <T> CompletableFuture<T>.catchSyncErrors(syncId: String): CompletableFuture<T> {
     return this
       .whenComplete { _, exception ->
         exception?.let {
           bspSyncConsole.addMessage("bsp-import", "Sync failed")
-          bspSyncConsole.finishTask("Failed", FailureResultImpl(exception))
+          bspSyncConsole.finishTask(syncId, "Failed", FailureResultImpl(exception))
         }
       }
   }
@@ -282,19 +286,19 @@ public class VeryTemporaryBspResolver(
     return this
       .whenComplete { _, exception ->
         exception?.let {
-          bspBuildConsole.addMessage("bsp-build", "Build failed", buildId)
-          bspBuildConsole.finishTask("Failed", FailureResultImpl(exception), buildId)
+          bspBuildConsole.addMessage("bsp-build", "Build failed")
+          bspBuildConsole.finishTask(buildId, "Failed", FailureResultImpl(exception))
         }
       }
   }
 }
 
 private class BspClient(
-  private val bspSyncConsole: BspProcessConsole,
-  private val bspBuildConsole: BspProcessConsole,
+  private val bspSyncConsole: TaskConsole,
+  private val bspBuildConsole: TaskConsole,
   private val bspRunConsole: BspTargetRunConsole,
   private val bspTestConsole: BspTargetTestConsole,
-  ) : BuildClient {
+) : BuildClient {
 
   override fun onBuildShowMessage(params: ShowMessageParams) {
     println("onBuildShowMessage")
@@ -317,6 +321,7 @@ private class BspClient(
         println("TEST START: ${testStart?.displayName}")
         bspTestConsole.startTest(isSuite, testStart.displayName)
       }
+
       TaskDataKind.TEST_TASK -> {
         // ignore
       }
@@ -340,9 +345,10 @@ private class BspClient(
         when (testFinish.status) {
           TestStatus.FAILED -> bspTestConsole.failTest(testFinish.displayName, testFinish.message)
           TestStatus.PASSED -> bspTestConsole.passTest(isSuite, testFinish.displayName)
-          else              -> bspTestConsole.ignoreTest(testFinish.displayName)
+          else -> bspTestConsole.ignoreTest(testFinish.displayName)
         }
       }
+
       TaskDataKind.TEST_REPORT -> {}
     }
     println("onBuildTaskFinish")
@@ -362,13 +368,13 @@ private class BspClient(
 
   private fun addMessageToConsole(id: Any?, message: String, originId: String?) {
     if (originId?.startsWith("build") == true) {
-      bspBuildConsole.addMessage(id, message, originId)
+      bspBuildConsole.addMessage(originId, message)
     } else if (originId?.startsWith("test") == true) {
       bspTestConsole.print(message)
     } else if (originId?.startsWith("run") == true) {
       bspRunConsole.print(message)
     } else {
-      bspSyncConsole.addMessage(id, message)
+      bspSyncConsole.addMessage(originId ?: syncId(), message)
     }
   }
 

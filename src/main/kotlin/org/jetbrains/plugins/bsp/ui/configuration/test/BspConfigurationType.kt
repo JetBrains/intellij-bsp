@@ -11,6 +11,7 @@ import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import javax.swing.Icon
 
 

@@ -15,6 +15,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspConfigurationType
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import javax.swing.Icon
 
 internal class BspRunConfigurationType : ConfigurationType {

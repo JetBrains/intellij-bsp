@@ -8,7 +8,8 @@ import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.services.*
-import org.jetbrains.plugins.bsp.ui.console.BspProcessConsole
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 
 /**
  * WARNING: temporary solution, might change
@@ -33,14 +34,14 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
     val magicMetaModel: MagicMetaModel = magicMetaModelService.magicMetaModel
     val targets: List<BuildTarget> = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
 
-    val bspBuildConsole: BspProcessConsole = bspConsoleService.bspBuildConsole
+    val bspBuildConsole: TaskConsole = bspConsoleService.bspBuildConsole
 
     val promiseResult = AsyncPromise<Result>()
 
     val bspResolver = VeryTemporaryBspResolver(
       project.stateStore.projectBasePath,
       bspConnectionService.server!!,
-      BspConsoleService.getInstance(project).bspSyncConsole,
+      bspConsoleService.bspSyncConsole,
       bspBuildConsole
     )
 
