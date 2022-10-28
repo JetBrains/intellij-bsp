@@ -209,13 +209,15 @@ class TaskConsoleTest {
   @Test
   fun `should display diagnostic messages correctly`() {
     val basePath = "/project/"
-    val documentPath = "file:///home/directory/project/src/test/Start.kt"
+    val fileURI = "file:///home/directory/project/src/test/Start.kt"
 
     data class SanitizedDiagnosticEvent(
       val originId: Any?,
       val message: String,
       val severity: Kind,
-      val filePositionPath: String
+      val filePositionPath: String,
+      val line: Int,
+      val column: Int
     )
 
     class DiagnosticListener : BuildProgressListener {
@@ -227,7 +229,9 @@ class TaskConsoleTest {
             it.parentId,
             it.message,
             it.kind,
-            it.filePosition.file.absolutePath
+            it.filePosition.file.absolutePath,
+            it.filePosition.startLine,
+            it.filePosition.startColumn
           )
         }
         addEvent(buildId, sanitizedEvent)
@@ -239,57 +243,33 @@ class TaskConsoleTest {
     }
 
     val diagnosticListener = DiagnosticListener()
-
     val taskConsole = TaskConsole(diagnosticListener, basePath)
-
-    fun createDiagnostic(message: String, severity: DiagnosticSeverity?): Diagnostic {
-      return Diagnostic(
-        Range(Position(1, 2), Position(3, 4)),
-        message
-      ).also {
-        it.severity = severity
-      }
-    }
-
-    fun sendDiagnosticParams(diagnostics: List<Diagnostic>, originId: String?) {
-      taskConsole.addDiagnosticMessage(
-        PublishDiagnosticsParams(
-          TextDocumentIdentifier(documentPath),
-          BuildTargetIdentifier("//src/test:Start"),
-          diagnostics,
-          false
-        ).also { it.originId = originId }
-      )
-    }
 
     // when
     taskConsole.startTask("origin", "Test", "started")
 
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 1", DiagnosticSeverity.ERROR)), "origin")
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 2", DiagnosticSeverity.WARNING)), "origin")
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 3", DiagnosticSeverity.INFORMATION)), "origin")
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 4", DiagnosticSeverity.HINT)), "origin")
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 1", DiagnosticSeverity.ERROR)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 2", DiagnosticSeverity.WARNING)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 3", DiagnosticSeverity.INFORMATION)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 4", DiagnosticSeverity.HINT)
 
     // blank message, should be omitted
-    sendDiagnosticParams(listOf(createDiagnostic("\t    \n   ", DiagnosticSeverity.ERROR)), "origin")
-
-    // no diagnostics, should be omitted
-    sendDiagnosticParams(listOf(), "origin")
-
-    // double diagnostic, should be sent correctly
-    sendDiagnosticParams(listOf(
-      createDiagnostic("Diagnostic 7", DiagnosticSeverity.ERROR),
-      createDiagnostic("Diagnostic 8", DiagnosticSeverity.WARNING)
-    ), "origin")
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "\t    \n   ", DiagnosticSeverity.ERROR)
 
     // no originId, should be omitted
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 9", DiagnosticSeverity.HINT)), null)
+    taskConsole.addDiagnosticMessage(null, fileURI, 10, 20, "Diagnostic 6", DiagnosticSeverity.ERROR)
 
     // non-existent originId, should be omitted
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 10", DiagnosticSeverity.HINT)), "wrong")
+    taskConsole.addDiagnosticMessage("wrong", fileURI, 10, 20, "Diagnostic 7", DiagnosticSeverity.ERROR)
 
     // null as severity, should be sent correctly
-    sendDiagnosticParams(listOf(createDiagnostic("Diagnostic 11", null)), "origin")
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 8", null)
+
+    // negative line and column numbers, should be sent nevertheless
+    taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 9", DiagnosticSeverity.ERROR)
+
+    // fileURI without `file://`, should be sent correctly
+    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 10", DiagnosticSeverity.WARNING)
 
     taskConsole.finishTask("origin", "finished", SuccessResultImpl())
 
@@ -297,13 +277,13 @@ class TaskConsoleTest {
     diagnosticListener.events shouldContainExactly mapOf(
       "origin" to listOf(
         null,  // starting the task
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 1\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt"),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt"),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt"),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 4\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt"),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 7\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt"),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 8\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt"),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 11\n", severity=Kind.SIMPLE, filePositionPath="/home/directory/project/src/test/Start.kt"),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 1\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 4\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 8\n", severity=Kind.SIMPLE, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 9\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 10\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         null  // finishing the task
       )
     )

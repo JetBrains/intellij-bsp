@@ -377,10 +377,18 @@ private class BspClient(
   }
 
   private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
-    if (params.originId?.startsWith("build") == true) {
-      bspBuildConsole.addDiagnosticMessage(params)
-    } else {
-      bspSyncConsole.addDiagnosticMessage(params)
+    if (params.originId != null && params.textDocument != null) {
+      val targetConsole = if (params.originId?.startsWith("build") == true) bspBuildConsole else bspSyncConsole
+      params.diagnostics.forEach {
+        targetConsole.addDiagnosticMessage(
+          params.originId,
+          params.textDocument.uri,
+          it.range.start.line,
+          it.range.start.character,
+          it.message,
+          it.severity
+        )
+      }
     }
   }
 }

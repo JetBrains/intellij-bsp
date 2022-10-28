@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.console
 
 import ch.epfl.scala.bsp4j.DiagnosticSeverity
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
@@ -103,28 +102,47 @@ public class TaskConsole(
     }
   }
 
+  /**
+   * Adds a diagnostic message to a particular task in this console.
+   *
+   * @param taskId id of the task (or a subtask), to which the message will be added
+   * @param fileURI absolute path to the file concerned by the diagnostic
+   * @param line line number in given file (first line is 0)
+   * @param column column number in given file (first column is 0)
+   * @param message description of the diagnostic
+   * @param severity severity of the diagnostic
+   */
   @Synchronized
-  public fun addDiagnosticMessage(params: PublishDiagnosticsParams) {
-    doIfTaskInProgress(params.originId) {
-      params.diagnostics.forEach {
-        if (it.message.isNotBlank()) {
-          val messageToSend = prepareTextToPrint(it.message)
-          val event = FileMessageEventImpl(
-            params.originId,
-            when (it.severity) {
-              DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-              DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-              DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-              DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
-              null -> MessageEvent.Kind.SIMPLE
-            },
-            null,
-            messageToSend,
-            null,
-            FilePosition(File(URI(params.textDocument.uri)), it.range.start.line, it.range.start.character)
-          )
-          taskView.onEvent(params.originId, event)
-        }
+  public fun addDiagnosticMessage(
+    taskId: Any?,
+    fileURI: String,
+    line: Int,
+    column: Int,
+    message: String,
+    severity: DiagnosticSeverity?
+  ) {
+    val parentTaskId = getSubtaskParent(taskId)
+    val subtaskId =
+      if (tasksInProgress.contains(taskId)) parentTaskId else taskId
+    doIfTaskInProgress(parentTaskId) {
+      if (message.isNotBlank()) {
+        val messageToSend = prepareTextToPrint(message)
+        val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
+        val event = FileMessageEventImpl(
+          subtaskId!!,
+          when (severity) {
+            DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+            DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+            DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+            DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+            null -> MessageEvent.Kind.SIMPLE
+          },
+          null,
+          messageToSend,
+          null,
+          FilePosition(File(URI(fullFileURI)), line, column)
+        )
+        taskView.onEvent(parentTaskId!!, event)
       }
     }
   }
