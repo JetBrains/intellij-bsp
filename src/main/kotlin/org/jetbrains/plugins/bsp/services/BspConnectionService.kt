@@ -170,7 +170,7 @@ public class VeryTemporaryBspResolver(
       if (targetIds.size == 1) "Building ${targetIds.first().uri}"
 //      else if (targetIds.isEmpty()) "?"  // consider implementing
       else "Building ${targetIds.size} target(s)"
-    bspBuildConsole.startTask(uuid, "BSP: Build", startBuildMessage)
+    bspBuildConsole.startTask(uuid, "Build", startBuildMessage)
 
     println("buildTargetCompile")
     val compileParams = CompileParams(targetIds).apply { originId = uuid }
@@ -243,8 +243,6 @@ public class VeryTemporaryBspResolver(
     val buildTargetJavacOptionsResult =
       server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors(syncId).get()
 
-    bspSyncConsole.finishTask(syncId, "Import done!", SuccessResultImpl())
-
     println("done done!")
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -276,7 +274,7 @@ public class VeryTemporaryBspResolver(
     return this
       .whenComplete { _, exception ->
         exception?.let {
-          bspSyncConsole.addMessage("bsp-import", "Sync failed")
+          bspSyncConsole.addMessage(syncId(), "Sync failed")
           bspSyncConsole.finishTask(syncId, "Failed", FailureResultImpl(exception))
         }
       }
@@ -303,13 +301,13 @@ private class BspClient(
   override fun onBuildShowMessage(params: ShowMessageParams) {
     println("onBuildShowMessage")
     println(params)
-    addMessageToConsole(params.task?.id, params.message, params.originId)
+    addMessageToConsole(params.originId, params.message)
   }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
     println("onBuildLogMessage")
     println(params)
-    addMessageToConsole(params.task?.id, params.message, params.originId)
+    addMessageToConsole(params.originId, params.message)
   }
 
   override fun onBuildTaskStart(params: TaskStartParams?) {
@@ -366,7 +364,7 @@ private class BspClient(
     println(params)
   }
 
-  private fun addMessageToConsole(id: Any?, message: String, originId: String?) {
+  private fun addMessageToConsole(originId: String?, message: String) {
     if (originId?.startsWith("build") == true) {
       bspBuildConsole.addMessage(originId, message)
     } else if (originId?.startsWith("test") == true) {

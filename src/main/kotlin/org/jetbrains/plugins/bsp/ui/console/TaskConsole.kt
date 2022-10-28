@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.console
 
+import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
@@ -104,18 +105,26 @@ public class TaskConsole(
 
   @Synchronized
   public fun addDiagnosticMessage(params: PublishDiagnosticsParams) {
-    params.diagnostics.forEach {
-      if (it.message.isNotBlank()) {
-        val messageToSend = prepareTextToPrint(it.message)
-        val event = FileMessageEventImpl(
-          params.originId,
-          MessageEvent.Kind.ERROR,
-          null,
-          messageToSend,
-          null,
-          FilePosition(File(URI(params.textDocument.uri)), it.range.start.line, it.range.start.character)
-        )
-        taskView.onEvent(params.originId, event)
+    doIfTaskInProgress(params.originId) {
+      params.diagnostics.forEach {
+        if (it.message.isNotBlank()) {
+          val messageToSend = prepareTextToPrint(it.message)
+          val event = FileMessageEventImpl(
+            params.originId,
+            when (it.severity) {
+              DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+              DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+              DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+              DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+              null -> MessageEvent.Kind.SIMPLE
+            },
+            null,
+            messageToSend,
+            null,
+            FilePosition(File(URI(params.textDocument.uri)), it.range.start.line, it.range.start.character)
+          )
+          taskView.onEvent(params.originId, event)
+        }
       }
     }
   }
