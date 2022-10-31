@@ -14,7 +14,7 @@ public interface BspConnection {
 
   public val server: BspServer?
 
-  public fun connect()
+  public fun connect(taskId: Any)
 
   public fun disconnect()
 

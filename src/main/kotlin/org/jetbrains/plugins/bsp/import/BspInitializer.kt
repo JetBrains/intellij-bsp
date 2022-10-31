@@ -21,9 +21,8 @@ import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
 import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzard
 import org.jetbrains.plugins.bsp.import.wizzard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
@@ -42,14 +41,14 @@ public class BspInitializer : StartupActivity {
         project.guessProjectDir()!!,
         BspConnectionDetailsGeneratorExtension.extensions()
       )
-    val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     val statusBar = WindowManager.getInstance().getStatusBar(project)
     statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
 
     if (project.isNewProject()) {
       println("BspInitializer.runActivity")
-      bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
+      bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
       val wizzard = ImportProjectWizzard(project, bspConnectionDetailsGeneratorProvider)
       if (wizzard.showAndGet()) {
@@ -74,18 +73,18 @@ public class BspInitializer : StartupActivity {
         private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
         override fun run(indicator: ProgressIndicator) {
-          val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+          val bspConsoleService = BspConsoleService.getInstance(project)
 
-          bspConnectionService.connection!!.connect()
+          bspConnectionService.connection!!.connect("bsp-import")
           val bspResolver =
             VeryTemporaryBspResolver(
               project.stateStore.projectBasePath,
               bspConnectionService.connection!!.server!!,
               bspSyncConsole,
-              bspBuildConsoleService.bspBuildConsole
+              bspConsoleService.bspBuildConsole
             )
 
-          val projectDetails = bspResolver.collectModel()
+          val projectDetails = bspResolver.collectModel("bsp-import")
 
           magicMetaModelService.initializeMagicModel(projectDetails)
           val magicMetaModel = magicMetaModelService.magicMetaModel
@@ -106,7 +105,7 @@ public class BspInitializer : StartupActivity {
       }
       task.queue()
     } else {
-      bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
+      bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
@@ -115,18 +114,18 @@ public class BspInitializer : StartupActivity {
         private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
         override fun run(indicator: ProgressIndicator) {
-          val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+          val bspConsoleService = BspConsoleService.getInstance(project)
 
-          bspConnectionService.connection!!.connect()
+          bspConnectionService.connection!!.connect("bsp-import")
           val bspResolver =
             VeryTemporaryBspResolver(
               project.stateStore.projectBasePath,
               bspConnectionService.connection!!.server!!,
               bspSyncConsole,
-              bspBuildConsoleService.bspBuildConsole
+              bspConsoleService.bspBuildConsole
             )
 
-          val projectDetails = bspResolver.collectModel()
+          val projectDetails = bspResolver.collectModel("bsp-import")
 
           magicMetaModelService.initializeMagicModel(projectDetails)
           val magicMetaModel = magicMetaModelService.magicMetaModel

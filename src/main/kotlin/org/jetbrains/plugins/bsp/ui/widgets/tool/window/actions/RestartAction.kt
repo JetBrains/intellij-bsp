@@ -14,9 +14,8 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class RestartAction :
@@ -37,24 +36,23 @@ public class RestartAction :
 
     if (bspConnectionService.connection != null && bspConnectionService.connection is BspGeneratorConnection) {
       val connection = bspConnectionService.connection as BspGeneratorConnection
-      val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-      val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+      val bspConsoleService = BspConsoleService.getInstance(project)
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
-      val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-      bspSyncConsole.startImport("bsp-restart", "BSP: Restart", "Restarting...")
+      val bspSyncConsole = bspConsoleService.bspSyncConsole
+      bspSyncConsole.startTask("bsp-restart", "BSP: Restart", "Restarting...")
       object : Task.Backgroundable(project, "Restarting...", true) {
         private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
         override fun run(indicator: ProgressIndicator) {
-          connection.restart()
+          connection.restart("bsp-restart")
           val bspResolver =
             VeryTemporaryBspResolver(
               project.stateStore.projectBasePath,
               bspConnectionService.connection!!.server!!,
-              bspSyncConsoleService.bspSyncConsole,
-              bspBuildConsoleService.bspBuildConsole
+              bspConsoleService.bspSyncConsole,
+              bspConsoleService.bspBuildConsole
             )
-          val projectDetails = bspResolver.collectModel()
+          val projectDetails = bspResolver.collectModel("bsp-restart")
 
           magicMetaModelService.magicMetaModel.clear()
           magicMetaModelService.initializeMagicModel(projectDetails)

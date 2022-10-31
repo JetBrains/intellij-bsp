@@ -12,9 +12,8 @@ import com.intellij.project.stateStore
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect.action.text")) {
@@ -31,8 +30,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
 
   private fun doAction(project: Project) {
     val bspConnectionService = BspConnectionService.getInstance(project)
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
     object : Task.Backgroundable(project, "Connecting...", true) {
@@ -40,18 +38,18 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
       private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
       override fun run(indicator: ProgressIndicator) {
-        val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-        bspSyncConsole.startImport("bsp-connect", "BSP: Connect", "Connecting...")
-        bspConnectionService.connection?.connect()
+        val bspSyncConsole = bspConsoleService.bspSyncConsole
+        bspSyncConsole.startTask("bsp-connect", "BSP: Connect", "Connecting...")
+        bspConnectionService.connection?.connect("bsp-connect")
         val bspResolver =
           VeryTemporaryBspResolver(
             project.stateStore.projectBasePath,
             bspConnectionService.connection!!.server!!,
-            bspSyncConsoleService.bspSyncConsole,
-            bspBuildConsoleService.bspBuildConsole
+            bspConsoleService.bspSyncConsole,
+            bspConsoleService.bspBuildConsole
           )
         // TODO add consoile
-        val projectDetails = bspResolver.collectModel()
+        val projectDetails = bspResolver.collectModel("bsp-connect")
 
         magicMetaModelService.magicMetaModel.clear()
         magicMetaModelService.initializeMagicModel(projectDetails)

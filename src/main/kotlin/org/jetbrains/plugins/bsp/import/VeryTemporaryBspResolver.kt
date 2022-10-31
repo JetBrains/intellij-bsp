@@ -35,15 +35,14 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.connection.BspServer
-import org.jetbrains.plugins.bsp.services.BspRunConsoleService
-import org.jetbrains.plugins.bsp.services.BspTestConsoleService
-import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
-import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
+import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
+import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
+import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-private val importSubtaskId = "import-subtask-id"
+private const val importSubtaskId = "import-subtask-id"
 
 public class VeryTemporaryBspResolver(
   private val projectBaseDir: Path,
@@ -97,21 +96,20 @@ public class VeryTemporaryBspResolver(
     return buildTargets(listOf(targetId))
   }
 
-  public fun collectModel(): ProjectDetails {
-
-    bspSyncConsole.startSubtask(importSubtaskId, "Collecting model...")
+  public fun collectModel(taskId: Any): ProjectDetails {
+    bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
     println("buildInitialize")
     val initializeBuildResult =
-      server.buildInitialize(createInitializeBuildParams()).catchSyncErrors(syncId).get()
+      server.buildInitialize(createInitializeBuildParams()).catchSyncErrors(importSubtaskId).get()
 
     println("onBuildInitialized")
     server.onBuildInitialized()
 
     server.onBuildInitialized()
-    val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities, syncId)
+    val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities, importSubtaskId)
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
-    bspSyncConsole.finishTask(syncId, "BSP: Import done!", SuccessResultImpl())
+    bspSyncConsole.finishTask(taskId, "Import done!", SuccessResultImpl())
 
     println("done done!")
     return projectDetails
@@ -173,7 +171,7 @@ public class VeryTemporaryBspResolver(
     return this
       .whenComplete { _, exception ->
         exception?.let {
-          bspSyncConsole.addMessage(syncId(), "Sync failed")
+          bspSyncConsole.addMessage(importSubtaskId, "Sync failed")
           bspSyncConsole.finishTask(syncId, "Failed", FailureResultImpl(exception))
         }
       }
@@ -271,7 +269,7 @@ public class BspClient(
     } else if (originId?.startsWith("run") == true) {
       bspRunConsole.print(message)
     } else {
-      bspSyncConsole.addMessage(originId ?: syncId(), message)
+      bspSyncConsole.addMessage(originId ?: importSubtaskId, message)
     }
   }
 
