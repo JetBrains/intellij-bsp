@@ -1,149 +1,49 @@
-package org.jetbrains.plugins.bsp.services
+package org.jetbrains.plugins.bsp.import
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.CompileParams
+import ch.epfl.scala.bsp4j.CompileResult
+import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.DidChangeBuildTarget
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.JavacOptionsParams
+import ch.epfl.scala.bsp4j.LogMessageParams
+import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.RunParams
+import ch.epfl.scala.bsp4j.RunResult
+import ch.epfl.scala.bsp4j.ShowMessageParams
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.StatusCode
+import ch.epfl.scala.bsp4j.TaskDataKind
+import ch.epfl.scala.bsp4j.TaskFinishParams
+import ch.epfl.scala.bsp4j.TaskProgressParams
+import ch.epfl.scala.bsp4j.TaskStartParams
+import ch.epfl.scala.bsp4j.TestFinish
+import ch.epfl.scala.bsp4j.TestParams
+import ch.epfl.scala.bsp4j.TestResult
+import ch.epfl.scala.bsp4j.TestStart
+import ch.epfl.scala.bsp4j.TestStatus
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
-import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
-import com.intellij.util.concurrency.AppExecutorUtil
-import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.ui.console.*
-import java.io.InputStream
-import java.io.OutputStream
+import org.jetbrains.plugins.bsp.connection.BspServer
+import org.jetbrains.plugins.bsp.services.BspRunConsoleService
+import org.jetbrains.plugins.bsp.services.BspTestConsoleService
+import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
+import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
-public interface BspServer : BuildServer, JavaBuildServer
-
-private fun syncId(): String = "bsp-import"  // TODO - temporary
-
-public fun interface Cancelable {
-  public fun cancel()
-}
-
-public class BspConnectionService(private val project: Project) {
-
-  public var server: BspServer? = null
-  private var bspProcess: Process? = null
-  private var cancelActions: List<Cancelable>? = null
-
-  // consider enclosing nicely in an object
-  public var dialogBuildToolUsed: Boolean? = null
-  public var dialogBuildToolName: String? = null
-  public var dialogConnectionFile: LocatedBspConnectionDetails? = null
-  public var bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider? = null
-
-  public var toolName: String? = null
-    private set
-
-  public fun connect(connectionFile: LocatedBspConnectionDetails) {
-    val process = createAndStartProcess(connectionFile.bspConnectionDetails)
-    val bspConsoleService = BspConsoleService.getInstance(project)
-
-    val client = BspClient(
-      bspConsoleService.bspSyncConsole,
-      bspConsoleService.bspBuildConsole,
-      bspConsoleService.bspRunConsole,
-      bspConsoleService.bspTestConsole
-    )
-
-    val bspIn = process.inputStream
-    val bspOut = process.outputStream
-    val launcher = createLauncher(bspIn, bspOut, client)
-
-    val listening = launcher.startListening()
-    bspProcess = process
-    server = launcher.remoteProxy
-
-    client.onConnectWithServer(server)
-    cancelActions = listOf(
-      Cancelable {
-        process.destroy()
-        process.waitFor(15, TimeUnit.SECONDS)
-      },
-      Cancelable { bspIn.close() },
-      Cancelable { bspOut.close() },
-      Cancelable { listening.cancel(true) },
-      Cancelable { process.destroy() }
-    )
-  }
-
-  public fun connectFromDialog(project: Project) {
-    val bspUtilService = BspUtilService.getInstance()
-    val bspSyncConsole: TaskConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("bsp-obtain-config", "Obtain config", "Obtaining...")
-    if (dialogBuildToolUsed != null) {
-      if (dialogBuildToolUsed!!) {
-        val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(
-          dialogBuildToolName!!,
-          ConsoleOutputStream("bsp-obtain-config", bspSyncConsole)
-        )
-        val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
-        this.toolName = xd2?.bspConnectionDetails?.name
-        bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
-        connect(xd2)
-      } else {
-        this.toolName = dialogConnectionFile?.bspConnectionDetails?.name
-        bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
-        connect(dialogConnectionFile!!)
-      }
-      bspSyncConsole.finishTask("bsp-obtain-config", "Config obtained!", SuccessResultImpl())
-    }
-  }
-
-  public fun reconnect(locationHash: String) {
-    val bspService = BspUtilService.getInstance()
-    bspService.bspConnectionDetails[locationHash]?.let {
-      connect(it)
-    }
-  }
-
-  public fun isRunning(): Boolean = bspProcess?.isAlive == true
-
-  private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
-    ProcessBuilder(bspConnectionDetails.argv)
-      .directory(project.stateStore.projectBasePath.toFile())
-      .start()
-
-  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
-    Launcher.Builder<BspServer>()
-      .setRemoteInterface(BspServer::class.java)
-      .setExecutorService(AppExecutorUtil.getAppExecutorService())
-      .setInput(bspIn)
-      .setOutput(bspOut)
-      .setLocalService(client)
-      .create()
-
-  public fun disconnect() {
-    val errors = mutableListOf<Throwable>()
-    cancelActions?.forEach {
-      try {
-        it.cancel()
-      } catch (e: Exception) {
-        errors.add(e)
-      }
-    }
-    val head = errors.firstOrNull()
-    head?.let {
-      errors.drop(1).forEach { head.addSuppressed(it) }
-      throw head
-    }
-  }
-
-  public companion object {
-    public fun getInstance(project: Project): BspConnectionService =
-      project.getService(BspConnectionService::class.java)
-  }
-}
+private val importSubtaskId = "import-subtask-id"
 
 public class VeryTemporaryBspResolver(
   private val projectBaseDir: Path,
@@ -198,9 +98,8 @@ public class VeryTemporaryBspResolver(
   }
 
   public fun collectModel(): ProjectDetails {
-    val syncId = syncId()
-    bspSyncConsole.startTask(syncId, "Import", "Importing...")
 
+    bspSyncConsole.startSubtask(importSubtaskId, "Collecting model...")
     println("buildInitialize")
     val initializeBuildResult =
       server.buildInitialize(createInitializeBuildParams()).catchSyncErrors(syncId).get()
@@ -211,7 +110,8 @@ public class VeryTemporaryBspResolver(
     server.onBuildInitialized()
     val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities, syncId)
 
-    bspSyncConsole.finishTask(syncId, "Import done!", SuccessResultImpl())
+    bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
+    bspSyncConsole.finishTask(syncId, "BSP: Import done!", SuccessResultImpl())
 
     println("done done!")
     return projectDetails
@@ -242,7 +142,6 @@ public class VeryTemporaryBspResolver(
     println("buildTargetJavacOptions")
     val buildTargetJavacOptionsResult =
       server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors(syncId).get()
-
     println("done done!")
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -291,7 +190,7 @@ public class VeryTemporaryBspResolver(
   }
 }
 
-private class BspClient(
+public class BspClient(
   private val bspSyncConsole: TaskConsole,
   private val bspBuildConsole: TaskConsole,
   private val bspRunConsole: BspTargetRunConsole,

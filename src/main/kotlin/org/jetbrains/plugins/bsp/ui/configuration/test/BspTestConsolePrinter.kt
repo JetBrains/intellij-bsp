@@ -57,10 +57,12 @@ public class BspTestConsolePrinter(private val processHandler: BspProcessHandler
    * @param message additional information about the failure
    */
   public fun failTest(name: String, message: String) {
-    executeCommand(ServiceMessageTypes.TEST_FAILED,
+    executeCommand(
+      ServiceMessageTypes.TEST_FAILED,
       "name" to name,
       "error" to "true",
-      "message" to message)
+      "message" to message
+    )
   }
 
   /**
