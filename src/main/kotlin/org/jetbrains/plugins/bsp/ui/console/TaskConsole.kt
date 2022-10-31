@@ -35,9 +35,6 @@ public class TaskConsole(
 
   private fun doStartTask(taskId: Any, title: String, message: String) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
-    // TODO one day
-    //  .withRestartActions(restartAction)
-
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
     taskView.onEvent(taskId, startEvent)
   }
@@ -52,17 +49,17 @@ public class TaskConsole(
    */
   @Synchronized
   public fun finishTask(
-    taskId: Any?,
+    taskId: Any,
     message: String,
     result: EventResult = SuccessResultImpl()
   ): Unit =
     doIfTaskInProgress(taskId) {
-      tasksInProgress.remove(taskId)
-      subtaskParentMap.filterValues { it != taskId }
-      doFinishTask(taskId!!, message, result)
+      doFinishTask(taskId, message, result)
     }
 
   private fun doFinishTask(taskId: Any, message: String, result: EventResult) {
+    tasksInProgress.remove(taskId)
+    subtaskParentMap.entries.removeAll { it.value == taskId }
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
   }
@@ -76,12 +73,16 @@ public class TaskConsole(
    * @param message will be displayed as this subtask's title until it's finished
    */
   @Synchronized
-  public fun startSubtask(parentTaskId: Any?, subtaskId: Any, message: String): Unit =
+  public fun startSubtask(parentTaskId: Any, subtaskId: Any, message: String): Unit =
     doIfTaskInProgress(parentTaskId) {
-      subtaskParentMap[subtaskId] = parentTaskId!!
-      val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
-      taskView.onEvent(parentTaskId, event)
+      doStartSubtask(parentTaskId, subtaskId, message)
     }
+
+  private fun doStartSubtask(parentTaskId: Any, subtaskId: Any, message: String) {
+    subtaskParentMap[subtaskId] = parentTaskId
+    val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
+    taskView.onEvent(parentTaskId, event)
+  }
 
   /**
    * Displays finishing of a subtask in this console
@@ -95,11 +96,15 @@ public class TaskConsole(
     if (subtaskParentMap.containsKey(subtaskId)) {
       val taskId = subtaskParentMap[subtaskId]
       doIfTaskInProgress(taskId) {
-        subtaskParentMap.remove(subtaskId)
-        val event = FinishBuildEventImpl(subtaskId, null, System.currentTimeMillis(), message, SuccessResultImpl())
-        taskView.onEvent(taskId!!, event)
+        doFinishSubtask(taskId!!, subtaskId, message)
       }
     }
+  }
+
+  private fun doFinishSubtask(taskId: Any, subtaskId: Any, message: String) {
+    subtaskParentMap.remove(subtaskId)
+    val event = FinishBuildEventImpl(subtaskId, null, System.currentTimeMillis(), message, SuccessResultImpl())
+    taskView.onEvent(taskId, event)
   }
 
   /**
@@ -114,7 +119,7 @@ public class TaskConsole(
    */
   @Synchronized
   public fun addDiagnosticMessage(
-    taskId: Any?,
+    taskId: Any,
     fileURI: String,
     line: Int,
     column: Int,
@@ -130,13 +135,7 @@ public class TaskConsole(
         val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
         val event = FileMessageEventImpl(
           subtaskId!!,
-          when (severity) {
-            DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-            DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-            DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-            DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
-            null -> MessageEvent.Kind.SIMPLE
-          },
+          getMessageEventKind(severity),
           null,
           messageToSend,
           null,
@@ -147,6 +146,15 @@ public class TaskConsole(
     }
   }
 
+  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
+    when (severity) {
+      DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+      DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+      DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+      DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+      null -> MessageEvent.Kind.SIMPLE
+    }
+
   /**
    * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
    * added to the subtask's parent task.
@@ -155,22 +163,26 @@ public class TaskConsole(
    * @param message message to be added. New line will be inserted at its end if it's not present there already
    */
   @Synchronized
-  public fun addMessage(taskId: Any?, message: String) {
-    val subtaskId =
-      if (tasksInProgress.contains(taskId)) null else taskId
+  public fun addMessage(taskId: Any, message: String) {
     val parentTaskId = getSubtaskParent(taskId)
     doIfTaskInProgress(parentTaskId) {
       if (message.isNotBlank()) {
-        val messageToSend = prepareTextToPrint(message)
-        doAddMessage(parentTaskId!!, subtaskId, messageToSend)
-        if (subtaskId != null) doAddMessage(parentTaskId, null, messageToSend)
+        doAddMessage(parentTaskId!!, taskId, message)
       }
     }
   }
 
-  private fun doAddMessage(taskId: Any, subtaskId: Any?, message: String) {
+  private fun doAddMessage(parentTaskId: Any, taskId: Any, message: String) {
+    val subtaskId =
+      if (tasksInProgress.contains(taskId)) null else taskId
+    val messageToSend = prepareTextToPrint(message)
+    sendMessageEvent(parentTaskId, subtaskId, messageToSend)  // send message to the subtask
+    if (subtaskId != null) sendMessageEvent(parentTaskId, null, messageToSend)  // send message to the parent
+  }
+
+  private fun sendMessageEvent(parentTaskId: Any, subtaskId: Any?, message: String) {
     val event = OutputBuildEventImpl(subtaskId, message, true)
-    taskView.onEvent(taskId, event)
+    taskView.onEvent(parentTaskId, event)
   }
 
   private inline fun doIfTaskInProgress(taskId: Any?, action: () -> Unit) {
@@ -188,6 +200,6 @@ public class TaskConsole(
   private fun prepareTextToPrint(text: String): String =
     if (text.endsWith("\n")) text else text + "\n"
 
-  private fun getSubtaskParent(taskId: Any?): Any? =
-    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap.getOrDefault(taskId, null)
+  private fun getSubtaskParent(taskId: Any): Any? =
+    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]
 }

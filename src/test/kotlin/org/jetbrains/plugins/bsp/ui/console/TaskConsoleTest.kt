@@ -47,7 +47,7 @@ private class MockBuildProgressListener : BuildProgressListener {
 
 class TaskConsoleTest {
   @Test
-  fun `should start the import, start 3 subtask, put 2 messages and for each subtask and finish the import (the happy path)`() {
+  fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given
     val buildProcessListener = MockBuildProgressListener()
     val basePath = "/project/"
@@ -56,45 +56,45 @@ class TaskConsoleTest {
 
     taskConsole.addMessage("task before start", "message before start - should be omitted")
 
-    taskConsole.startTask("import", "Import", "Importing...")
+    taskConsole.startTask("task", "Task", "Testing...")
 
-    taskConsole.startSubtask("import", "subtask 1", "Starting subtask 1")
+    taskConsole.startSubtask("task", "subtask 1", "Starting subtask 1")
     taskConsole.addMessage("subtask 1", "message 1\n")
     taskConsole.addMessage("subtask 1", "message 2\n")
     taskConsole.finishSubtask("subtask 1", "Subtask 1 finished")
 
-    taskConsole.startSubtask("import", "subtask 2", "Starting subtask 2")
+    taskConsole.startSubtask("task", "subtask 2", "Starting subtask 2")
     taskConsole.addMessage("subtask 2", "message 3")
     taskConsole.addMessage("subtask 2", "message 4")
 
-    taskConsole.startSubtask("import", "subtask 3", "Starting subtask 3")
+    taskConsole.startSubtask("task", "subtask 3", "Starting subtask 3")
     taskConsole.addMessage("subtask 3", "message 5")
     taskConsole.addMessage("subtask 3", "message 6")
 
     taskConsole.finishSubtask("subtask 2", "Subtask 2 finished")
     taskConsole.finishSubtask("subtask 3", "Subtask 3 finished")
 
-    taskConsole.finishTask("import", "Finished!", SuccessResultImpl())
+    taskConsole.finishTask("task", "Finished!", SuccessResultImpl())
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(
-      "import" to listOf(
-        TestableBuildEvent(StartBuildEventImpl::class, "import", null, "Importing..."),
+      "task" to listOf(
+        TestableBuildEvent(StartBuildEventImpl::class, "task", null, "Testing..."),
 
-        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 1", "import", "Starting subtask 1"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 1", "task", "Starting subtask 1"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 1", "message 1\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 1\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 1", "message 2\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 2\n"),
         TestableBuildEvent(FinishBuildEventImpl::class, "subtask 1", null, "Subtask 1 finished"),
 
-        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 2", "import", "Starting subtask 2"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 2", "task", "Starting subtask 2"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 2", "message 3\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 3\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 2", "message 4\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 4\n"),
 
-        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 3", "import", "Starting subtask 3"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 3", "task", "Starting subtask 3"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 3", "message 5\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 5\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 3", "message 6\n"),
@@ -103,7 +103,7 @@ class TaskConsoleTest {
         TestableBuildEvent(FinishBuildEventImpl::class, "subtask 2", null, "Subtask 2 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "subtask 3", null, "Subtask 3 finished"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "import", null, "Finished!"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "task", null, "Finished!"),
       )
     )
   }
@@ -179,15 +179,14 @@ class TaskConsoleTest {
     taskConsole.addMessage("task", "Message 1\n")
     taskConsole.addMessage("task", "Message 2")  // should add new line at the end
     taskConsole.addMessage("subtask", "Message 3")  // should send a copy the message to the subtask's parent
-    taskConsole.addMessage(null, "Message 4")  // should be omitted - invalid taskId
-    taskConsole.addMessage("nonexistent-task", "Message 5")  // should be omitted - no such task
+    taskConsole.addMessage("nonexistent-task", "Message 4")  // should be omitted - no such task
     taskConsole.addMessage("task", "")  // should be omitted - empty message
     taskConsole.addMessage("task", "   \n  \t  ")  // should be omitted - blank message
 
     taskConsole.finishSubtask("subtask", "Subtask finished")
     taskConsole.finishTask("task", "Task finished")
 
-    taskConsole.addMessage("task", "Message 8")  // should be omitted - task already finished
+    taskConsole.addMessage("task", "Message 7")  // should be omitted - task already finished
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(
@@ -256,20 +255,17 @@ class TaskConsoleTest {
     // blank message, should be omitted
     taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "\t    \n   ", DiagnosticSeverity.ERROR)
 
-    // no originId, should be omitted
-    taskConsole.addDiagnosticMessage(null, fileURI, 10, 20, "Diagnostic 6", DiagnosticSeverity.ERROR)
-
     // non-existent originId, should be omitted
-    taskConsole.addDiagnosticMessage("wrong", fileURI, 10, 20, "Diagnostic 7", DiagnosticSeverity.ERROR)
+    taskConsole.addDiagnosticMessage("wrong", fileURI, 10, 20, "Diagnostic 6", DiagnosticSeverity.ERROR)
 
     // null as severity, should be sent correctly
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 8", null)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 7", null)
 
     // negative line and column numbers, should be sent nevertheless
-    taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 9", DiagnosticSeverity.ERROR)
+    taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 8", DiagnosticSeverity.ERROR)
 
     // fileURI without `file://`, should be sent correctly
-    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 10", DiagnosticSeverity.WARNING)
+    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 9", DiagnosticSeverity.WARNING)
 
     taskConsole.finishTask("origin", "finished", SuccessResultImpl())
 
@@ -281,9 +277,9 @@ class TaskConsoleTest {
         SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 4\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 8\n", severity=Kind.SIMPLE, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 9\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 10\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 7\n", severity=Kind.SIMPLE, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 8\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 9\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         null  // finishing the task
       )
     )

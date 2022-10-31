@@ -9,7 +9,7 @@ public class ConsoleOutputStream(private val taskId: String?, private val bspSyn
   override fun write(b: Int) {
     val c: Char = (b and 255).toChar()
     line.append(c)
-    if (c == '\n') {
+    if (c == '\n' && taskId != null) {
       bspSyncConsole.addMessage(taskId, line.toString())
       line = StringBuffer()
     }
