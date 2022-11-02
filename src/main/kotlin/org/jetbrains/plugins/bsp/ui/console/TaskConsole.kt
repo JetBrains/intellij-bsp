@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.console
 
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
@@ -41,7 +40,7 @@ public class TaskConsole(
 
   /**
    * Displays finish of a task in this console.
-   * Will not display anything if a task with given `taskId` is not running or if `null` was passed
+   * Will not display anything if a task with given `taskId` is not running
    *
    * @param message message informing about the start of the task
    * @param result result of the task execution (success by default, if nothing passed)
@@ -92,18 +91,19 @@ public class TaskConsole(
    * @param message will be displayed as this subtask's title after it is finished
    */
   @Synchronized
-  public fun finishSubtask(subtaskId: Any, message: String) {
+  public fun finishSubtask(subtaskId: Any, message: String, result: EventResult = SuccessResultImpl()) {
     if (subtaskParentMap.containsKey(subtaskId)) {
-      val taskId = subtaskParentMap[subtaskId]
-      doIfTaskInProgress(taskId) {
-        doFinishSubtask(taskId!!, subtaskId, message)
+      subtaskParentMap[subtaskId]?.let {
+        doIfTaskInProgress(it) {
+          doFinishSubtask(it, subtaskId, message, result)
+        }
       }
     }
   }
 
-  private fun doFinishSubtask(taskId: Any, subtaskId: Any, message: String) {
+  private fun doFinishSubtask(taskId: Any, subtaskId: Any, message: String, result: EventResult) {
     subtaskParentMap.remove(subtaskId)
-    val event = FinishBuildEventImpl(subtaskId, null, System.currentTimeMillis(), message, SuccessResultImpl())
+    val event = FinishBuildEventImpl(subtaskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
   }
 
@@ -124,36 +124,38 @@ public class TaskConsole(
     line: Int,
     column: Int,
     message: String,
-    severity: DiagnosticSeverity?
+    severity: MessageEvent.Kind
   ) {
-    val parentTaskId = getSubtaskParent(taskId)
-    val subtaskId =
-      if (tasksInProgress.contains(taskId)) parentTaskId else taskId
-    doIfTaskInProgress(parentTaskId) {
-      if (message.isNotBlank()) {
-        val messageToSend = prepareTextToPrint(message)
-        val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
-        val event = FileMessageEventImpl(
-          subtaskId!!,
-          getMessageEventKind(severity),
-          null,
-          messageToSend,
-          null,
-          FilePosition(File(URI(fullFileURI)), line, column)
-        )
-        taskView.onEvent(parentTaskId!!, event)
+    getSubtaskParent(taskId)?.let {
+      doIfTaskInProgress(it) {
+        if (message.isNotBlank()) {
+          val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
+          val subtaskId =
+            if (tasksInProgress.contains(taskId)) it else taskId
+          val filePosition = FilePosition(File(URI(fullFileURI)), line, column)
+          doAddDiagnosticMessage(it, subtaskId, filePosition, message, severity)
+        }
       }
     }
   }
 
-  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
-    when (severity) {
-      DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-      DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-      DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-      DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
-      null -> MessageEvent.Kind.SIMPLE
-    }
+  private fun doAddDiagnosticMessage(
+    taskId: Any,
+    subtaskId: Any,
+    filePosition: FilePosition,
+    message: String,
+    severity: MessageEvent.Kind
+  ) {
+    val event = FileMessageEventImpl(
+      subtaskId,
+      severity,
+      null,
+      prepareTextToPrint(message),
+      null,
+      filePosition
+    )
+    taskView.onEvent(taskId, event)
+  }
 
   /**
    * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
@@ -164,10 +166,11 @@ public class TaskConsole(
    */
   @Synchronized
   public fun addMessage(taskId: Any, message: String) {
-    val parentTaskId = getSubtaskParent(taskId)
-    doIfTaskInProgress(parentTaskId) {
-      if (message.isNotBlank()) {
-        doAddMessage(parentTaskId!!, taskId, message)
+    getSubtaskParent(taskId)?.let {
+      doIfTaskInProgress(it) {
+        if (message.isNotBlank()) {
+          doAddMessage(it, taskId, message)
+        }
       }
     }
   }
@@ -176,8 +179,12 @@ public class TaskConsole(
     val subtaskId =
       if (tasksInProgress.contains(taskId)) null else taskId
     val messageToSend = prepareTextToPrint(message)
-    sendMessageEvent(parentTaskId, subtaskId, messageToSend)  // send message to the subtask
-    if (subtaskId != null) sendMessageEvent(parentTaskId, null, messageToSend)  // send message to the parent
+    sendMessageEvent(parentTaskId, subtaskId, messageToSend)
+    if (subtaskId != null) sendMessageToParent(parentTaskId, messageToSend)
+  }
+
+  private fun sendMessageToParent(parentTaskId: Any, message: String) {
+    sendMessageEvent(parentTaskId, null, message)
   }
 
   private fun sendMessageEvent(parentTaskId: Any, subtaskId: Any?, message: String) {
@@ -185,14 +192,14 @@ public class TaskConsole(
     taskView.onEvent(parentTaskId, event)
   }
 
-  private inline fun doIfTaskInProgress(taskId: Any?, action: () -> Unit) {
-    if (taskId != null && tasksInProgress.contains(taskId)) {
+  private inline fun doIfTaskInProgress(taskId: Any, action: () -> Unit) {
+    if (tasksInProgress.contains(taskId)) {
       action()
     }
   }
 
-  private inline fun doUnlessTaskInProgress(taskId: Any?, action: () -> Unit) {
-    if (taskId != null && !tasksInProgress.contains(taskId)) {
+  private inline fun doUnlessTaskInProgress(taskId: Any, action: () -> Unit) {
+    if (!tasksInProgress.contains(taskId)) {
       action()
     }
   }

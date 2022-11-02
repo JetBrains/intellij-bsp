@@ -1,36 +1,10 @@
 package org.jetbrains.plugins.bsp.import
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.RunResult
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TaskDataKind
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestParams
-import ch.epfl.scala.bsp4j.TestResult
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -283,9 +257,18 @@ public class BspClient(
           it.range.start.line,
           it.range.start.character,
           it.message,
-          it.severity
+          getMessageEventKind(it.severity)
         )
       }
     }
   }
+
+  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
+    when (severity) {
+      DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+      DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+      DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+      DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+      null -> MessageEvent.Kind.SIMPLE
+    }
 }

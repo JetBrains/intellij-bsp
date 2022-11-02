@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.console
 
-import ch.epfl.scala.bsp4j.*
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.MessageEvent.Kind
@@ -247,25 +246,21 @@ class TaskConsoleTest {
     // when
     taskConsole.startTask("origin", "Test", "started")
 
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 1", DiagnosticSeverity.ERROR)
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 2", DiagnosticSeverity.WARNING)
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 3", DiagnosticSeverity.INFORMATION)
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 4", DiagnosticSeverity.HINT)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 1", Kind.ERROR)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 2", Kind.WARNING)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 3", Kind.INFO)
 
     // blank message, should be omitted
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "\t    \n   ", DiagnosticSeverity.ERROR)
+    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "\t    \n   ", Kind.ERROR)
 
     // non-existent originId, should be omitted
-    taskConsole.addDiagnosticMessage("wrong", fileURI, 10, 20, "Diagnostic 6", DiagnosticSeverity.ERROR)
-
-    // null as severity, should be sent correctly
-    taskConsole.addDiagnosticMessage("origin", fileURI, 10, 20, "Diagnostic 7", null)
+    taskConsole.addDiagnosticMessage("wrong", fileURI, 10, 20, "Diagnostic 5", Kind.ERROR)
 
     // negative line and column numbers, should be sent nevertheless
-    taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 8", DiagnosticSeverity.ERROR)
+    taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 6", Kind.ERROR)
 
     // fileURI without `file://`, should be sent correctly
-    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 9", DiagnosticSeverity.WARNING)
+    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 7", Kind.WARNING)
 
     taskConsole.finishTask("origin", "finished", SuccessResultImpl())
 
@@ -276,11 +271,39 @@ class TaskConsoleTest {
         SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 1\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 4\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 7\n", severity=Kind.SIMPLE, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 8\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 9\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 6\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
+        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 7\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
         null  // finishing the task
+      )
+    )
+  }
+
+  @Test
+  fun `should finish subtask when its parent is finished`() {
+    val buildProcessListener = MockBuildProgressListener()
+    val basePath = "/project/"
+
+    // when
+    val taskConsole = TaskConsole(buildProcessListener, basePath)
+
+    taskConsole.startTask("parent", "Parent task", "Parent started")
+    taskConsole.startSubtask("parent", "child", "Child started")
+    taskConsole.addMessage("child", "Message 1")
+    taskConsole.finishTask("parent", "Parent finished")
+
+    // message should not be sent - the child's parent has been finished
+    taskConsole.addMessage("child", "Message 2")
+
+    // then
+    buildProcessListener.events shouldContainExactly mapOf(
+      "parent" to listOf(
+        TestableBuildEvent(StartBuildEventImpl::class, "parent", null, "Parent started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "child", "parent", "Child started"),
+
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "child", "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
+
+        TestableBuildEvent(FinishBuildEventImpl::class, "parent", null, "Parent finished"),
       )
     )
   }
