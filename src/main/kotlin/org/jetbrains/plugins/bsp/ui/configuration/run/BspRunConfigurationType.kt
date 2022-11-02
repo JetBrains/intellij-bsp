@@ -15,10 +15,9 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.services.BspRunConsoleService
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspConfigurationType
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -64,14 +63,8 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
     }
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
-      val bspConnectionService = BspConnectionService.getInstance(project)
-      val bspConsoleService = BspConsoleService.getInstance(project)
-      val bspResolver = VeryTemporaryBspResolver(
-        project.stateStore.projectBasePath,
-        bspConnectionService.connection!!.server!!,
-        bspConsoleService.bspSyncConsole,
-        bspConsoleService.bspBuildConsole,
-      )
+      val bspConsoleService = BspRunConsoleService.getInstance(project)
+      val bspResolver = VeryTemporaryBspResolver(project)
       val processHandler = startProcess()
       val console = createConsole(executor)?.apply {
         attachToProcess(processHandler)

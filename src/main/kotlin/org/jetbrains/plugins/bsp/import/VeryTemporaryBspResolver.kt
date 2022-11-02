@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.connection.BspServer
 import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
@@ -19,11 +20,15 @@ import java.util.concurrent.CompletableFuture
 private const val importSubtaskId = "import-subtask-id"
 
 public class VeryTemporaryBspResolver(
-  private val projectBaseDir: Path,
-  private val server: BspServer,
-  private val bspSyncConsole: TaskConsole,
-  private val bspBuildConsole: TaskConsole
+  project: Project
 ) {
+
+  private val projectBaseDir = project.getProjectDirOrThrow()
+
+  // TODO
+  private val server = BspConnectionService.getConnectionOrThrow(project).server!!
+  private val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+  private val bspBuildConsole = BspBuildConsoleService.getInstance(project).bspBuildConsole
 
   public fun runTarget(targetId: BuildTargetIdentifier): RunResult {
 
@@ -77,8 +82,6 @@ public class VeryTemporaryBspResolver(
       server.buildInitialize(createInitializeBuildParams()).catchSyncErrors(importSubtaskId).get()
 
     println("onBuildInitialized")
-    server.onBuildInitialized()
-
     server.onBuildInitialized()
     val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities, importSubtaskId)
 

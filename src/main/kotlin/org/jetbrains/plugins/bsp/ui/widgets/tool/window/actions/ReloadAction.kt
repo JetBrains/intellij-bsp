@@ -8,12 +8,11 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.action.text")) {
@@ -29,24 +28,16 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
   }
 
   private fun doAction(project: Project) {
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    val bspConsoleService = BspConsoleService.getInstance(project)
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
     object : Task.Backgroundable(project, "Reloading...", true) {
       private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
       override fun run(indicator: ProgressIndicator) {
-        val bspSyncConsole = bspConsoleService.bspSyncConsole
-        bspSyncConsole.startTask("bsp-reload", "BSP: Reload", "Reloading...")
-        val bspResolver =
-          VeryTemporaryBspResolver(
-            project.stateStore.projectBasePath,
-            bspConnectionService.connection!!.server!!,
-            bspConsoleService.bspSyncConsole,
-            bspConsoleService.bspBuildConsole
-          )
-        val projectDetails = bspResolver.collectModel("bsp-reload")
+        val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+        bspSyncConsole.startImport("bsp-reload", "BSP: Reload", "Reloading...")
+        val bspResolver = VeryTemporaryBspResolver(project)
+        val projectDetails = bspResolver.collectModel()
 
         magicMetaModelService.magicMetaModel.clear()
         magicMetaModelService.initializeMagicModel(projectDetails)

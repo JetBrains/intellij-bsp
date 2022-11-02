@@ -2,16 +2,18 @@ package org.jetbrains.plugins.bsp.ui.configuration.test
 
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.*
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationBase
+import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.*
+import org.jetbrains.plugins.bsp.services.BspTestConsoleService
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
@@ -30,6 +32,7 @@ public class BspConfigurationType : ConfigurationType {
   override fun getConfigurationFactories(): Array<ConfigurationFactory> {
     return arrayOf(TestRunFactory(this))
   }
+
   public companion object {
     public const val ID: String = "BSP_TEST_RUN_CONFIGURATION"
   }
@@ -51,16 +54,8 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 
-      val bspConnectionService = BspConnectionService.getInstance(project)
-      val bspConsoleService = BspConsoleService.getInstance(project)
-      val bspTestConsole = bspConsoleService.bspTestConsole
-
-      val bspResolver = VeryTemporaryBspResolver(
-        project.stateStore.projectBasePath,
-        bspConnectionService.connection!!.server!!,
-        bspConsoleService.bspSyncConsole,
-        bspConsoleService.bspBuildConsole
-      )
+      val bspTestConsoleService = BspTestConsoleService.getInstance(project)
+      val bspResolver = VeryTemporaryBspResolver(project)
 
       val processHandler = BspProcessHandler()
       val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))

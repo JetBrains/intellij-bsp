@@ -8,12 +8,11 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect.action.text")) {
@@ -30,7 +29,6 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
 
   private fun doAction(project: Project) {
     val bspConnectionService = BspConnectionService.getInstance(project)
-    val bspConsoleService = BspConsoleService.getInstance(project)
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
     object : Task.Backgroundable(project, "Connecting...", true) {
@@ -38,18 +36,12 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
       private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
       override fun run(indicator: ProgressIndicator) {
-        val bspSyncConsole = bspConsoleService.bspSyncConsole
-        bspSyncConsole.startTask("bsp-connect", "BSP: Connect", "Connecting...")
-        bspConnectionService.connection?.connect("bsp-connect")
-        val bspResolver =
-          VeryTemporaryBspResolver(
-            project.stateStore.projectBasePath,
-            bspConnectionService.connection!!.server!!,
-            bspConsoleService.bspSyncConsole,
-            bspConsoleService.bspBuildConsole
-          )
+        val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+        bspSyncConsole.startImport("bsp-connect", "BSP: Connect", "Connecting...")
+        bspConnectionService.connection?.connect()
+        val bspResolver = VeryTemporaryBspResolver(project)
         // TODO add consoile
-        val projectDetails = bspResolver.collectModel("bsp-connect")
+        val projectDetails = bspResolver.collectModel()
 
         magicMetaModelService.magicMetaModel.clear()
         magicMetaModelService.initializeMagicModel(projectDetails)
@@ -74,8 +66,8 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   }
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    e.presentation.isEnabled = bspConnectionService.connection!!.isConnected() == false
+    val bspConnection = BspConnectionService.getConnectionOrThrow(project)
+    e.presentation.isEnabled = bspConnection.isConnected() == false
   }
 
   override fun getActionUpdateThread(): ActionUpdateThread =

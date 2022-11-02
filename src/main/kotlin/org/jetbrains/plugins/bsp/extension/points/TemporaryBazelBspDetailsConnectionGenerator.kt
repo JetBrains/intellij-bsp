@@ -15,12 +15,15 @@ import com.intellij.ui.dsl.builder.rows
 import com.intellij.ui.dsl.builder.visibleIf
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.io.exists
+import com.intellij.util.io.isDirectory
 import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
 import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzardStep
 import java.io.OutputStream
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.io.path.writeText
@@ -58,7 +61,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 
   private fun calculateInstallerCommand(): String =
     listOfNotNull(
-      "cs launch org.jetbrains.bsp:bazel-bsp:2.2.1 -M org.jetbrains.bsp.bazel.install.Install",
+      "cs launch org.jetbrains.bsp:bazel-bsp:2.3.0 -M org.jetbrains.bsp.bazel.install.Install",
       projectViewFilePathProperty.get()?.let { "-- -p $it" }
     ).joinToString(" ")
 }
@@ -145,7 +148,13 @@ public class BazelEditProjectViewStep(
     }
 
   private fun calculateProjectViewFileNameFromConnectionDetails(bspConnectionDetails: BspConnectionDetails): String? =
-    bspConnectionDetails.argv.getOrNull(projectViewFileArgvIndex)
+    bspConnectionDetails.argv.last().takeIf {
+      try {
+        !Paths.get(it).isDirectory()
+      } catch (e: InvalidPathException) {
+        false
+      }
+    }.orEmpty()
 
   private val projectViewTextProperty =
     propertyGraph
@@ -159,7 +168,7 @@ public class BazelEditProjectViewStep(
   private fun calculateProjectViewText(projectViewFilePathProperty: GraphProperty<Path?>): String =
     projectViewFilePathProperty.get()
       ?.takeIf { it.exists() }
-      ?.readText() ?: ""
+      ?.readText().orEmpty()
 
   override val panel: DialogPanel = panel {
     row {
@@ -194,7 +203,6 @@ public class BazelEditProjectViewStep(
     projectViewFilePathProperty.get()?.writeText(projectViewTextProperty.get())
 
   private companion object {
-    private const val projectViewFileArgvIndex = 5
     private const val defaultProjectViewFileName = "projectview.bazelproject"
   }
 }
