@@ -9,11 +9,11 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.connection.BspServer
+import org.jetbrains.plugins.bsp.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
 import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
-import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -27,8 +27,9 @@ public class VeryTemporaryBspResolver(
 
   // TODO
   private val server = BspConnectionService.getConnectionOrThrow(project).server!!
-  private val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-  private val bspBuildConsole = BspBuildConsoleService.getInstance(project).bspBuildConsole
+  private val bspConsoleService = BspConsoleService.getInstance(project)
+  private val bspSyncConsole = bspConsoleService.bspSyncConsole
+  private val bspBuildConsole = bspConsoleService.bspBuildConsole
 
   public fun runTarget(targetId: BuildTargetIdentifier): RunResult {
 

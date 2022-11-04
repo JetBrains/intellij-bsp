@@ -1,17 +1,14 @@
 package org.jetbrains.plugins.bsp.import
 
-import ch.epfl.scala.bsp4j.*
-import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.build.events.impl.SuccessResultImpl
+import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
-import com.intellij.task.*
+import com.intellij.task.ProjectTask
+import com.intellij.task.ProjectTaskContext
+import com.intellij.task.ProjectTaskRunner
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
-import org.jetbrains.plugins.bsp.services.*
-import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 
 /**
  * WARNING: temporary solution, might change

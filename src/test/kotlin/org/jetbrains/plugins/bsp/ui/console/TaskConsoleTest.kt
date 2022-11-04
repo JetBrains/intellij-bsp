@@ -8,27 +8,60 @@ import io.kotest.matchers.maps.shouldContainExactly
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 
-private data class TestableBuildEvent(
-  val eventType: KClass<*>,
-  val id: Any?,
-  val parentId: Any?,
-  val message: String,
+private abstract class TestableEvent(
+  open val eventType: KClass<*>,
+  open val id: Any?,
+  open val message: String,
 )
 
-private class MockBuildProgressListener : BuildProgressListener {
+private data class TestableBuildEvent(
+  override val eventType: KClass<*>,
+  override val id: Any?,
+  val parentId: Any?,
+  override val message: String,
+) : TestableEvent(eventType, id, message)
 
-  val events: MutableMap<Any, List<TestableBuildEvent>> = mutableMapOf()
+private data class TestableDiagnosticEvent(
+  override val id: Any?,
+  override val message: String,
+  val severity: Kind,
+  val filePositionPath: String,
+  val line: Int,
+  val column: Int
+) : TestableEvent(
+  FileMessageEventImpl::class,
+  id,
+  message
+)
+
+private class MockProgressEventListener : BuildProgressListener {
+  val events: MutableMap<Any, List<TestableEvent>> = mutableMapOf()
 
   override fun onEvent(buildId: Any, event: BuildEvent) {
     addEvent(buildId, sanitizeEvent(event))
   }
 
-  private fun sanitizeEvent(eventToSanitize: BuildEvent): TestableBuildEvent = when (eventToSanitize) {
+  private fun addEvent(buildId: Any, event: TestableEvent) {
+    event.let {
+      events.merge(buildId, listOf(event)) { acc, x -> acc + x }
+    }
+  }
+
+  private fun sanitizeEvent(eventToSanitize: BuildEvent): TestableEvent = when (eventToSanitize) {
     is OutputBuildEventImpl -> TestableBuildEvent(
       eventToSanitize::class,
       null,
       eventToSanitize.parentId,
       eventToSanitize.message
+    )
+
+    is FileMessageEventImpl -> TestableDiagnosticEvent(
+      eventToSanitize.parentId,
+      eventToSanitize.message,
+      eventToSanitize.kind,
+      eventToSanitize.filePosition.file.absolutePath,
+      eventToSanitize.filePosition.startLine,
+      eventToSanitize.filePosition.startColumn
     )
 
     else -> TestableBuildEvent(
@@ -38,17 +71,13 @@ private class MockBuildProgressListener : BuildProgressListener {
       eventToSanitize.message
     )
   }
-
-  private fun addEvent(buildId: Any, event: TestableBuildEvent) {
-    events.merge(buildId, listOf(event)) { acc, x -> acc + x }
-  }
 }
 
 class TaskConsoleTest {
   @Test
   fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given
-    val buildProcessListener = MockBuildProgressListener()
+    val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
     // when
     val taskConsole = TaskConsole(buildProcessListener, basePath)
@@ -109,7 +138,7 @@ class TaskConsoleTest {
 
   @Test
   fun `should start multiple processes and finish them`() {
-    val buildProcessListener = MockBuildProgressListener()
+    val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
 
     // when
@@ -141,7 +170,7 @@ class TaskConsoleTest {
 
   @Test
   fun `should ignore invalid Task events`() {
-    val buildProcessListener = MockBuildProgressListener()
+    val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
 
     // when
@@ -164,7 +193,7 @@ class TaskConsoleTest {
   
   @Test
   fun `should display messages correctly`() {
-    val buildProcessListener = MockBuildProgressListener()
+    val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
 
     // when
@@ -209,38 +238,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
     val fileURI = "file:///home/directory/project/src/test/Start.kt"
 
-    data class SanitizedDiagnosticEvent(
-      val originId: Any?,
-      val message: String,
-      val severity: Kind,
-      val filePositionPath: String,
-      val line: Int,
-      val column: Int
-    )
-
-    class DiagnosticListener : BuildProgressListener {
-      val events = mutableMapOf<Any, List<SanitizedDiagnosticEvent?>>()
-
-      override fun onEvent(buildId: Any, event: BuildEvent) {
-        val sanitizedEvent = (event as? FileMessageEventImpl)?.let {
-          SanitizedDiagnosticEvent(
-            it.parentId,
-            it.message,
-            it.kind,
-            it.filePosition.file.absolutePath,
-            it.filePosition.startLine,
-            it.filePosition.startColumn
-          )
-        }
-        addEvent(buildId, sanitizedEvent)
-      }
-
-      private fun addEvent(buildId: Any, event: SanitizedDiagnosticEvent?) {
-        events.merge(buildId, listOf(event)) { acc, x -> acc + x }
-      }
-    }
-
-    val diagnosticListener = DiagnosticListener()
+    val diagnosticListener = MockProgressEventListener()
     val taskConsole = TaskConsole(diagnosticListener, basePath)
 
     // when
@@ -267,20 +265,20 @@ class TaskConsoleTest {
     // then
     diagnosticListener.events shouldContainExactly mapOf(
       "origin" to listOf(
-        null,  // starting the task
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 1\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 6\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
-        SanitizedDiagnosticEvent(originId="origin", message="Diagnostic 7\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        null  // finishing the task
+        TestableBuildEvent(StartBuildEventImpl::class, "origin", null, "started"),
+        TestableDiagnosticEvent(id="origin", message="Diagnostic 1\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id="origin", message="Diagnostic 6\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
+        TestableDiagnosticEvent(id="origin", message="Diagnostic 7\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableBuildEvent(FinishBuildEventImpl::class, "origin", null, "finished"),
       )
     )
   }
 
   @Test
   fun `should finish subtask when its parent is finished`() {
-    val buildProcessListener = MockBuildProgressListener()
+    val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
 
     // when
@@ -291,8 +289,13 @@ class TaskConsoleTest {
     taskConsole.addMessage("child", "Message 1")
     taskConsole.finishTask("parent", "Parent finished")
 
+    // starting a different parent task, under similar ID
+    taskConsole.startTask("parent", "Parent task", "Parent started")
+
     // message should not be sent - the child's parent has been finished
     taskConsole.addMessage("child", "Message 2")
+
+    taskConsole.finishTask("parent", "Parent finished")
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(
@@ -303,6 +306,9 @@ class TaskConsoleTest {
         TestableBuildEvent(OutputBuildEventImpl::class, null, "child", "Message 1\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
 
+        TestableBuildEvent(FinishBuildEventImpl::class, "parent", null, "Parent finished"),
+
+        TestableBuildEvent(StartBuildEventImpl::class, "parent", null, "Parent started"),
         TestableBuildEvent(FinishBuildEventImpl::class, "parent", null, "Parent finished"),
       )
     )
