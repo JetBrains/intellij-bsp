@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
+import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
@@ -11,7 +12,9 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.AbstractActionWithTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import java.awt.event.MouseEvent
@@ -50,25 +53,33 @@ public class LoadedTargetsMouseListener(
     return if (target != null && isConnected) {
       val actions = mutableListOf<AnAction>()
       if (target.capabilities.canCompile) {
-        val action = getAction(BuildTargetAction::class.java)
-        actions.add(action)
+        actions.addAction(BuildTargetAction::class.java)
       }
       if (target.capabilities.canRun) {
-        val action = getAction(RunTargetAction::class.java)
-        actions.add(action)
+        actions.addAction(RunTargetAction::class.java)
+        if (target.isJvmTarget()) {
+          actions.addAction(RunWithLocalJvmRunnerAction::class.java)
+          actions.addAction(DebugWithLocalJvmRunnerAction::class.java)
+        }
       }
       if (target.capabilities.canTest) {
-        val action = getAction(TestTargetAction::class.java)
-        actions.add(action)
+        actions.addAction(TestTargetAction::class.java)
       }
       DefaultActionGroup().also { it.addAll(actions) }
     } else null
   }
 
-  private fun getAction(actionClass : Class<out AbstractActionWithTarget>) : AbstractActionWithTarget =
+  private fun MutableList<AnAction>.addAction(
+     actionClass : Class<out AbstractActionWithTarget>
+  ) : AbstractActionWithTarget =
     actions.getOrPut(actionClass) {
       actionClass.constructors.first { it.parameterCount == 0 }.newInstance() as AbstractActionWithTarget
-    }.also { it.target = container.getSelectedBuildTarget()?.id }
+    }.also {
+      it.target = container.getSelectedBuildTarget()?.id
+      add(it)
+    }
+
+  private fun BuildTarget.isJvmTarget(): Boolean = dataKind == "jvm"
 
   override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
