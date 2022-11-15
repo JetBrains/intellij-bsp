@@ -115,7 +115,7 @@ public class BspFileConnection(
           .handle { value, error ->
             val elapsedTime = currentTimeMillis() - startTime
             log.debug("BSP method '${method.name}' call took ${elapsedTime}ms. Result: ${if(error == null) "SUCCESS" else "FAILURE"}")
-            if(error != null && error is TimeoutException) {
+            if(error is TimeoutException) {
               log.error("BSP request '${method.name}' timed out after ${elapsedTime}ms", error)
               null
             } else if (error != null)  {
@@ -136,15 +136,14 @@ public class BspFileConnection(
     ) as BspServer
   }
 
-  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> {
-    return Launcher.Builder<BspServer>()
+  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
+    Launcher.Builder<BspServer>()
       .setRemoteInterface(BspServer::class.java)
       .setExecutorService(AppExecutorUtil.getAppExecutorService())
       .setInput(bspIn)
       .setOutput(bspOut)
       .setLocalService(client)
       .create()
-  }
 
   public override fun disconnect() {
     val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
