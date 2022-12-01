@@ -246,7 +246,7 @@ class NonOverlappingTargetsTest {
 
     val allTargets = setOf(targetA, targetB)
 
-    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph = mapOf())
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, conflictGraph = mapOf())
     val expectedTargets = setOf(BuildTargetId("targetA"), BuildTargetId("targetB"))
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
