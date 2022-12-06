@@ -100,15 +100,13 @@ internal object NonOverlappingTargets {
     conflictingWithDependers(conflictGraph, dependers)
       ?: mostConflictingTargets(conflictGraph)
 
-  private fun getInvertedDependencyMap(allTargets: Set<BuildTarget>): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
-    val invertedDependencyMap: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> = allTargets.fold(emptyMap()) { acc, target ->
+  private fun getInvertedDependencyMap(allTargets: Set<BuildTarget>): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> =
+    allTargets.fold(emptyMap()) { acc, target ->
       val newEntries = target.dependencies.map { it to target.id }
       newEntries.fold(acc) { smallAcc, entry ->
         smallAcc + (entry.first to (smallAcc[entry.first].orEmpty() + entry.second))
       }
     }
-    return invertedDependencyMap
-  }
 
   private fun toTreeMap(fullConflictGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>): TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
     val treeMap = TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(Comparator.comparing { it.uri })
