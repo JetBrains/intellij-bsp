@@ -85,15 +85,11 @@ internal object NonOverlappingTargets {
     val comparatorByOverlaps = Comparator.comparingInt<BuildTargetIdentifier> {
       conflictGraph.conflictMap[it]?.size ?: 0
     }
-    val comparatorByName0: Comparator<BuildTargetIdentifier> = Comparator.comparing { it.uri }
-    return conflictGraph.connectedNodes.maxWithOrNull(comparatorByOverlaps then comparatorByName0)
+    return conflictGraph.connectedNodes.maxWithOrNull(comparatorByOverlaps)
   }
 
-  private fun conflictingWithDependers(conflictGraph: ConflictGraph, availableDependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? {
-    val targetsConflictingWithDependers = availableDependers.flatMap { conflictGraph.conflictMap[it].orEmpty() }
-    val comparatorByName: Comparator<BuildTargetIdentifier> = Comparator.comparing { it.uri }
-    return targetsConflictingWithDependers.maxWithOrNull(comparatorByName)
-  }
+  private fun conflictingWithDependers(conflictGraph: ConflictGraph, availableDependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? =
+    availableDependers.flatMap { conflictGraph.conflictMap[it].orEmpty() }.firstOrNull()
 
   private fun chooseWorstConflict(conflictGraph: ConflictGraph,
                                   dependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? =
