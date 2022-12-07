@@ -150,7 +150,7 @@ public class ConflictGraph(
     val conflicts = nodes.flatMap { conflictMap0[it].orEmpty() }
     conflicts.forEach {
       conflictMap0.replace(it, conflictMap0[it].orEmpty() - nodes)
-      if (conflictMap0[it].orEmpty().isEmpty()) {
+      if (conflictMap0[it].isNullOrEmpty()) {
         isolatedNodes0.add(it)
         connectedNodes0.remove(it)
       }
