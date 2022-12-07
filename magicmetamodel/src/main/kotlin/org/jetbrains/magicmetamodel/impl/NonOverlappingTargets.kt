@@ -56,8 +56,7 @@ internal object NonOverlappingTargets {
     log.trace { "Calculating non overlapping targets for $allTargets..." }
     val invertedDependencyMap = getInvertedDependencyMap(allTargets)
     val fullConflictGraph = allTargets.associate { it.id to emptySet<BuildTargetIdentifier>() } + conflictGraph
-    val treeMap = toTreeMap(fullConflictGraph)
-    return extractNonConflictingTargets(ConflictGraph(treeMap), invertedDependencyMap)
+    return extractNonConflictingTargets(ConflictGraph(fullConflictGraph.toMutableMap()), invertedDependencyMap)
   }
 
   private fun extractNonConflictingTargets(
@@ -104,9 +103,12 @@ internal object NonOverlappingTargets {
       }
     }
 
-  private fun toTreeMap(fullConflictGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>): TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
-    val treeMap = TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(Comparator.comparing { it.uri })
-    treeMap.putAll(fullConflictGraph)
+  private fun Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>.toMutableMap()
+    : TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>> = toMutableMap(Comparator.comparing { it.uri })
+
+  private fun <K, V> Map<K, V>.toMutableMap(comparator: Comparator<K>): TreeMap<K, V> {
+    val treeMap = TreeMap<K, V>(comparator)
+    treeMap.putAll(this)
     return treeMap
   }
 }
