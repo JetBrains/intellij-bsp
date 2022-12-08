@@ -102,19 +102,10 @@ internal object NonOverlappingTargets {
         smallAcc + (entry.first to (smallAcc[entry.first].orEmpty() + entry.second))
       }
     }
-
-  private fun Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>.toMutableMap()
-    : TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>> = toMutableMap(Comparator.comparing { it.uri })
-
-  private fun <K, V> Map<K, V>.toMutableMap(comparator: Comparator<K>): TreeMap<K, V> {
-    val treeMap = TreeMap<K, V>(comparator)
-    treeMap.putAll(this)
-    return treeMap
-  }
 }
 
 public class ConflictGraph(
-  private val conflictMap0: TreeMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
+  private val conflictMap0: MutableMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
 ) {
   private val isolatedNodes0: MutableSet<BuildTargetIdentifier> = conflictMap0.filter { it.value.toSet().isEmpty() }.keys.toMutableSet()
   private val connectedNodes0: MutableSet<BuildTargetIdentifier> = (conflictMap0.keys - isolatedNodes0).toMutableSet()
