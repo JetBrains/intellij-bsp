@@ -20,7 +20,7 @@ import kotlin.io.path.readText
 // TODO make sure these values are updated by dependabot or similar tool
 private const val bazelRepositoryTag = "5.3.2"
 private const val bazelBspVersion = "2.3.0"
-class NonOverlapping {
+class NonOverlappingTest {
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
     val bazelDir = createTempDirectory("bazel-bsp-")

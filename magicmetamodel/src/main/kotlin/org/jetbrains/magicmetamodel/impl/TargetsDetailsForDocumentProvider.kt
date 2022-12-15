@@ -93,7 +93,7 @@ public class TargetsDetailsForDocumentProvider {
       isFileMap4HACK
     )
 
-  public companion object {
+  private companion object {
     private val log = logger<TargetsDetailsForDocumentProvider>()
   }
 }
