@@ -57,5 +57,4 @@ object query {
 
   fun div(vararg attributes: Pair<String, String>): String =
     attributes.joinToString(" and ", "//div[", "]") { (name, value) -> "@$name='$value'" }
-
 }

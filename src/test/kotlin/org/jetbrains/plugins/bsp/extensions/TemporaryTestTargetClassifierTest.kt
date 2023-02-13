@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test
 
 class TemporaryTestTargetClassifierTest {
   private val classifier = TemporaryTestTargetClassifier()
+
   @Test
   fun mainRepoTest() {
     val target = makeTarget("@//a/b/c:label")
     classifier.getBuildTargetName(target) shouldBe "label"
     classifier.getBuildTargetPath(target) shouldBe listOf("a", "b", "c")
   }
+
   @Test
   fun mainRepoTestOldSyntax() { // pre-bazel 6 syntax
     val target = makeTarget("//a/b/c:label")
@@ -28,6 +30,7 @@ class TemporaryTestTargetClassifierTest {
     classifier.getBuildTargetName(target) shouldBe "label"
     classifier.getBuildTargetPath(target) shouldBe listOf()
   }
+
   @Test
   fun labelNotMatchingBazelPattern() {
     val target = makeTarget("foo")

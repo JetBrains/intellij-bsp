@@ -38,7 +38,7 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
       .filter { it.capabilities.canCompile }
       .map { it.id }
 
-    val result= BuildTargetTask(project).executeIfConnected(targetsToBuild)
+    val result = BuildTargetTask(project).executeIfConnected(targetsToBuild)
 
     return if (result?.statusCode == StatusCode.OK) {
       bspBuildConsole.finishTask("bsp-build", "Build done!", SuccessResultImpl())

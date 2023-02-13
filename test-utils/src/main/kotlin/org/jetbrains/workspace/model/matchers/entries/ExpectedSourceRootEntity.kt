@@ -64,4 +64,3 @@ private fun toExpectedContentRootEntity(expected: ExpectedSourceRootEntity): Exp
     excludedPatterns = expected.contentRootEntity.excludedPatterns,
     parentModuleEntity = expected.parentModuleEntity,
   )
-

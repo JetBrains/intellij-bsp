@@ -149,9 +149,11 @@ public class BuildTargetTree(
   override fun getSelectedBuildTarget(): BuildTarget? {
     val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
     val userObject = selected?.userObject
-    return if (userObject is TargetNodeData)
+    return if (userObject is TargetNodeData) {
       userObject.target
-    else null
+    } else {
+      null
+    }
   }
 
   override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetTree {

@@ -135,7 +135,6 @@ class ResourcesItemStateTest {
   }
 }
 
-
 @DisplayName("DependencySourcesItemState tests")
 class DependencySourcesItemStateTest {
 
@@ -154,7 +153,6 @@ class DependencySourcesItemStateTest {
     state.fromState() shouldBe dependencySourcesItem
   }
 }
-
 
 @DisplayName("JavacOptionsItemState tests")
 class JavacOptionsItemStateTest {
@@ -176,7 +174,6 @@ class JavacOptionsItemStateTest {
     state.fromState() shouldBe javacOptionsItem
   }
 }
-
 
 @DisplayName("ModuleDetailsState tests")
 class ModuleDetailsStateTest {
@@ -219,11 +216,11 @@ class ModuleDetailsStateTest {
         )
       ),
       javacOptions = JavacOptionsItem(
-          BuildTargetIdentifier("target1"),
-          listOf("opt1", "opt2", "opt3"),
-          listOf("classpath1", "classpath2"),
-          "class/dir"
-        )
+        BuildTargetIdentifier("target1"),
+        listOf("opt1", "opt2", "opt3"),
+        listOf("classpath1", "classpath2"),
+        "class/dir"
+      )
     )
 
     // when

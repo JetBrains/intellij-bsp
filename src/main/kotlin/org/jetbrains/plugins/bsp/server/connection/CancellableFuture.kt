@@ -40,7 +40,7 @@ public class CancellableFuture<T> private constructor(private val original: Comp
 public fun <T> CompletableFuture<T>.cancelOn(cancelOnFuture: CompletableFuture<*>): CompletableFuture<T> {
   cancelOnFuture.whenComplete { _, exception ->
     when (exception) {
-      is CancellationException -> if(!isDone) cancel(true)
+      is CancellationException -> if (!isDone) cancel(true)
     }
   }
   return this

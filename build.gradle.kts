@@ -27,11 +27,13 @@ dependencies {
   testImplementation(libs.kotest)
 }
 
-tasks.runIde{
-  jvmArgs("-Xmx16000m",
+tasks.runIde {
+  jvmArgs(
+    "-Xmx16000m",
     "-Didea.log.trace.categories=" +
-    "#org.jetbrains.plugins.bsp," +
-    "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
+      "#org.jetbrains.plugins.bsp," +
+      "#org.jetbrains.magicmetamodel.impl.PerformanceLogger"
+  )
 }
 
 // Configure gradle-intellij-plugin plugin.
@@ -104,10 +106,12 @@ tasks {
 
   runPluginVerifier {
     ideVersions.set(pluginVerifierIdeVersions.split(',').map(String::trim).filter(String::isNotEmpty))
-    failureLevel.set(setOf(
-      FailureLevel.COMPATIBILITY_PROBLEMS,
-      FailureLevel.NOT_DYNAMIC
-    ))
+    failureLevel.set(
+      setOf(
+        FailureLevel.COMPATIBILITY_PROBLEMS,
+        FailureLevel.NOT_DYNAMIC
+      )
+    )
   }
 
   publishPlugin {

@@ -19,6 +19,7 @@ public class BspTestConsolePrinter(
   init {
     processHandler.startNotify()
   }
+
   /**
    * Ends the testing process. Tests executed after this method's invocation will not have their results shown
    */
@@ -34,7 +35,8 @@ public class BspTestConsolePrinter(
    */
   public fun startTest(isSuite: Boolean, name: String) {
     executeCommand(
-      if (isSuite) ServiceMessageTypes.TEST_SUITE_STARTED else ServiceMessageTypes.TEST_STARTED, "name" to name
+      if (isSuite) ServiceMessageTypes.TEST_SUITE_STARTED else ServiceMessageTypes.TEST_STARTED,
+      "name" to name
     )
   }
 

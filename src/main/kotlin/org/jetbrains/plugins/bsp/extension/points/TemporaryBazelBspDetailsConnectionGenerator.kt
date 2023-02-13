@@ -136,7 +136,9 @@ public class BazelEditProjectViewStep(
   ): Path? =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
-        calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails)
+        calculateProjectViewFileNameFromConnectionDetails(
+          connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails
+        )
           ?.let { Path(it) }
 
       else -> projectBasePath.resolve(defaultProjectViewFileName)
@@ -192,7 +194,9 @@ public class BazelEditProjectViewStep(
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   ): Boolean =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
-      is ConnectionFile -> calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails) != null
+      is ConnectionFile -> calculateProjectViewFileNameFromConnectionDetails(
+        connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails
+      ) != null
       else -> true
     }
 
@@ -235,7 +239,9 @@ public class BazelEditProjectViewStep(
         .rows(15)
     }
     row {
-      text("Please choose a connection file with project view file or create a new connection in order to edit project view")
+      text(
+        "Please choose a connection file with project view file or create a new connection in order to edit project view"
+      )
         .visibleIf(isProjectViewFileNameSpecifiedProperty.transform { !it })
     }
   }

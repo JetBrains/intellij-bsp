@@ -28,9 +28,11 @@ internal object BspModuleDetailsToModuleTransformer :
       type = inputEntity.type,
       modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
       librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer
-        .transform(inputEntity.dependencySources.map {
-          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
-        }),
+        .transform(
+          inputEntity.dependencySources.map {
+            DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+          }
+        ),
     )
   }
 }

@@ -93,8 +93,10 @@ public object NonOverlappingTargets {
   private fun conflictingWithDependers(conflictGraph: ConflictGraph, availableDependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? =
     availableDependers.flatMap { conflictGraph.conflictMap[it].orEmpty() }.firstOrNull()
 
-  private fun chooseWorstConflict(conflictGraph: ConflictGraph,
-                                  dependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? =
+  private fun chooseWorstConflict(
+    conflictGraph: ConflictGraph,
+    dependers: MutableSet<BuildTargetIdentifier>
+  ): BuildTargetIdentifier? =
     conflictingWithDependers(conflictGraph, dependers)
       ?: mostConflictingTargets(conflictGraph)
 
@@ -122,7 +124,6 @@ public class ConflictGraph(
    * reasons.
    */
   public val isolatedNodes: Set<BuildTargetIdentifier> = isolatedNodes0
-
 
   /**
    * Check if any nodes are still left in the graph

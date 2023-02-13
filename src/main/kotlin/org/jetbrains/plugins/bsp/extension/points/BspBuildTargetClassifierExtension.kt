@@ -37,6 +37,6 @@ public class TemporaryTestTargetClassifier : BspBuildTargetClassifierExtension {
   }
 
   private fun isBazelMainRepositoryTarget(uri: String) =
-    uri.run { startsWith("//") || startsWith("@//") } // "//" should be removed once we drop support for Bazel 5
-      && uri.contains(':')
+    uri.run { startsWith("//") || startsWith("@//") } && // "//" should be removed once we drop support for Bazel 5
+      uri.contains(':')
 }

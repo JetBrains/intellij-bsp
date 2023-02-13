@@ -21,7 +21,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 // theoretically we could use those instead of real BSP entities,
 // but those are mutable (well, BSP are mutable as well)
 
-
 public interface ConvertableFromState<out T> {
   public fun fromState(): T
 }
@@ -29,7 +28,6 @@ public interface ConvertableFromState<out T> {
 public interface ConvertableToState<out T> {
   public fun toState(): T
 }
-
 
 public data class BuildTargetIdentifierState(
   public var uri: String = ""
@@ -41,7 +39,6 @@ public data class BuildTargetIdentifierState(
 
 public fun BuildTargetIdentifier.toState(): BuildTargetIdentifierState =
   BuildTargetIdentifierState(uri)
-
 
 public data class BuildTargetCapabilitiesState(
   public var canCompile: Boolean = false,
@@ -61,7 +58,6 @@ public fun BuildTargetCapabilities.toState(): BuildTargetCapabilitiesState =
     canRun = canRun,
     canDebug = canDebug,
   )
-
 
 public data class BuildTargetState(
   public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
@@ -104,7 +100,6 @@ public fun BuildTarget.toState(): BuildTargetState =
     data = data,
   )
 
-
 public data class SourceItemState(
   public var uri: String = "",
   public var kind: Int = 0,
@@ -121,7 +116,6 @@ public fun SourceItem.toState(): SourceItemState =
     kind = kind.value,
     generated = generated,
   )
-
 
 public data class SourcesItemState(
   public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
@@ -142,7 +136,6 @@ public fun SourcesItem.toState(): SourcesItemState =
     roots = roots,
   )
 
-
 public class ResourcesItemState(
   public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
   public var resources: List<String> = emptyList(),
@@ -158,7 +151,6 @@ public fun ResourcesItem.toState(): ResourcesItemState =
     resources = resources,
   )
 
-
 public class DependencySourcesItemState(
   public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
   public var sources: List<String> = emptyList(),
@@ -169,11 +161,10 @@ public class DependencySourcesItemState(
 }
 
 public fun DependencySourcesItem.toState(): DependencySourcesItemState =
-    DependencySourcesItemState(
-      target = target.toState(),
-      sources = sources,
-    )
-
+  DependencySourcesItemState(
+    target = target.toState(),
+    sources = sources,
+  )
 
 public class JavacOptionsItemState(
   public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
@@ -188,12 +179,11 @@ public class JavacOptionsItemState(
 
 public fun JavacOptionsItem.toState(): JavacOptionsItemState =
   JavacOptionsItemState(
-      target = target.toState(),
-      options= options,
-      classpath = classpath,
+    target = target.toState(),
+    options = options,
+    classpath = classpath,
     classDirectory = classDirectory,
-    )
-
+  )
 
 public data class ProjectDetailsState(
   public var targetsId: List<BuildTargetIdentifierState> = emptyList(),
@@ -225,7 +215,6 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     javacOptions = javacOptions.map { it.toState() }
   )
 
-
 public data class ModuleDetailsState(
   public var target: BuildTargetState = BuildTargetState(),
   public var allTargetsIds: List<BuildTargetIdentifierState> = emptyList(),
@@ -255,7 +244,6 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions?.toState(),
   )
-
 
 public data class DefaultMagicMetaModelState(
   public var projectDetailsState: ProjectDetailsState = ProjectDetailsState(),

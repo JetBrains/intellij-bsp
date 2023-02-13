@@ -289,7 +289,8 @@ internal class LoadedTargetsStorage private constructor(
     LoadedTargetsStorageState(
       allTargets.map { it.toState() },
       loadedTargets.map { it.toState() },
-      notLoadedTargets.map { it.toState() })
+      notLoadedTargets.map { it.toState() }
+    )
 
   fun copy(): LoadedTargetsStorage =
     LoadedTargetsStorage(

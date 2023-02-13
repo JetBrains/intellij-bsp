@@ -54,7 +54,9 @@ public class LoadedTargetsMouseListener(
         actions.add(TestTargetAction(target.id))
       }
       DefaultActionGroup().also { it.addAll(actions) }
-    } else null
+    } else {
+      null
+    }
   }
 
   override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }

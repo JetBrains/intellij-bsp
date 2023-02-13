@@ -46,7 +46,6 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 
   private val cancelOnFuture = CompletableFuture<Void>()
 
-
   public fun executeInTheBackground(
     name: String,
     cancelable: Boolean,
@@ -130,18 +129,26 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       e is CompletionException && e.cause is CancellationException
 
     fun errorCallback(e: Throwable) = when {
-        isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
-        else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
-      }
+      isCancellationException(e) -> bspSyncConsole.finishTask(
+        taskId,
+        "Canceled",
+        FailureResultImpl("The task has been canceled!")
+      )
+      else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+    }
 
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
     val initializeBuildResult = queryForInitialize(server).catchSyncErrors { errorCallback(it) }.get()
     server.onBuildInitialized()
 
-
     val projectDetails =
-      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
+      calculateProjectDetailsWithCapabilities(
+        server,
+        initializeBuildResult.capabilities,
+        { errorCallback(it) },
+        cancelOn
+      )
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
 
@@ -186,12 +193,18 @@ public fun calculateProjectDetailsWithCapabilities(
     val sourcesFuture = queryForSourcesResult(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
 
     val resourcesFuture =
-      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(
+        errorCallback
+      )
     val dependencySourcesFuture =
-      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(
+        errorCallback
+      )
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
-    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(
+      errorCallback
+    )
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -239,8 +252,11 @@ private fun queryForTargetResources(
 ): CompletableFuture<ResourcesResult>? {
   val resourcesParams = ResourcesParams(allTargetsIds)
 
-  return if (capabilities.resourcesProvider) server.buildTargetResources(resourcesParams)
-  else null
+  return if (capabilities.resourcesProvider) {
+    server.buildTargetResources(resourcesParams)
+  } else {
+    null
+  }
 }
 
 private fun queryForDependencySources(
@@ -250,8 +266,11 @@ private fun queryForDependencySources(
 ): CompletableFuture<DependencySourcesResult>? {
   val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
 
-  return if (capabilities.dependencySourcesProvider) server.buildTargetDependencySources(dependencySourcesParams)
-  else null
+  return if (capabilities.dependencySourcesProvider) {
+    server.buildTargetDependencySources(dependencySourcesParams)
+  } else {
+    null
+  }
 }
 
 private fun calculateJavaTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
@@ -264,7 +283,9 @@ private fun queryForJavacOptions(
   return if (javaTargetsIds.isNotEmpty()) {
     val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
     server.buildTargetJavacOptions(javacOptionsParams)
-  } else null
+  } else {
+    null
+  }
 }
 
 private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =

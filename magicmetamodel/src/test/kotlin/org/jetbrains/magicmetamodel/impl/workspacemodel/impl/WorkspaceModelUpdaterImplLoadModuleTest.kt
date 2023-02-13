@@ -1,24 +1,24 @@
-//@file:Suppress("MaxLineLength", "LongMethod")
+// @file:Suppress("MaxLineLength", "LongMethod")
 //
-//package org.jetbrains.magicmetamodel.impl.workspacemodel.impl
+// package org.jetbrains.magicmetamodel.impl.workspacemodel.impl
 //
-//import ch.epfl.scala.bsp4j.BuildTarget
-//import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-//import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-//import ch.epfl.scala.bsp4j.DependencySourcesItem
-//import ch.epfl.scala.bsp4j.ResourcesItem
-//import ch.epfl.scala.bsp4j.SourceItem
-//import ch.epfl.scala.bsp4j.SourceItemKind
-//import ch.epfl.scala.bsp4j.SourcesItem
-//import com.intellij.openapi.command.WriteCommandAction
-//import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-//import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-//import org.junit.jupiter.api.DisplayName
-//import org.junit.jupiter.api.Test
+// import ch.epfl.scala.bsp4j.BuildTarget
+// import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+// import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+// import ch.epfl.scala.bsp4j.DependencySourcesItem
+// import ch.epfl.scala.bsp4j.ResourcesItem
+// import ch.epfl.scala.bsp4j.SourceItem
+// import ch.epfl.scala.bsp4j.SourceItemKind
+// import ch.epfl.scala.bsp4j.SourcesItem
+// import com.intellij.openapi.command.WriteCommandAction
+// import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+// import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+// import org.junit.jupiter.api.DisplayName
+// import org.junit.jupiter.api.Test
 //
-//// TODO load modules test
-//@DisplayName("workspaceModelUpdaterImpl.loadModule(moduleDetails) tests")
-//class WorkspaceModelUpdaterImplLoadModuleTest : WorkspaceModelBaseTest() {
+// // TODO load modules test
+// @DisplayName("workspaceModelUpdaterImpl.loadModule(moduleDetails) tests")
+// class WorkspaceModelUpdaterImplLoadModuleTest : WorkspaceModelBaseTest() {
 //
 //  @Test
 //  fun `should add java module`() {
@@ -76,7 +76,7 @@
 //      sources = listOf(moduleSources),
 //      resources = listOf(moduleResources),
 //      dependenciesSources = listOf(moduleDependenciesSources),
-////      javacOptions = listOf()
+// //      javacOptions = listOf()
 //    )
 //
 //    // when
@@ -106,4 +106,4 @@
 //    // TODO test libraries
 //    // loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
 //  }
-//}
+// }

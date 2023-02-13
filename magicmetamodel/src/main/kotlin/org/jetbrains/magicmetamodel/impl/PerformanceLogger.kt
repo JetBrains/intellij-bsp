@@ -9,8 +9,8 @@ public object PerformanceLogger {
 
   @OptIn(ExperimentalTime::class)
   public fun <T> logPerformance(computationId: String, block: () -> T): T {
-    log.debug("Task '${computationId}' started")
-    return measureTimedValue (block).let {
+    log.debug("Task '$computationId' started")
+    return measureTimedValue(block).let {
       log.debug("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
       it.value
     }
