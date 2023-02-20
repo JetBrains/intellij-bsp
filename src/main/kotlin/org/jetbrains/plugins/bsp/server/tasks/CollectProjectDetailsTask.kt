@@ -210,6 +210,9 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
     val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    
+    val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
+    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -219,7 +222,8 @@ public fun calculateProjectDetailsWithCapabilities(
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
       // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
       // so it's just safer to add timeout here. This should not be called at all for SBT.
-      javacOptions = javacOptionsFuture?.get()?.items ?: emptyList()
+      javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
+      pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList()
     )
   } catch (e: Exception) {
     // TODO the type xd
@@ -282,6 +286,19 @@ private fun queryForJavacOptions(
   return if (javaTargetsIds.isNotEmpty()) {
     val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
     server.buildTargetJavacOptions(javacOptionsParams)
+  } else null
+}
+
+private fun calculatePythonTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("python") }.map { it.id }
+
+private fun queryForPythonOptions(
+  server: BspServer,
+  pythonTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<PythonOptionsResult>? {
+  return if (pythonTargetsIds.isNotEmpty()) {
+    val pythonOptionsParams = PythonOptionsParams(pythonTargetsIds)
+    server.buildTargetPythonOptions(pythonOptionsParams)
   } else null
 }
 
