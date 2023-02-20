@@ -9,6 +9,8 @@ import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.InitializeBuildResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
 import ch.epfl.scala.bsp4j.JavacOptionsResult
+import ch.epfl.scala.bsp4j.PythonOptionsParams
+import ch.epfl.scala.bsp4j.PythonOptionsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -159,6 +161,7 @@ public fun calculateProjectDetailsWithCapabilities(
   val dependencySourcesFuture =
     queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
   val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
+  val pythonOptionsFuture = queryForPythonOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
 
   return ProjectDetails(
     targetsId = allTargetsIds,
@@ -168,7 +171,8 @@ public fun calculateProjectDetailsWithCapabilities(
     dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
     // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
     // so it's just safer to add timeout here. This should not be called at all for SBT.
-    javacOptions = javacOptionsFuture.get()?.items ?: emptyList()
+    javacOptions = javacOptionsFuture.get()?.items ?: emptyList(),
+    pythonOptions = pythonOptionsFuture.get()?.items ?: emptyList()
   )
 }
 
@@ -218,6 +222,13 @@ private fun queryForJavacOptions(
   return server.buildTargetJavacOptions(javacOptionsParams)
 }
 
+private fun queryForPythonOptions(
+  server: BspServer,
+  allTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<PythonOptionsResult> {
+  val pythonOptionsParams = PythonOptionsParams(allTargetsIds)
+  return server.buildTargetPythonOptions(pythonOptionsParams)
+}
 
 private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
   this.whenComplete { _, exception ->
