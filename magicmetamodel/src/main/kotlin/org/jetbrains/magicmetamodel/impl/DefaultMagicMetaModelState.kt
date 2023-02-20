@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -194,6 +195,20 @@ public fun JavacOptionsItem.toState(): JavacOptionsItemState =
     classDirectory = classDirectory,
     )
 
+public class PythonOptionsItemState(
+  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
+  public var options: List<String> = emptyList(),
+) : ConvertableFromState<PythonOptionsItem> {
+
+  public override fun fromState(): PythonOptionsItem =
+    PythonOptionsItem(target.fromState(), options)
+}
+
+public fun PythonOptionsItem.toState(): PythonOptionsItemState =
+  PythonOptionsItemState(
+    target = target.toState(),
+    options = interpreterOptions
+  )
 
 public data class ProjectDetailsState(
   public var targetsId: List<BuildTargetIdentifierState> = emptyList(),
@@ -202,6 +217,7 @@ public data class ProjectDetailsState(
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: List<JavacOptionsItemState> = emptyList(),
+  public var pythonOptions: List<PythonOptionsItemState> = emptyList(),
 ) : ConvertableFromState<ProjectDetails> {
 
   public override fun fromState(): ProjectDetails =
@@ -212,6 +228,7 @@ public data class ProjectDetailsState(
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions.map { it.fromState() },
+      pythonOptions = pythonOptions.map { it.fromState() },
     )
 }
 
@@ -243,6 +260,7 @@ public data class ModuleDetailsState(
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: JavacOptionsItemState? = null,
+  public var pythonOptions: PythonOptionsItemState? = null,
 ) : ConvertableFromState<ModuleDetails> {
 
   public override fun fromState(): ModuleDetails =
@@ -253,6 +271,7 @@ public data class ModuleDetailsState(
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions?.fromState(),
+      pythonOptions = pythonOptions?.fromState(),
     )
 }
 

@@ -132,6 +132,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem),
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = javacOptionsItem,
+      pythonOptions = null,
     )
 
     // when
@@ -287,6 +288,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = target1JavacOptionsItem,
+      pythonOptions = null,
     )
 
     val module2Root = createTempDirectory("module2")
@@ -348,6 +350,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = target2JavacOptionsItem,
+      pythonOptions = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
