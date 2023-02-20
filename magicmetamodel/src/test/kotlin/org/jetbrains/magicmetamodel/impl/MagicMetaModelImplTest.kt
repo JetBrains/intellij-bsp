@@ -49,6 +49,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -151,6 +152,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -338,6 +340,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -530,6 +533,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -586,6 +590,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -668,6 +673,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -738,6 +744,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -808,6 +815,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -872,6 +880,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -927,6 +936,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -984,6 +994,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -1047,6 +1058,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -1106,6 +1118,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -1189,6 +1202,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when 1
@@ -1250,6 +1264,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -1293,6 +1308,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -1349,6 +1365,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
@@ -1410,6 +1427,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when

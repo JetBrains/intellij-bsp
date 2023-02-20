@@ -26,6 +26,7 @@ class MagicMetaModelTest : WorkspaceModelBaseTest() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        pythonOptions = emptyList(),
       )
 
       // when
