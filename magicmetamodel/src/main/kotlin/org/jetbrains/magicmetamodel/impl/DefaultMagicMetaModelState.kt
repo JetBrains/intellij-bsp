@@ -273,6 +273,7 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions?.toState(),
+    pythonOptions = pythonOptions?.toState(),
   )
 
 
