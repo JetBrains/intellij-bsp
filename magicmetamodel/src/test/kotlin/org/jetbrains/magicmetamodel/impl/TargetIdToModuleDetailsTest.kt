@@ -225,14 +225,14 @@ class TargetIdToModuleDetailsTest {
 
     val target4Id = BuildTargetIdentifier("target4")
     val target4 = BuildTarget(
-      target3Id,
+      target4Id,
       emptyList(),
       emptyList(),
       listOf(BuildTargetIdentifier("target1")),
       BuildTargetCapabilities(),
     )
     val target4Sources = SourcesItem(
-      target3Id,
+      target4Id,
       listOf(
         SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
       ),
@@ -258,7 +258,7 @@ class TargetIdToModuleDetailsTest {
     // then
     val expectedModuleDetails1 = ModuleDetails(
       target = target1,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id),
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target1Sources),
       resources = listOf(target1Resources),
       dependenciesSources = listOf(target1DependencySources),
@@ -267,7 +267,7 @@ class TargetIdToModuleDetailsTest {
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id),
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target2Sources1, target2Sources2),
       resources = listOf(target2Resources),
       dependenciesSources = listOf(target2DependencySources),
@@ -276,7 +276,7 @@ class TargetIdToModuleDetailsTest {
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id),
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target3Sources),
       resources = emptyList(),
       dependenciesSources = emptyList(),
