@@ -37,6 +37,7 @@ public class MagicMetaModelService(private val project: Project) :
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
+      pythonOptions = emptyList(),
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
