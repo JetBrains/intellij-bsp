@@ -1,43 +1,42 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.InitializeBuildResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
+import org.jetbrains.plugins.bsp.server.connection.cancelOn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
+import java.util.concurrent.ExecutionException
 
 public class UpdateMagicMetaModelInTheBackgroundTask(
   private val project: Project,
   private val taskId: Any,
-  private val collect: () -> ProjectDetails?,
+  private val collect: (cancelOn: CompletableFuture<Void>) -> ProjectDetails?,
 ) {
+
+  private var progressIndicator: ProgressIndicator? = null
+
+  private val cancelOnFuture = CompletableFuture<Void>()
+
 
   public fun executeInTheBackground(
     name: String,
@@ -55,9 +54,16 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     afterOnSuccess: () -> Unit = {}
   ) = object : Task.Backgroundable(project, name, cancelable) {
 
+    private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+
     private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
+    private var uniqueJdkInfos: Set<JvmBuildTarget>? = null
+
+    private val jdkTable = ProjectJdkTable.getInstance()
+
     override fun run(indicator: ProgressIndicator) {
+      progressIndicator = indicator
       beforeRun()
       updateMagicMetaModelDiff()
     }
@@ -65,31 +71,65 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     private fun updateMagicMetaModelDiff() {
       val magicMetaModel = logPerformance("update-magic-meta-model-diff") { initializeMagicMetaModel() }
       magicMetaModelDiff = logPerformance("load-default-targets") { magicMetaModel.loadDefaultTargets() }
+
+      bspSyncConsole.finishSubtask("calculate-project-structure", "Calculating project structure done!")
     }
 
     // TODO ugh, it should be nicer
     private fun initializeMagicMetaModel(): MagicMetaModel {
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
-      val projectDetails = logPerformance("collect-project-details") { collect() }
+      val projectDetails = logPerformance("collect-project-details") { collect(cancelOnFuture) }
 
       if (projectDetails != null) {
+        bspSyncConsole.startSubtask(taskId, "calculate-all-unique-jdk-infos", "Calculating all unique jdk infos...")
+        uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
+        bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
+
+        bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
         logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
       }
 
       return magicMetaModelService.value
     }
 
+    private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+
     override fun onSuccess() {
+      addBspFetchedJdks()
       applyChangesOnWorkspaceModel()
       afterOnSuccess()
     }
 
-    private fun applyChangesOnWorkspaceModel() {
-      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-      bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Updating model...")
-      runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
-      bspSyncConsole.finishSubtask("apply-on-workspace-model", "Updating model done!")
+    private fun addBspFetchedJdks() {
+      bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
+      logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach(::addJdkIfNotYetAdded) }
+      bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
     }
+
+    private fun addJdkIfNotYetAdded(jdkInfo: JvmBuildTarget) {
+      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, jdkInfo.javaHome.removePrefix("file://"))
+      if (jdk.isJdkNotAdded()) runWriteAction { jdkTable.addJdk(jdk) }
+    }
+
+    private fun Sdk.isJdkNotAdded(): Boolean {
+      val existingJdk = jdkTable.findJdk(this.name, this.sdkType.name)
+      return existingJdk == null || existingJdk.sdkAdditionalData !== this.sdkAdditionalData
+    }
+
+    private fun applyChangesOnWorkspaceModel() {
+      bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
+      runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
+      bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")
+    }
+
+    override fun onCancel() {
+      bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+    }
+  }
+
+  public fun cancelExecution() {
+    cancelOnFuture.cancel(true)
+    progressIndicator?.cancel()
   }
 }
 
@@ -99,14 +139,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
   public fun prepareBackgroundTask(): UpdateMagicMetaModelInTheBackgroundTask =
-    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) {
-      executeWithServerIfConnected { collectModel(it) }
+    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) { cancelOn ->
+      executeWithServerIfConnected { collectModel(it, cancelOn) }
     }
 
-  private fun collectModel(server: BspServer): ProjectDetails {
-    fun errorCallback(e: Throwable) {
-      bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
-    }
+  private fun collectModel(server: BspServer, cancelOn: CompletableFuture<Void>): ProjectDetails? {
+    fun isCancellationException(e: Throwable): Boolean =
+      e is CompletionException && e.cause is CancellationException
+
+    fun errorCallback(e: Throwable) = when {
+        isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+        else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+      }
 
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
@@ -115,7 +159,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
 
     val projectDetails =
-      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities) { errorCallback(it) }
+      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
 
@@ -149,33 +193,48 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
   buildServerCapabilities: BuildServerCapabilities,
-  errorCallback: (Throwable) -> Unit
-): ProjectDetails {
-  val workspaceBuildTargetsResult = queryForBuildTargets(server).get()
+  errorCallback: (Throwable) -> Unit,
+  cancelOn: CompletableFuture<Void> = CompletableFuture(),
+): ProjectDetails? {
+  try {
+    val workspaceBuildTargetsResult = queryForBuildTargets(server).cancelOn(cancelOn).catchSyncErrors(errorCallback).get()
 
-  val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
+    val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-  val sourcesFuture = queryForSourcesResult(server, allTargetsIds).catchSyncErrors(errorCallback)
-  val resourcesFuture =
-    queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
-  val dependencySourcesFuture =
-    queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
-  val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
-  val pythonOptionsFuture = queryForPythonOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
+    val sourcesFuture = queryForSourcesResult(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
 
-  return ProjectDetails(
-    targetsId = allTargetsIds,
-    targets = workspaceBuildTargetsResult.targets.toSet(),
-    sources = sourcesFuture.get().items,
-    resources = resourcesFuture?.get()?.items ?: emptyList(),
-    dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
-    // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
-    // so it's just safer to add timeout here. This should not be called at all for SBT.
-    javacOptions = javacOptionsFuture.get()?.items ?: emptyList(),
-    pythonOptions = pythonOptionsFuture.get()?.items ?: emptyList()
-  )
+    val resourcesFuture =
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val dependencySourcesFuture =
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+
+    val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
+    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture = queryForPythonOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
+    return ProjectDetails(
+      targetsId = allTargetsIds,
+      targets = workspaceBuildTargetsResult.targets.toSet(),
+      sources = sourcesFuture.get().items,
+      resources = resourcesFuture?.get()?.items ?: emptyList(),
+      dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
+      // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
+      // so it's just safer to add timeout here. This should not be called at all for SBT.
+      javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
+      pythonOptions = pythonOptionsFuture.get()?.items ?: emptyList()
+    )
+  } catch (e: Exception) {
+    // TODO the type xd
+    val log = logger<Any>()
+
+    if (e is ExecutionException && e.cause is CancellationException) {
+      log.debug("calculateProjectDetailsWithCapabilities has been cancelled!", e)
+    } else {
+      log.error("calculateProjectDetailsWithCapabilities has failed!", e)
+    }
+
+    return null
+  }
 }
-
 
 private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =
   server.workspaceBuildTargets()
@@ -214,12 +273,17 @@ private fun queryForDependencySources(
   else null
 }
 
+private fun calculateJavaTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("java") }.map { it.id }
+
 private fun queryForJavacOptions(
   server: BspServer,
-  allTargetsIds: List<BuildTargetIdentifier>
-): CompletableFuture<JavacOptionsResult> {
-  val javacOptionsParams = JavacOptionsParams(allTargetsIds)
-  return server.buildTargetJavacOptions(javacOptionsParams)
+  javaTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<JavacOptionsResult>? {
+  return if (javaTargetsIds.isNotEmpty()) {
+    val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
+    server.buildTargetJavacOptions(javacOptionsParams)
+  } else null
 }
 
 private fun queryForPythonOptions(
