@@ -1,12 +1,10 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
-import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path;
 
 internal data class PythonSdkInfo(val version: String, val interpreter: Path)
@@ -21,7 +19,6 @@ internal data class PythonModule(
   // todo - not sure if all of these fields should stay
 ) : WorkspaceModelEntity()
 
-// todo
 internal class PythonModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
@@ -44,9 +41,9 @@ internal class PythonModuleWithSourcesUpdater(
     pythonResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
 
     val module = moduleEntity.findModule(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder)
-    module?.let {
-      val modifiableModule = ModuleRootManager.getInstance(it).modifiableModel
-      modifiableModule.sdk = TODO("idk yet")
+    if (module != null && entityToAdd.sdkInfo != null) {
+      val modifiableModule = ModuleRootManager.getInstance(module).modifiableModel
+      modifiableModule.sdk = ProjectJdkTable.getInstance().findJdk(entityToAdd.sdkInfo.version, "PythonSDK")
       modifiableModule.commit()
     }
 
