@@ -17,21 +17,16 @@ internal data class PythonSourceRoot(
 
 internal class PythonSourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<PythonSourceRoot, PythonSourceRootPropertiesEntity> {
+) : WorkspaceModelEntityWithParentModuleUpdater<PythonSourceRoot, SourceRootEntity> {
 
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: PythonSourceRoot, parentModuleEntity: ModuleEntity): PythonSourceRootPropertiesEntity {
+  override fun addEntity(entityToAdd: PythonSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
-    val sourceRootEntity = addSourceRootEntity(
+    return addSourceRootEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       contentRootEntity,
-      entityToAdd
-    )
-    return addPythonSourceRootEntity(
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-      sourceRootEntity,
       entityToAdd
     )
   }
@@ -57,15 +52,5 @@ internal class PythonSourceEntityUpdater(
     url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
     rootType = entityToAdd.rootType,
     source = DoNotSaveInDotIdeaDirEntitySource,
-  )
-
-  private fun addPythonSourceRootEntity(
-    builder: MutableEntityStorage,
-    sourceRoot: SourceRootEntity,
-    entityToAdd: PythonSourceRoot,
-  ): PythonSourceRootPropertiesEntity = builder.addPythonSourceRootEntity(
-    sourceRoot = sourceRoot,
-    generated = entityToAdd.generated,
-    packagePrefix = entityToAdd.packagePrefix,
   )
 }

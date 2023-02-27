@@ -6,7 +6,6 @@ import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addPythonModuleSettingsEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path;
 
@@ -28,11 +27,12 @@ internal class PythonModuleWithSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
+    val moduleEntityUpdater =
+      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    addPythonModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
+    // addPythonModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
 
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
@@ -56,8 +56,7 @@ internal class PythonModuleWithSourcesUpdater(
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
     if (entityToAdd.sdkInfo != null) {
       defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.sdkInfo.version, "PythonSDK")
-    }
-    else defaultDependencies
+    } else defaultDependencies
 
   private companion object {
     val defaultDependencies = listOf(
@@ -93,5 +92,4 @@ internal class PythonModuleUpdater(
       Pair(0, 0) -> pythonModuleWithoutSourcesUpdater.addEntity(entityToAdd)
       else -> pythonModuleWithSourcesUpdater.addEntity(entityToAdd)
     }
-  }
 }
