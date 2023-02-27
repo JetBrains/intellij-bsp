@@ -4,9 +4,7 @@ import java.nio.file.Path
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.PythonResourceRootPropertiesEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addPythonResourceRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addSourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 
@@ -16,19 +14,18 @@ internal data class PythonResourceRoot(
 
 internal class PythonResourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<PythonResourceRoot, PythonResourceRootPropertiesEntity> {
+) : WorkspaceModelEntityWithParentModuleUpdater<PythonResourceRoot, SourceRootEntity> {
 
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: PythonResourceRoot, parentModuleEntity: ModuleEntity): PythonResourceRootPropertiesEntity {
+  override fun addEntity(entityToAdd: PythonResourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
-    val sourceRoot = addSourceRootEntity(
+    return addSourceRootEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       contentRootEntity,
       entityToAdd
     )
-    return addPythonResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
   }
 
   private fun addContentRootEntity(
@@ -51,15 +48,6 @@ internal class PythonResourceEntityUpdater(
     url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
     rootType = ROOT_TYPE,
     source = DoNotSaveInDotIdeaDirEntitySource,
-  )
-
-  private fun addPythonResourceRootEntity(
-    builder: MutableEntityStorage,
-    sourceRoot: SourceRootEntity,
-  ): PythonResourceRootPropertiesEntity = builder.addPythonResourceRootEntity(
-    sourceRoot = sourceRoot,
-    generated = DEFAULT_GENERATED,
-    relativeOutputPath = DEFAULT_RELATIVE_OUTPUT_PATH,
   )
 
   private companion object {
