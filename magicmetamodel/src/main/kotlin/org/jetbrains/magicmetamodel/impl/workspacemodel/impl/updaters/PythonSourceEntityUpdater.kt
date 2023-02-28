@@ -9,7 +9,6 @@ import java.nio.file.Path
 internal data class PythonSourceRoot(
   val sourcePath: Path,
   val generated: Boolean,
-  val packagePrefix: String,
   val rootType: String,
   val excludedFiles: List<Path> = ArrayList(),
   val targetId: BuildTargetIdentifier
