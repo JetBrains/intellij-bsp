@@ -222,9 +222,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
-        val sourcePackagePrefix11 = "example.package.one"
         val sourcePath12 = URI.create("file:///root/dir/example/package/two").toPath()
-        val sourcePackagePrefix12 = "example.package.two"
         val sourceRoots1 = listOf(
           PythonSourceRoot(
             sourcePath = sourcePath11,
@@ -278,7 +276,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
-        val sourcePackagePrefix21 = "another.example.package"
         val sourceRoots2 = listOf(
           PythonSourceRoot(
             sourcePath = sourcePath21,
