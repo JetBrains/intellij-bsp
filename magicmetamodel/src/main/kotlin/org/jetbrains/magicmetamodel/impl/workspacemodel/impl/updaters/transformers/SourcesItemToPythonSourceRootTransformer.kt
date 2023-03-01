@@ -6,12 +6,6 @@ import com.intellij.util.io.isAncestor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
 
-// TODO: what to do with this duplicate class?
-//internal data class BuildTargetAndSourceItem(
-//  val buildTarget: BuildTarget,
-//  val sourcesItem: SourcesItem,
-//)
-
 internal object SourcesItemToPythonSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, PythonSourceRoot> {
 

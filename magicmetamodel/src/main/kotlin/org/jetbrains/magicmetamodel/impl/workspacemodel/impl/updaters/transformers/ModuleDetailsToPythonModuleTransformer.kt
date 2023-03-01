@@ -28,13 +28,7 @@ internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTra
         )
       }),
       resourceRoots = ResourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
-      // TODO: libraries probably don't work yet - they're the same as in Java version of this file.
-      libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources.map {
-        DependencySourcesAndJavacOptions(
-          it,
-          inputEntity.javacOptions
-        )
-      }),
+      libraries = emptyList(),
       sdkInfo = toSdkInfo(inputEntity)
     )
 
@@ -59,9 +53,9 @@ internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTra
 
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
-    // TODO: is the URI.create().toPath() valid way to do that?
     return if (pythonBuildTarget != null) PythonSdkInfo(
       version = pythonBuildTarget.version,
+      // TODO: check if the URI.create().toPath() is a valid way to do that
       interpreter = URI.create(pythonBuildTarget.interpreter).toPath()
     )
     else null
