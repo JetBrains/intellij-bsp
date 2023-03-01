@@ -92,7 +92,8 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       return magicMetaModelService.value
     }
 
-    private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+    private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
+      projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
     override fun onSuccess() {
       addBspFetchedJdks()
@@ -107,7 +108,8 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     }
 
     private fun addJdkIfNotYetAdded(jdkInfo: JvmBuildTarget) {
-      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, jdkInfo.javaHome.removePrefix("file://"))
+      val jdk =
+        ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, jdkInfo.javaHome.removePrefix("file://"))
       if (jdk.isJdkNotAdded()) runWriteAction { jdkTable.addJdk(jdk) }
     }
 
@@ -148,9 +150,14 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       e is CompletionException && e.cause is CancellationException
 
     fun errorCallback(e: Throwable) = when {
-        isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
-        else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
-      }
+      isCancellationException(e) -> bspSyncConsole.finishTask(
+        taskId,
+        "Canceled",
+        FailureResultImpl("The task has been canceled!")
+      )
+
+      else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+    }
 
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
@@ -159,7 +166,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
 
     val projectDetails =
-      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
+      calculateProjectDetailsWithCapabilities(
+        server,
+        initializeBuildResult.capabilities,
+        { errorCallback(it) },
+        cancelOn
+      )
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
 
@@ -197,20 +209,25 @@ public fun calculateProjectDetailsWithCapabilities(
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
   try {
-    val workspaceBuildTargetsResult = queryForBuildTargets(server).cancelOn(cancelOn).catchSyncErrors(errorCallback).get()
+    val workspaceBuildTargetsResult =
+      queryForBuildTargets(server).cancelOn(cancelOn).catchSyncErrors(errorCallback).get()
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
     val sourcesFuture = queryForSourcesResult(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
 
     val resourcesFuture =
-      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
     val dependencySourcesFuture =
-      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
-    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
-    val pythonOptionsFuture = queryForPythonOptions(server, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val javacOptionsFuture =
+      queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture =
+      queryForPythonOptions(server, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
