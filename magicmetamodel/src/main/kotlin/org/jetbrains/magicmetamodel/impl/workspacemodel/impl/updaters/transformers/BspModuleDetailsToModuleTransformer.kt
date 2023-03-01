@@ -1,9 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.*
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
@@ -15,7 +12,8 @@ internal data class BspModuleDetails(
   val allTargetsIds: List<BuildTargetIdentifier>,
   val dependencySources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
-  val type: String,
+  val pythonOptions: PythonOptionsItem?,
+  val type: String
 )
 
 internal object BspModuleDetailsToModuleTransformer :
