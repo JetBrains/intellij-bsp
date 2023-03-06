@@ -226,8 +226,9 @@ public fun calculateProjectDetailsWithCapabilities(
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
     val javacOptionsFuture =
       queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonTargetIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
     val pythonOptionsFuture =
-      queryForPythonOptions(server, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForPythonOptions(server, pythonTargetIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
@@ -303,12 +304,15 @@ private fun queryForJavacOptions(
   } else null
 }
 
+private fun calculatePythonTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("python") }.map { it.id }
+
 private fun queryForPythonOptions(
   server: BspServer,
-  allTargetsIds: List<BuildTargetIdentifier>
+  pythonTargetsIds: List<BuildTargetIdentifier>
 ): CompletableFuture<PythonOptionsResult>? {
-  return if (allTargetsIds.isNotEmpty()) {
-    val pythonOptionsParams = PythonOptionsParams(allTargetsIds)
+  return if (pythonTargetsIds.isNotEmpty()) {
+    val pythonOptionsParams = PythonOptionsParams(pythonTargetsIds)
     return server.buildTargetPythonOptions(pythonOptionsParams)
   } else null
 }
