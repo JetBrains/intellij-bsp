@@ -8,14 +8,11 @@ import com.intellij.openapi.observable.properties.PropertyGraph
 import com.intellij.openapi.observable.util.transform
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.bindText
-import com.intellij.ui.dsl.builder.enableIf
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.rows
-import com.intellij.ui.dsl.builder.visibleIf
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.EnvironmentUtil
-import com.intellij.util.io.exists
 import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
@@ -28,6 +25,7 @@ import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.writeText
 
@@ -35,7 +33,9 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path?>
 
-  public override fun name(): String = "bazel"
+  public override fun id(): String = "bazelbsp"
+
+  public override fun displayName(): String = "Bazel"
 
   public override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "WORKSPACE" }
@@ -68,7 +68,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     return listOf(
       coursierExecutable.toString(),
       "launch",
-      "org.jetbrains.bsp:bazel-bsp:2.4.0",
+      "org.jetbrains.bsp:bazel-bsp:2.5.1",
       "-M",
       "org.jetbrains.bsp.bazel.install.Install",
     ) + calculateProjectViewFileInstallerOption()
@@ -226,14 +226,14 @@ public class BazelEditProjectViewStep(
       textField()
         .label("Project view file name")
         .bindText(projectViewFileNameProperty)
-        .enableIf(isProjectViewFileNameEditableProperty)
-        .horizontalAlign(HorizontalAlign.FILL)
+        .enabledIf(isProjectViewFileNameEditableProperty)
+        .align(Align.FILL)
     }
     row {
       textArea()
         .bindText(projectViewTextProperty)
         .visibleIf(isProjectViewFileNameSpecifiedProperty)
-        .horizontalAlign(HorizontalAlign.FILL)
+        .align(Align.FILL)
         .rows(15)
     }
     row {

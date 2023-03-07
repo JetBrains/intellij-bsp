@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.workspaceModel.storage.MutableEntityStorage
@@ -18,6 +19,7 @@ public data class ModuleDetails(
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
+  val pythonOptions: PythonOptionsItem?,
 )
 
 internal data class ModuleName(

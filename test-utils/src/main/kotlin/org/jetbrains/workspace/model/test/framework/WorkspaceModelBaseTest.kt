@@ -74,3 +74,29 @@ public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceMode
       type = parentModuleType
     )
 }
+
+public abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelBaseTest() {
+  protected lateinit var parentModuleEntity: ModuleEntity
+
+  private val parentModuleName = "test-module-root"
+  private val parentModuleType = "PYTHON_MODULE"
+
+  @BeforeEach
+  override fun beforeEach() {
+    super.beforeEach()
+
+    addParentModuleEntity()
+  }
+
+  private fun addParentModuleEntity() {
+    parentModuleEntity = addParentModuleEntity(workspaceEntityStorageBuilder)
+  }
+
+  private fun addParentModuleEntity(builder: MutableEntityStorage): ModuleEntity =
+    builder.addModuleEntity(
+      name = parentModuleName,
+      dependencies = emptyList(),
+      source = object : EntitySource {},
+      type = parentModuleType
+    )
+}

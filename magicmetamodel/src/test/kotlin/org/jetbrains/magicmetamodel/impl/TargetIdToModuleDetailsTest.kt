@@ -7,6 +7,7 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -30,7 +31,8 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
-    )
+      pythonOptions = emptyList(),
+      )
 
     // when
     val targetIdToModuleDetails = TargetIdToModuleDetails(emptyProjectDetails)
@@ -57,7 +59,8 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
-    )
+      pythonOptions = emptyList(),
+      )
 
     // when
     val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
@@ -70,6 +73,7 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = null,
+      pythonOptions = null,
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -106,6 +110,12 @@ class TargetIdToModuleDetailsTest {
       listOf("classpath1", "classpath2", "classpath3"),
       "class/dir"
     )
+
+    val pythonOptions = PythonOptionsItem(
+      targetId,
+      listOf("opt1", "opt2", "opt3")
+    )
+
     val projectDetails = ProjectDetails(
       targetsId = listOf(targetId),
       targets = setOf(target),
@@ -113,6 +123,7 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = listOf(javacOptions),
+      pythonOptions = listOf(pythonOptions),
     )
 
     // when
@@ -126,6 +137,7 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = javacOptions,
+      pythonOptions = pythonOptions,
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -211,13 +223,33 @@ class TargetIdToModuleDetailsTest {
       "class/dir3"
     )
 
+    val target4Id = BuildTargetIdentifier("target4")
+    val target4 = BuildTarget(
+      target4Id,
+      emptyList(),
+      emptyList(),
+      listOf(BuildTargetIdentifier("target1")),
+      BuildTargetCapabilities(),
+    )
+    val target4Sources = SourcesItem(
+      target4Id,
+      listOf(
+        SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
+      ),
+    )
+    val target4PythonOptionsItem = PythonOptionsItem(
+      target4Id,
+      listOf("opt1", "opt2")
+    )
+
     val projectDetails = ProjectDetails(
-      targetsId = listOf(target1Id, target3Id, target2Id),
-      targets = setOf(target2, target1, target3),
-      sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2),
+      targetsId = listOf(target1Id, target3Id, target2Id, target4Id),
+      targets = setOf(target2, target1, target3, target4),
+      sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2, target4Sources),
       resources = listOf(target1Resources, target2Resources),
       dependenciesSources = listOf(target2DependencySources, target1DependencySources),
       javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
+      pythonOptions = listOf(target4PythonOptionsItem),
     )
 
     // when
@@ -226,33 +258,46 @@ class TargetIdToModuleDetailsTest {
     // then
     val expectedModuleDetails1 = ModuleDetails(
       target = target1,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id),
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target1Sources),
       resources = listOf(target1Resources),
       dependenciesSources = listOf(target1DependencySources),
       javacOptions = target1JavacOptionsItem,
+      pythonOptions = null,
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id),
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target2Sources1, target2Sources2),
       resources = listOf(target2Resources),
       dependenciesSources = listOf(target2DependencySources),
       javacOptions = null,
+      pythonOptions = null,
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id),
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target3Sources),
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = target3JavacOptionsItem,
+      pythonOptions = null,
+    )
+    val expectedModuleDetails4 = ModuleDetails(
+      target = target4,
+      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
+      sources = listOf(target4Sources),
+      resources = emptyList(),
+      dependenciesSources = emptyList(),
+      javacOptions = null,
+      pythonOptions = target4PythonOptionsItem,
     )
 
     targetIdToModuleDetails shouldBe mapOf(
       target1Id to expectedModuleDetails1,
       target2Id to expectedModuleDetails2,
       target3Id to expectedModuleDetails3,
+      target4Id to expectedModuleDetails4,
     )
   }
 }

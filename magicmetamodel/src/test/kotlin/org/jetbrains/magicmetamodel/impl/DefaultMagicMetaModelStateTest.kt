@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -223,7 +224,11 @@ class ModuleDetailsStateTest {
           listOf("opt1", "opt2", "opt3"),
           listOf("classpath1", "classpath2"),
           "class/dir"
-        )
+        ),
+      pythonOptions = PythonOptionsItem(
+        BuildTargetIdentifier("target1"),
+        listOf("opt1", "opt2", "opt3")
+      )
     )
 
     // when

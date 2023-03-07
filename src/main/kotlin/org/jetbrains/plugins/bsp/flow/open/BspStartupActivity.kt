@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.startup.ProjectPostStartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
@@ -28,9 +28,9 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-public class BspStartupActivity : StartupActivity.DumbAware {
+public class BspStartupActivity : ProjectPostStartupActivity {
 
-  override fun runActivity(project: Project) {
+  override suspend fun execute(project: Project) {
     val projectProperties = BspProjectPropertiesService.getInstance(project).value
 
     if (projectProperties.isBspProject) {
@@ -46,8 +46,6 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
     if (project.isNewProject()) {
       suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
-    } else {
-      collectProject(project)
     }
   }
 
@@ -82,7 +80,7 @@ public class BspStartupActivity : StartupActivity.DumbAware {
     val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)
     if (wizard.showAndGet()) {
       when (val connectionFileOrNewConnection = wizard.connectionFileOrNewConnectionProperty.get()) {
-        is NewConnection -> initializeNewConnection(project, bspConnectionDetailsGeneratorProvider)
+        is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
         is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
       }
 
@@ -90,13 +88,11 @@ public class BspStartupActivity : StartupActivity.DumbAware {
     }
   }
 
-  private fun initializeNewConnection(
+  private fun initializeNewConnectionFromGenerator(
     project: Project,
-    bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider,
+    newConnection: NewConnection
   ) {
-    val name = bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()
-    // TODO
-    val generator = BspConnectionDetailsGeneratorExtension.extensions().find { it.name() == name }!!
+    val generator = newConnection.generator
     val bspGeneratorConnection = BspGeneratorConnection(project, generator)
 
     val bspConnectionService = BspConnectionService.getInstance(project)
@@ -112,13 +108,20 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
   private fun collectProject(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
     collectProjectDetailsTask.executeInTheBackground(
       "Syncing...",
       true,
-      beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
+      beforeRun = {
+        bspSyncConsole.startTask(
+          taskId = "bsp-import",
+          title = "Import",
+          message = "Importing...",
+          cancelAction = { collectProjectDetailsTask.cancelExecution() }
+        )
+        BspConnectionService.getInstance(project).value.connect("bsp-import")
+      },
       afterOnSuccess = { bspSyncConsole.finishTask("bsp-import", "Done!") }
     )
   }
