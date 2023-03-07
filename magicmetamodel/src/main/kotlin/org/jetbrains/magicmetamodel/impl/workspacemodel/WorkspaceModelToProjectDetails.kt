@@ -65,6 +65,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
         resources = modulesParsingData.mapNotNull(ModuleParsingData::resourcesItem),
         dependenciesSources = modulesParsingData.mapNotNull(ModuleParsingData::libSources),
         javacOptions = modulesParsingData.mapNotNull(ModuleParsingData::libJars),
+        pythonOptions = emptyList(),
       )
     }
 

@@ -417,7 +417,8 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         listOf(expectedSourcesItem1, expectedSourcesItem2),
         listOf(expectedResourceItem1, expectedResourceItem2),
         listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
-        listOf(expectedJavacSourceItem1, expectedJavacSourceItem2)
+        listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
+        emptyList(),
       )
 
       projectDetails shouldBe expectedProjectDetails
