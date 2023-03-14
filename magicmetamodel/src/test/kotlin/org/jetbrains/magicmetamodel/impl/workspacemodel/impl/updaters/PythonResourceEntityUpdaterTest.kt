@@ -3,7 +3,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -41,13 +40,6 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
     // then
     val virtualResourceUrl = resourcePath.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedContentRootEntity = ExpectedContentRootEntity(
-      url = virtualResourceUrl,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
-
     val expectedPythonResourceRootEntity = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
@@ -63,7 +55,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
     )
 
 
-    returnedPythonResourceRootEntity.contentRoot shouldBeEqual expectedContentRootEntity
+    returnedPythonResourceRootEntity shouldBeEqual expectedPythonResourceRootEntity
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
       expectedPythonResourceRootEntity
     )
@@ -91,13 +83,6 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
     // then
     val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedContentRootEntity1 = ExpectedContentRootEntity(
-      url = virtualResourceUrl1,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
-
     val expectedPythonResourceRootEntity1 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
@@ -114,13 +99,6 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
 
     val virtualResourceUrl2 = resourcePath2.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedContentRootEntity2 = ExpectedContentRootEntity(
-      url = virtualResourceUrl2,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
-
     val expectedPythonResourceRootEntity2 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
@@ -136,13 +114,6 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
     )
 
     val virtualResourceUrl3 = resourcePath3.toVirtualFileUrl(virtualFileUrlManager)
-
-    val expectedContentRootEntity3 = ExpectedContentRootEntity(
-      url = virtualResourceUrl3,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
 
     val expectedPythonResourceRootEntity3 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
@@ -164,13 +135,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
       expectedPythonResourceRootEntity3
     )
 
-    val expectedPythonContentRootEntities = listOf(
-      expectedContentRootEntity1,
-      expectedContentRootEntity2,
-      expectedContentRootEntity3
-    )
-
-    returnedPythonResourceRootEntities.map { it.contentRoot } shouldContainExactlyInAnyOrder expectedPythonContentRootEntities
+    returnedPythonResourceRootEntities shouldContainExactlyInAnyOrder expectedPythonResourceRootEntities
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedPythonResourceRootEntities
   }
 }
