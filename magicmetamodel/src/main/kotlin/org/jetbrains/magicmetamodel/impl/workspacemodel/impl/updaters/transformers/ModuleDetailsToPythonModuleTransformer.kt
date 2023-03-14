@@ -2,32 +2,42 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.PythonBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BspModuleDetailsToModuleTransformer
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.toPath
 
-internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTransformer<ModuleDetails, PythonModule> {
+internal class ModuleDetailsToPythonModuleTransformer(
+  moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
+  private val projectBasePath: Path,
+) : WorkspaceModelEntityTransformer<ModuleDetails, PythonModule> {
 
-  private const val type = "PYTHON_MODULE"
+  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
+  private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer(projectBasePath)
+  private val resourcesItemToPythonResourceRootTransformer =
+    ResourcesItemToPythonResourceRootTransformer(projectBasePath)
 
   override fun transform(inputEntity: ModuleDetails): PythonModule =
     PythonModule(
       module = toModule(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = SourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
+      sourceRoots = sourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
           inputEntity.target,
           it,
         )
       }),
-      resourceRoots = ResourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
+      resourceRoots = resourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
       libraries = DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity.dependenciesSources),
       sdkInfo = toSdkInfo(inputEntity)
     )
@@ -42,7 +52,13 @@ internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTra
       pythonOptions = inputEntity.pythonOptions,
     )
 
-    return BspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
+  }
+
+  private fun Module.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): Module {
+    val dummyJavaModuleDependencies =
+      calculateDummyJavaModuleNames(inputEntity, projectBasePath).map { ModuleDependency(it) }
+    return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
@@ -61,6 +77,11 @@ internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTra
     else null
   }
 
+  companion object {
+
+    private const val type = "PYTHON_MODULE"
+
+  }
 }
 
 public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =

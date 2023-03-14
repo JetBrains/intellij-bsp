@@ -18,6 +18,7 @@ import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 public data class MagicMetaModelProjectConfig(
   val workspaceModel: WorkspaceModel,
   val virtualFileUrlManager: VirtualFileUrlManager,
+  val moduleNameProvider: ((BuildTargetIdentifier) -> String)? = null
 )
 
 public data class ProjectDetails(
