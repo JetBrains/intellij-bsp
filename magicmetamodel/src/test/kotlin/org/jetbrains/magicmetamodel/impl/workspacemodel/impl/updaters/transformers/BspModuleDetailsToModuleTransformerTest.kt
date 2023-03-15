@@ -79,7 +79,7 @@ class BspModuleDetailsToModuleTransformerTest {
       dependencySources = listOf(dependencySourceItem1),
       type = "JAVA_MODULE",
       javacOptions = javacOptions,
-      pythonOptions = null
+      pythonOptions = null,
     )
 
     // when
@@ -196,7 +196,7 @@ class BspModuleDetailsToModuleTransformerTest {
       dependencySources = listOf(dependencySourceItem2),
       type = "JAVA_MODULE",
       javacOptions = javacOptionsItem2,
-      pythonOptions = null
+      pythonOptions = null,
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)

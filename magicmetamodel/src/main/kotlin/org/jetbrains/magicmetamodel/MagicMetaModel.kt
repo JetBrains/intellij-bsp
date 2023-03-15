@@ -28,7 +28,17 @@ public data class ProjectDetails(
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,
   val pythonOptions: List<PythonOptionsItem>,
-)
+) {
+  public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
+    targetsId + old.targetsId,
+    targets + old.targets,
+    sources + old.sources,
+    resources + old.resources,
+    dependenciesSources + old.dependenciesSources,
+    javacOptions + old.javacOptions,
+    pythonOptions + old.pythonOptions,
+  )
+}
 
 /**
  * Contains information about loaded target and not loaded targets for given document.

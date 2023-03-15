@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -50,14 +49,7 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
 
     // then
     val virtualSourceDir = sourceDir.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedContentRootEntity = ExpectedContentRootEntity(
-      url = virtualSourceDir,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
 
-    // todo - is sourceRoot for python correct?
     val expectedPythonSourceRootEntity = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
@@ -71,8 +63,8 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
-    // todo
-    returnedPythonSourceRootEntity.contentRoot shouldBeEqual expectedContentRootEntity
+
+    returnedPythonSourceRootEntity shouldBeEqual expectedPythonSourceRootEntity
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedPythonSourceRootEntity)
   }
 
@@ -108,12 +100,6 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
 
     // then
     val virtualSourceDir1 = sourceDir1.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedContentRootEntity1 = ExpectedContentRootEntity(
-      url = virtualSourceDir1,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
 
     val expectedPythonSourceRootEntity1 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
@@ -130,12 +116,6 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
     )
 
     val virtualSourceDir2 = sourceDir2.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedContentRootEntity2 = ExpectedContentRootEntity(
-      url = virtualSourceDir2,
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-      excludedUrls = emptyList(),
-    )
 
     val expectedPythonSourceRootEntity2 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
@@ -151,11 +131,9 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
       parentModuleEntity = parentModuleEntity,
     )
 
-    val expectedPythonContentRootEntities = listOf(expectedContentRootEntity1, expectedContentRootEntity2)
     val expectedPythonSourceRootEntities = listOf(expectedPythonSourceRootEntity1, expectedPythonSourceRootEntity2)
 
-    // TODO - making separate expected Content and Source RootEntities, change?
-    returnedPythonSourceRootEntities.map { it.contentRoot } shouldContainExactlyInAnyOrder expectedPythonContentRootEntities
+    returnedPythonSourceRootEntities shouldContainExactlyInAnyOrder expectedPythonSourceRootEntities
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedPythonSourceRootEntities
   }
 }

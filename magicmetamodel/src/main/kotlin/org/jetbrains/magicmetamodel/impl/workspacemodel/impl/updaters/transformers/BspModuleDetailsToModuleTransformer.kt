@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.*
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 
 internal data class BspModuleDetails(
@@ -29,6 +30,9 @@ internal object BspModuleDetailsToModuleTransformer :
         .transform(inputEntity.dependencySources.map {
           DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
         }),
+      capabilities = inputEntity.target.capabilities.let {
+        ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
+      }
     )
   }
 }
