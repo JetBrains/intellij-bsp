@@ -11,6 +11,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
 import java.net.URI
+import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
 internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTransformer<ModuleDetails, PythonModule> {
@@ -55,8 +56,8 @@ internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTra
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
     return if (pythonBuildTarget != null) PythonSdkInfo(
       version = pythonBuildTarget.version,
-      // TODO: check if the URI.create().toPath() is a valid way to do that
-      interpreter = URI.create(pythonBuildTarget.interpreter).toPath()
+      // TODO: check if the Path(...) is a valid way to do that
+      interpreter = Path(pythonBuildTarget.interpreter)
     )
     else null
   }
