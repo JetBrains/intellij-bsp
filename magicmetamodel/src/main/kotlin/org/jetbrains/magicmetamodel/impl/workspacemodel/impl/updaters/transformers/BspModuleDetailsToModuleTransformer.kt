@@ -1,6 +1,10 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module

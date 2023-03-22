@@ -213,11 +213,11 @@ public fun calculateProjectDetailsWithCapabilities(
     val dependencySourcesFuture =
       queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
-    val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
+    val javaTargetsIds = calculateTargetsIds(workspaceBuildTargetsResult, "java")
     val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
-    val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonTargetsIds = calculateTargetsIds(workspaceBuildTargetsResult, "python")
+    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -281,8 +281,8 @@ private fun queryForDependencySources(
   else null
 }
 
-private fun calculateJavaTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
-  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("java") }.map { it.id }
+private fun calculateTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult, expectedId: String): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains(expectedId) }.map { it.id }
 
 private fun queryForJavacOptions(
   server: BspServer,
@@ -293,9 +293,6 @@ private fun queryForJavacOptions(
     server.buildTargetJavacOptions(javacOptionsParams)
   } else null
 }
-
-private fun calculatePythonTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
-  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("python") }.map { it.id }
 
 private fun queryForPythonOptions(
   server: BspServer,

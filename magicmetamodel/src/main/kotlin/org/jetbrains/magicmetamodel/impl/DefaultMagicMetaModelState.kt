@@ -170,10 +170,10 @@ public class DependencySourcesItemState(
 }
 
 public fun DependencySourcesItem.toState(): DependencySourcesItemState =
-    DependencySourcesItemState(
-      target = target.toState(),
-      sources = sources,
-    )
+  DependencySourcesItemState(
+    target = target.toState(),
+    sources = sources,
+  )
 
 
 public class JavacOptionsItemState(
@@ -189,11 +189,11 @@ public class JavacOptionsItemState(
 
 public fun JavacOptionsItem.toState(): JavacOptionsItemState =
   JavacOptionsItemState(
-      target = target.toState(),
-      options= options,
-      classpath = classpath,
+    target = target.toState(),
+    options = options,
+    classpath = classpath,
     classDirectory = classDirectory,
-    )
+  )
 
 public class PythonOptionsItemState(
   public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),

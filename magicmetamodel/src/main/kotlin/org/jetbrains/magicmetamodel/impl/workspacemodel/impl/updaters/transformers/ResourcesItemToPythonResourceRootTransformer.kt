@@ -8,11 +8,10 @@ internal object ResourcesItemToPythonResourceRootTransformer :
 
   override fun transform(inputEntity: ResourcesItem): List<PythonResourceRoot> =
     inputEntity.resources
-      .map(this::toPythonResourceRoot)
+      .map {
+        PythonResourceRoot(
+          resourcePath = RawUriToDirectoryPathTransformer.transform(it)
+        )
+      }
       .distinct()
-
-  private fun toPythonResourceRoot(resourcePath: String) =
-    PythonResourceRoot(
-      resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath)
-    )
 }

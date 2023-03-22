@@ -5,7 +5,7 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import java.nio.file.Path;
+import java.nio.file.Path
 
 internal data class PythonSdkInfo(val version: String, val interpreter: Path)
 
@@ -28,8 +28,6 @@ internal class PythonModuleWithSourcesUpdater(
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
-
-    // addPythonModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
 
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)

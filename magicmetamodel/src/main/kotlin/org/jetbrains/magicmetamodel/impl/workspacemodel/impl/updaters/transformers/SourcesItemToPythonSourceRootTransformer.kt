@@ -1,10 +1,8 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.util.io.isAncestor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
 
 internal object SourcesItemToPythonSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, PythonSourceRoot> {
@@ -26,22 +24,16 @@ internal object SourcesItemToPythonSourceRootTransformer :
 
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
-      .map { toPythonSourceRoot(it, rootType, inputEntity.buildTarget.id) }
+      .map {
+        PythonSourceRoot(
+          sourcePath = it.sourcePath,
+          generated = it.generated,
+          rootType = rootType,
+          targetId = inputEntity.buildTarget.id
+        )
+      }
   }
 
   private fun inferRootType(buildTarget: BuildTarget): String =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
-
-  private fun toPythonSourceRoot(
-    sourceRoot: SourceRoot,
-    rootType: String,
-    targetId: BuildTargetIdentifier
-  ): PythonSourceRoot {
-    return PythonSourceRoot(
-      sourcePath = sourceRoot.sourcePath,
-      generated = sourceRoot.generated,
-      rootType = rootType,
-      targetId = targetId,
-    )
-  }
 }
