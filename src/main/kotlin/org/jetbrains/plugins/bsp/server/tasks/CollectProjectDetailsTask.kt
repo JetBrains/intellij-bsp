@@ -217,7 +217,7 @@ public fun calculateProjectDetailsWithCapabilities(
     val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
