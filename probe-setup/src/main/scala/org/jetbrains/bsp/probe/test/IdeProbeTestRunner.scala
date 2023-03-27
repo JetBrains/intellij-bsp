@@ -34,7 +34,8 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     val configurationInput = importDialog.findWithTimeout(query.className("JBTextArea"), 1.second)
     configuration.foreach(configurationInput.setText(_))
     importDialog.findWithTimeout(query.button("text" -> "Create"), 1.second).doClick()
-    probe.await(robot.extendWaitLogic(WaitLogic.Default))
+    val longWaitLogic = WaitLogic.emptyNamedBackgroundTasks(atMost = 1.hour)
+    probe.await(robot.extendWaitLogic(longWaitLogic))
     (probe, robot)
   }
 
