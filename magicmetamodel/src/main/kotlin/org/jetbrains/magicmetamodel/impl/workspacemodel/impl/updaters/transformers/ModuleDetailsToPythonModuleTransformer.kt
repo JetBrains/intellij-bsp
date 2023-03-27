@@ -28,7 +28,7 @@ internal object ModuleDetailsToPythonModuleTransformer : WorkspaceModelEntityTra
         )
       }),
       resourceRoots = ResourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
-      libraries = emptyList(),
+      libraries = DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity.dependenciesSources),
       sdkInfo = toSdkInfo(inputEntity)
     )
 
