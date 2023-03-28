@@ -49,6 +49,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       dependencySources = inputEntity.dependenciesSources,
       type = type,
       javacOptions = inputEntity.javacOptions,
+      pythonOptions = inputEntity.pythonOptions,
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)

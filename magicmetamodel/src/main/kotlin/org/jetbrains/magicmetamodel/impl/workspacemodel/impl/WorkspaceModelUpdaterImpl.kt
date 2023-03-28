@@ -40,7 +40,7 @@ internal class WorkspaceModelUpdaterImpl(
     // TODO for now we are supporting only java modules
     val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
     javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
-    pythonModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
+//   TODO  pythonModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
     val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
     val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
     javaModuleUpdater.addEntity(javaModule)

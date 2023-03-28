@@ -52,13 +52,8 @@ internal class ModuleDetailsToPythonModuleTransformer(
       pythonOptions = inputEntity.pythonOptions,
     )
 
-    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
-  }
-
-  private fun Module.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): Module {
-    val dummyJavaModuleDependencies =
-      calculateDummyJavaModuleNames(inputEntity, projectBasePath).map { ModuleDependency(it) }
-    return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
+    // TODO add similar hack as in java
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
