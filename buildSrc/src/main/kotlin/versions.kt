@@ -5,7 +5,7 @@ import org.gradle.kotlin.dsl.provideDelegate
 object Plugin {
   const val group = "org.jetbrains"
   const val name = "intellij-bsp"
-  const val version = "0.0.1-alpha.3"
+  const val version = "0.1.0"
 
 // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
 // for insight into build numbers and IntelliJ Platform versions.
@@ -19,7 +19,7 @@ const val pluginVerifierIdeVersions = "2023.1"
 
 object Platform {
   const val type = "IC"
-  const val version = "231.7665.28-EAP-SNAPSHOT"
+  const val version = "231.8109.2-EAP-SNAPSHOT"
   const val downloadSources = true
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
@@ -28,4 +28,4 @@ object Platform {
 }
 
 const val javaVersion = "17"
-const val kotlinVersion = "1.7"
+const val kotlinVersion = "1.8"

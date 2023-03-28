@@ -24,7 +24,7 @@ internal class JavaModuleWithSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
+    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
@@ -42,7 +42,7 @@ internal class JavaModuleWithSourcesUpdater(
     return moduleEntity
   }
 
-  private fun calculateModuleDefaultDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
+  private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     if (entityToAdd.jvmJdkInfo != null) {
       defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkInfo.javaVersion, "JavaSDK")
     }
@@ -92,8 +92,11 @@ internal class JavaModuleUpdater(
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity =
-    when (Pair(entityToAdd.sourceRoots.size, entityToAdd.resourceRoots.size)) {
-      Pair(0, 0) -> javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
+    when (Triple(entityToAdd.sourceRoots.size, entityToAdd.resourceRoots.size, entityToAdd.containsJavaKotlinLanguageIds())) {
+      Triple(0, 0, true) -> javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
       else -> javaModuleWithSourcesUpdater.addEntity(entityToAdd)
     }
+
+  private fun JavaModule.containsJavaKotlinLanguageIds() =
+    this.module.languageIds.any { it == "kotlin" || it == "java" }
 }
