@@ -3,11 +3,10 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.openapi.wm.ToolWindowAnchor
-import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.impl.welcomeScreen.WelcomeFrame
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -20,7 +19,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
+import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -39,24 +38,15 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private fun doRunActivity(project: Project) {
-    addBspWidgetsOnUiThread(project)
+    RunConfigurationProducersDisabler(project)
 
     val bspSyncConsoleService = BspConsoleService.getInstance(project)
     bspSyncConsoleService.init()
 
-    if (project.isNewProject()) {
-      suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
-    }
-  }
+    val isBspConnectionKnown = BspConnectionService.getInstance(project).value != null
 
-  private fun addBspWidgetsOnUiThread(project: Project) {
-    AppUIExecutor.onUiThread().execute {
-      ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
-        icon = BspPluginIcons.bsp
-        canCloseContent = false
-        anchor = ToolWindowAnchor.RIGHT
-        contentFactory = BspAllTargetsWidgetFactory()
-      }
+    if (project.isNewProject() || !isBspConnectionKnown) {
+      suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
     }
   }
 
@@ -86,6 +76,10 @@ public class BspStartupActivity : ProjectActivity {
 
       collectProject(project)
     }
+    else {
+      ProjectManager.getInstance().closeAndDispose(project)
+      WelcomeFrame.showIfNoProjectOpened()
+    }
   }
 
   private fun initializeNewConnectionFromGenerator(
@@ -96,14 +90,14 @@ public class BspStartupActivity : ProjectActivity {
     val bspGeneratorConnection = BspGeneratorConnection(project, generator)
 
     val bspConnectionService = BspConnectionService.getInstance(project)
-    bspConnectionService.init(bspGeneratorConnection)
+    bspConnectionService.value = bspGeneratorConnection
   }
 
   private fun initializeConnectionFromFile(project: Project, connectionFileInfo: ConnectionFile) {
     val bspFileConnection = BspFileConnection(project, connectionFileInfo.locatedBspConnectionDetails)
 
     val bspConnectionService = BspConnectionService.getInstance(project)
-    bspConnectionService.init(bspFileConnection)
+    bspConnectionService.value = bspFileConnection
   }
 
   private fun collectProject(project: Project) {
@@ -120,7 +114,7 @@ public class BspStartupActivity : ProjectActivity {
           message = "Importing...",
           cancelAction = { collectProjectDetailsTask.cancelExecution() }
         )
-        BspConnectionService.getInstance(project).value.connect("bsp-import")
+        BspConnectionService.getInstance(project).value!!.connect("bsp-import")
       },
       afterOnSuccess = { bspSyncConsole.finishTask("bsp-import", "Done!") }
     )

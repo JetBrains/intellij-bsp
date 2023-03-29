@@ -4,7 +4,6 @@ import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
@@ -25,7 +24,7 @@ public abstract class ImportProjectWizardStep : StepAdapter() {
 }
 
 public class ImportProjectWizard(
-  private val project: Project,
+  project: Project,
   private val bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider
 ) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
 
@@ -39,8 +38,11 @@ public class ImportProjectWizard(
       this::updateWizardButtonsToGeneratorSelection
     )
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
-    if (firstStep.canBeSkipped()) addGeneratorSteps()
-    else addStep(firstStep)
+
+    addStep(firstStep)
+    if (firstStep.canBeSkipped()) {
+      proceedToNextStep()
+    }
 
     init()
     updateWizardButtonsToGeneratorSelection()
@@ -66,10 +68,14 @@ public class ImportProjectWizard(
     )
   }
 
-  override fun doCancelAction() {
-    super.doCancelAction()
-
-    ProjectManager.getInstance().closeAndDispose(project)
+  override fun createSouthPanel(): JComponent {
+    val emptyStep = object : ImportProjectWizardStep() {
+      override val panel: DialogPanel = DialogPanel()
+    }
+    mySteps.add(emptyStep)
+    val panel = super.createSouthPanel()
+    mySteps.remove(emptyStep)
+    return panel
   }
 
   override fun getHelpID(): String =
@@ -80,5 +86,15 @@ public class ImportProjectWizard(
     super.proceedToNextStep()
   }
 
-  private fun addGeneratorSteps(): Unit = calculateGeneratorSteps().forEach(::addStep)
+  private fun addGeneratorSteps() {
+    removeAllFollowingSteps()
+    calculateGeneratorSteps().forEach(::addStep)
+  }
+
+  private fun removeAllFollowingSteps() {
+    val stepsToRetain = currentStep + 1
+    while (mySteps.size > stepsToRetain) {
+      mySteps.removeAt(stepsToRetain)
+    }
+  }
 }

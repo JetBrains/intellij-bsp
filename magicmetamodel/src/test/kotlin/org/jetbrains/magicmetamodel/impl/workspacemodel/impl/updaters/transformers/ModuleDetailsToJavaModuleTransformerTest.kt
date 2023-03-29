@@ -11,15 +11,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaResourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -31,13 +22,15 @@ import kotlin.io.path.name
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest {
 
+  val projectBasePath = Path("")
+
   @Test
   fun `should return no java modules roots for no modules details`() {
     // given
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val javaModules = ModuleDetailsToJavaModuleTransformer.transform(emptyModulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(emptyModulesDetails)
 
     // then
     javaModules shouldBe emptyList()
@@ -46,7 +39,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
   @Test
   fun `should return single java module for single module details`() {
     // given
-    val projectRoot = createTempDirectory("project")
+    val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
 
     val javaHome = "/fake/path/to/local_jdk"
@@ -98,7 +91,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
-    val resourceFilePath = createTempFile("resource", "File.txt")
+    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
     val resourcesItem = ResourcesItem(
       buildTargetId,
       listOf(resourceFilePath.toUri().toString())
@@ -136,20 +130,23 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     // when
-    val javaModule = ModuleDetailsToJavaModuleTransformer.transform(moduleDetails)
+    val javaModule = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = Module(
       name = "module1",
       type = "JAVA_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
+      modulesDependencies = listOf(
+        ModuleDependency("module2"),
+        ModuleDependency("module3"),
+        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath))),
       librariesDependencies = listOf(
         LibraryDependency("BSP: test1-1.0.0"),
         LibraryDependency("BSP: test2-2.0.0"),
       )
     )
 
-    val expectedBaseDirContentRoot = ContentRoot(projectRoot)
+    val expectedBaseDirContentRoot = ContentRoot(projectRoot.toAbsolutePath())
 
     val expectedJavaSourceRoot1 = JavaSourceRoot(
       sourcePath = file1APath,
@@ -204,10 +201,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
   @Test
   fun `should return multiple java module for multiple module details`() {
     // given
-    val projectRoot = createTempDirectory("project")
-    projectRoot.toFile().deleteOnExit()
 
-    val module1Root = createTempDirectory("module1")
+    val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
     module1Root.toFile().deleteOnExit()
 
     val buildTargetId1 = BuildTargetIdentifier("module1")
@@ -250,8 +245,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
-    val resourceFilePath11 = createTempFile("resource", "File1.txt")
-    val resourceFilePath12 = createTempFile("resource", "File2.txt")
+    val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
+    resourceFilePath11.toFile().deleteOnExit()
+    val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
+    resourceFilePath12.toFile().deleteOnExit()
     val resourcesItem1 = ResourcesItem(
       buildTargetId1,
       listOf(
@@ -291,7 +288,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       pythonOptions = null,
     )
 
-    val module2Root = createTempDirectory("module2")
+    val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
     module2Root.toFile().deleteOnExit()
 
     val buildTargetId2 = BuildTargetIdentifier("module2")
@@ -322,7 +319,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
-    val resourceDirPath21 = Files.createTempDirectory("resource")
+    val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 = ResourcesItem(
       buildTargetId2,
       listOf(resourceDirPath21.toUri().toString())
@@ -356,13 +353,16 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val javaModules = ModuleDetailsToJavaModuleTransformer.transform(modulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = Module(
       name = "module1",
       type = "JAVA_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
+      modulesDependencies = listOf(
+        ModuleDependency("module2"),
+        ModuleDependency("module3"),
+        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath))),
       librariesDependencies = listOf(
         LibraryDependency("BSP: test1-1.0.0"),
         LibraryDependency("BSP: test2-2.0.0"),
@@ -421,7 +421,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val expectedModule2 = Module(
       name = "module2",
       type = "JAVA_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module3")),
+      modulesDependencies = listOf(
+        ModuleDependency("module3"),
+        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))),
       librariesDependencies = listOf(LibraryDependency("BSP: test1-1.0.0")),
     )
 

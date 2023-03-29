@@ -20,7 +20,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleWithSourcesUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleWithoutSourcesUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaResourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceEntityUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
@@ -81,7 +80,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
 
       // when
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
@@ -127,7 +126,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
 
       // when
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
@@ -309,7 +308,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
       // when
 
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1, javaModule2))
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
@@ -357,9 +356,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities(true, true, true, true)
-      ).apply {
-        baseDirectory = baseDirContentRoot3.url.toString()
-      }
+      )
 
       val expectedSourcesItem1 = SourcesItem(
         expectedBuildTargetId1,

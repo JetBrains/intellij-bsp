@@ -7,6 +7,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
@@ -33,11 +34,11 @@ private class ListsUpdater(
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     loadedTargetsPanel =
       BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllLoadedTargets())
-    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it) }
+    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
 
     notLoadedTargetsPanel =
       BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllNotLoadedTargets())
-    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it) }
+    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
   }
 
@@ -55,7 +56,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
     val bspConnection = BspConnectionService.getInstance(project).value
-    val listsUpdater = ListsUpdater(project, bspConnection.buildToolId, this::showCurrentPanel)
+    val listsUpdater = ListsUpdater(project, bspConnection!!.buildToolId, this::showCurrentPanel)
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
@@ -77,16 +78,18 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     actionGroup.addSeparator()
 
-    actionGroup.add(object : AnAction({ notLoadedTargetsActionName }, BspPluginIcons.notLoadedTarget) {
-      override fun actionPerformed(e: AnActionEvent) {
-        showNotLoadedTargets(listsUpdater)
-      }
-    })
-    actionGroup.add(object : AnAction({ loadedTargetsActionName }, BspPluginIcons.loadedTarget) {
-      override fun actionPerformed(e: AnActionEvent) {
-        showLoadedTargets(listsUpdater)
-      }
-    })
+    actionGroup.add(StickyTargetAction(
+      hintText = notLoadedTargetsActionName,
+      icon = BspPluginIcons.notLoadedTarget,
+      onPerform = { listsUpdater.showNotLoadedTargets() },
+      selectionProvider = { panelShown == PanelShown.NOTLOADED }
+    ))
+    actionGroup.add(StickyTargetAction(
+      hintText = loadedTargetsActionName,
+      icon = BspPluginIcons.loadedTarget,
+      onPerform = { listsUpdater.showLoadedTargets() },
+      selectionProvider = { panelShown == PanelShown.LOADED }
+    ))
 
     val actionToolbar = actionManager.createActionToolbar("Bsp Toolbar", actionGroup, true)
     actionToolbar.targetComponent = this.component
@@ -94,14 +97,14 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     this.toolbar = actionToolbar.component
   }
 
-  private fun showLoadedTargets(listsUpdater: ListsUpdater) {
+  private fun ListsUpdater.showLoadedTargets() {
     panelShown = PanelShown.LOADED
-    showCurrentPanel(listsUpdater)
+    showCurrentPanel(this)
   }
 
-  private fun showNotLoadedTargets(listsUpdater: ListsUpdater) {
+  private fun ListsUpdater.showNotLoadedTargets() {
     panelShown = PanelShown.NOTLOADED
-    showCurrentPanel(listsUpdater)
+    showCurrentPanel(this)
   }
 
   private fun showCurrentPanel(listsUpdater: ListsUpdater) {

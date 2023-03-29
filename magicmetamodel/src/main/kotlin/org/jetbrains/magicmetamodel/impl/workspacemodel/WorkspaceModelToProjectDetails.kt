@@ -18,6 +18,7 @@ import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootPropertiesEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.LibraryId
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRootTypeId
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
@@ -50,12 +51,13 @@ public object WorkspaceModelToProjectDetailsTransformer {
       sourceRoots: Sequence<SourceRootEntity>,
       libraries: Sequence<LibraryEntity>,
     ): ProjectDetails {
+      val librariesIndex = libraries.associateBy { it.symbolicId }
       val modulesWithSources = sourceRoots.groupBy { it.contentRoot.module }
       val modulesWithoutSources =
         loadedModules.mapNotNull { it.takeUnless(modulesWithSources::contains)?.to(emptyList<SourceRootEntity>()) }
       val allModules = modulesWithSources + modulesWithoutSources
       val modulesParsingData = allModules.map {
-        it.toModuleParsingData(libraries)
+        it.toModuleParsingData(librariesIndex)
       }
       val targets = modulesParsingData.map(ModuleParsingData::target)
       return ProjectDetails(
@@ -70,7 +72,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
     }
 
     private fun Map.Entry<ModuleEntity, List<SourceRootEntity>>.toModuleParsingData(
-      libraries: Sequence<LibraryEntity>,
+      libraries: Map<LibraryId, LibraryEntity>,
     ): ModuleParsingData {
       val (module, sources) = this
       val target = module.toBuildTarget()
@@ -110,11 +112,9 @@ public object WorkspaceModelToProjectDetailsTransformer {
 
   private fun SourceRootEntity.toResourcePaths() = javaResourceRoots.map { it.toResourcePath() }
 
-  private fun Sequence<LibraryEntity>.getLibrariesForModule(module: ModuleEntity): Sequence<LibraryEntity> {
-    val moduleLibraryIds =
-      module.dependencies.filterIsInstance<ModuleDependencyItem.Exportable.LibraryDependency>().map { it.library }
-    return filter { moduleLibraryIds.contains(it.symbolicId) }
-  }
+  private fun Map<LibraryId, LibraryEntity>.getLibrariesForModule(module: ModuleEntity): Sequence<LibraryEntity> =
+    module.dependencies.filterIsInstance<ModuleDependencyItem.Exportable.LibraryDependency>()
+      .mapNotNull { this[it.library] }.asSequence()
 
   private fun Sequence<LibraryEntity>.filterRoots(type: LibraryRootTypeId) =
     flatMap { lib ->
@@ -135,6 +135,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
 
   private fun ModuleEntity.toBuildTarget(): BuildTarget {
     val sdkDependency = this.dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()
+    // TODO prob we can remove it, but we dont want to do it a few hours before the release
     val baseDirContentRoot = contentRoots.firstOrNull { it.sourceRoots.isEmpty() }
     val capabilities = ModuleCapabilities(customImlData?.customModuleOptions.orEmpty())
     val modulesDeps = dependencies.toBuildTargetIdentifiers()
