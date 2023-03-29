@@ -29,13 +29,15 @@ import kotlin.io.path.*
 @DisplayName("ModuleDetailsToPythonModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToPythonModuleTransformerTest {
 
+  val projectBasePath = Path("")
+
   @Test
   fun `should return no python modules roots for no modules details`() {
     // given
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer.transform(emptyModulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(null, projectBasePath).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -125,7 +127,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
 
     // when
-    val pythonModule = ModuleDetailsToPythonModuleTransformer.transform(moduleDetails)
+    val pythonModule = ModuleDetailsToPythonModuleTransformer(null, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = Module(
@@ -315,7 +317,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer.transform(modulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(null, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = Module(

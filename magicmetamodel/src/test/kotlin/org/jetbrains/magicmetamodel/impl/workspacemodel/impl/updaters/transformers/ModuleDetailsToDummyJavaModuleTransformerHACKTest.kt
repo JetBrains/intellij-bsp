@@ -192,6 +192,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
+      pythonOptions = null
     )
 
     // when
