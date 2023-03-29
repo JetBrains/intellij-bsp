@@ -15,9 +15,9 @@ import kotlin.io.path.toPath
 internal class ModuleDetailsToJavaModuleTransformer(
   moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
   private val projectBasePath: Path,
-): WorkspaceModelEntityTransformer<ModuleDetails, JavaModule> {
+): ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
 
-  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
+  override val type = "JAVA_MODULE"
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(projectBasePath)
 
@@ -42,7 +42,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       jvmJdkInfo = toJdkInfo(inputEntity)
     )
 
-  private fun toModule(inputEntity: ModuleDetails): Module {
+  override fun toModule(inputEntity: ModuleDetails): Module {
     val bspModuleDetails = BspModuleDetails(
       target = inputEntity.target,
       allTargetsIds = inputEntity.allTargetsIds,
@@ -60,12 +60,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 
-  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
-    ContentRoot(
-      // TODO what if null?
-      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath()
-    )
-
   private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
     inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
 
@@ -74,11 +68,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
     return if (jvmBuildTarget != null) JvmJdkInfo(javaVersion = jvmBuildTarget.javaVersion, javaHome = jvmBuildTarget.javaHome)
     else null
   }
-
-  companion object {
-    private const val type = "JAVA_MODULE"
-  }
-
 }
 
 public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =

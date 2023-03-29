@@ -18,5 +18,3 @@ internal class ResourcesItemToPythonResourceRootTransformer(private val projectB
       resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath)
     )
 }
-
-internal fun Path.isPathInProjectBasePath(projectBasePath: Path) = this.toAbsolutePath().startsWith(projectBasePath.toAbsolutePath())
