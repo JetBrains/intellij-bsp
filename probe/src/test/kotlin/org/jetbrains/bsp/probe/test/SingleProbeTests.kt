@@ -14,7 +14,7 @@ class SingleProbeTests {
   }
 
   @Test
-  fun `open fresh instance of bazel-bsp project and check imported targets`() {
+  fun openFreshInstanceOfBazelBspProjectAndCheckImportedTargets() {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/JetBrains/bazel-bsp.git",
@@ -36,7 +36,7 @@ class SingleProbeTests {
   }
 
   @Test
-  fun `open fresh instance of bazel project and check build console output for errors`() {
+  fun openFreshInstanceOfBazelProjectAndCheckBuildConsoleOutputForErrors() {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/bazelbuild/bazel.git", "6.0.0"
