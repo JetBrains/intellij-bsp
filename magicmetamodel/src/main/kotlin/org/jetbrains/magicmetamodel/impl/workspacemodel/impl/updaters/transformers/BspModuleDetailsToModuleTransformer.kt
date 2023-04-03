@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
+import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 
 internal data class BspModuleDetails(
@@ -16,7 +17,7 @@ internal data class BspModuleDetails(
   val type: String
 )
 
-internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ((BuildTargetIdentifier) -> String)?) :
+internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ModuleNameProvider) :
   WorkspaceModelEntityTransformer<BspModuleDetails, Module> {
 
   override fun transform(inputEntity: BspModuleDetails): Module {
@@ -24,7 +25,7 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
       BuildTargetToModuleDependencyTransformer(inputEntity.allTargetsIds, moduleNameProvider)
 
     return Module(
-      name = moduleNameProvider?.let { it(inputEntity.target.id) } ?: inputEntity.target.id.uri,
+      name = moduleNameProvider(inputEntity.target.id),
       type = inputEntity.type,
       modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
       librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer
@@ -54,7 +55,7 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 
 internal class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: List<BuildTargetIdentifier>,
-  private val moduleNameProvider: ((BuildTargetIdentifier) -> String)?
+  private val moduleNameProvider: ModuleNameProvider,
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
 
   override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
@@ -64,6 +65,6 @@ internal class BuildTargetToModuleDependencyTransformer(
 
   private fun toModuleDependency(targetId: BuildTargetIdentifier): ModuleDependency =
     ModuleDependency(
-      moduleName = moduleNameProvider?.let { it(targetId) } ?: targetId.uri,
+      moduleName = moduleNameProvider(targetId),
     )
 }
