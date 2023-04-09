@@ -10,9 +10,8 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
 
 internal class ModuleDetailsToPythonModuleTransformer(
   moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
@@ -57,8 +56,7 @@ internal class ModuleDetailsToPythonModuleTransformer(
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
     return if (pythonBuildTarget != null) PythonSdkInfo(
       version = pythonBuildTarget.version,
-      // TODO: check if the URI.create().toPath() is a valid way to do that
-      interpreter = URI.create(pythonBuildTarget.interpreter).toPath()
+      interpreter = Path(pythonBuildTarget.interpreter)
     )
     else null
   }

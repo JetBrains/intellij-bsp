@@ -46,7 +46,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
   @Test
   fun `should return single python module for single module details`() {
     // given
-    val projectRoot = createTempDirectory("project")
+    val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
 
     val version = "3"
@@ -97,7 +97,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
-    val resourceFilePath = createTempFile("resource", "File.txt")
+    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
     val resourcesItem = ResourcesItem(
       buildTargetId,
       listOf(resourceFilePath.toUri().toString()),
@@ -180,7 +181,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val projectRoot = createTempDirectory("project")
     projectRoot.toFile().deleteOnExit()
 
-    val module1Root = createTempDirectory("module1")
+    val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
     module1Root.toFile().deleteOnExit()
 
     val buildTargetId1 = BuildTargetIdentifier("module1")
@@ -222,8 +223,10 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
     sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
-    val resourceFilePath11 = createTempFile("resource", "File1.txt")
-    val resourceFilePath12 = createTempFile("resource", "File2.txt")
+    val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
+    resourceFilePath11.toFile().deleteOnExit()
+    val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
+    resourceFilePath12.toFile().deleteOnExit()
     val resourcesItem1 = ResourcesItem(
       buildTargetId1,
       listOf(
@@ -255,7 +258,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       pythonOptions = target1PythonOptionsItem,
     )
 
-    val module2Root = createTempDirectory("module2")
+    val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
     module2Root.toFile().deleteOnExit()
 
     val buildTargetId2 = BuildTargetIdentifier("module2")
@@ -285,7 +288,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
     sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
-    val resourceDirPath21 = Files.createTempDirectory("resource")
+    val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 = ResourcesItem(
       buildTargetId2,
       listOf(resourceDirPath21.toUri().toString())
