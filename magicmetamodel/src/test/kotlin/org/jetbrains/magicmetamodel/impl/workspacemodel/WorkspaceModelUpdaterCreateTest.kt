@@ -20,7 +20,8 @@ class WorkspaceModelUpdaterCreateTest : WorkspaceModelBaseTest() {
         workspaceEntityStorageBuilder,
         virtualFileUrlManager,
         projectBasePath,
-        DefaultModuleNameProvider
+        DefaultModuleNameProvider,
+        pythonHelpersPath
       )
 
     // then

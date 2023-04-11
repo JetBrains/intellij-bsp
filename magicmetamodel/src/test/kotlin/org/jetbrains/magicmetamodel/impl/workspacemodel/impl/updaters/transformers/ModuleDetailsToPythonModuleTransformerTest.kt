@@ -19,6 +19,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 import org.junit.jupiter.api.DisplayName
@@ -30,6 +31,7 @@ import kotlin.io.path.*
 class ModuleDetailsToPythonModuleTransformerTest {
 
   val projectBasePath = Path("")
+  val helpersModuleName = "intellij.python.helpers"
 
   @Test
   fun `should return no python modules roots for no modules details`() {
@@ -37,7 +39,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(null, projectBasePath).transform(emptyModulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -128,7 +130,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
 
     // when
-    val pythonModule = ModuleDetailsToPythonModuleTransformer(null, projectBasePath).transform(moduleDetails)
+    val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = Module(
@@ -176,7 +178,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
   }
 
   @Test
-  fun `should return multiple python module for multiple module details`() {
+  fun `should return multiple python modules for multiple module details`() {
     // given
     val projectRoot = createTempDirectory("project")
     projectRoot.toFile().deleteOnExit()
@@ -237,7 +239,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val dependencySourcesItem1 = DependencySourcesItem(
       buildTargetId1,
-      emptyList(),
+      listOf("externalSource1"),
     )
     val target1PythonOptionsItem = PythonOptionsItem(
       buildTargetId1,
@@ -320,13 +322,17 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(null, projectBasePath).transform(modulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = Module(
       name = "module1",
       type = "PYTHON_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
+      modulesDependencies = listOf(
+        ModuleDependency("module2"),
+        ModuleDependency("module3"),
+        ModuleDependency(helpersModuleName)
+      ),
       librariesDependencies = emptyList(),
     )
 

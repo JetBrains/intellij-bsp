@@ -22,6 +22,7 @@ public open class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
   protected val projectBasePath: Path = Path("")
+  protected val pythonHelpersPath: Path = Path("")
 
   @BeforeEach
   protected open fun beforeEach() {

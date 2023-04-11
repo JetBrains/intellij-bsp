@@ -8,6 +8,12 @@ import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
 import com.intellij.workspaceModel.storage.bridgeEntities.addLibraryEntity
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import javax.annotation.Untainted
+import kotlin.io.path.Path
 
 
 internal data class PythonLibrary(
@@ -20,13 +26,17 @@ internal class PythonLibraryEntityUpdater(
 ) : WorkspaceModelEntityWithParentModuleUpdater<PythonLibrary, LibraryEntity> {
 
   override fun addEntity(entityToAdd: PythonLibrary, parentModuleEntity: ModuleEntity): LibraryEntity {
-    // TODO copying to helper
+    val sourcesInHelpers = copyExternalSources(entityToAdd)
+
     return addPythonLibraryEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       parentModuleEntity,
-      entityToAdd
+      entityToAdd.copy(sources = sourcesInHelpers.toString())
     )
   }
+
+  private fun copyExternalSources(entityToAdd: PythonLibrary): Path? =
+    entityToAdd.sources?.let { Files.copy(Path(it), workspaceModelEntityUpdaterConfig.pythonHelpersPath, StandardCopyOption.REPLACE_EXISTING) }
 
   private fun addPythonLibraryEntity(
     builder: MutableEntityStorage,

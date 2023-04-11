@@ -23,12 +23,14 @@ internal class WorkspaceModelUpdaterImpl(
   val virtualFileUrlManager: VirtualFileUrlManager,
   moduleNameProvider: ModuleNameProvider,
   projectBasePath: Path,
+  pythonHelpersPath: Path,
 ) : WorkspaceModelUpdater {
 
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
-    projectBasePath = projectBasePath
+    projectBasePath = projectBasePath,
+    pythonHelpersPath = pythonHelpersPath
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
@@ -38,15 +40,13 @@ internal class WorkspaceModelUpdaterImpl(
   private val moduleDetailsToDummyJavaModulesTransformerHACK = ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
 
   override fun loadModule(moduleDetails: ModuleDetails) {
-    // TODO for now we are supporting only java modules
+    // TODO for now we are supporting only java and python modules
     val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
     javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
-//   TODO  pythonModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
     val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
     val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
     javaModuleUpdater.addEntity(javaModule)
     pythonModuleUpdater.addEntity(pythonModule)
-
   }
 
   private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))

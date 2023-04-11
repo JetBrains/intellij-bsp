@@ -50,7 +50,8 @@ internal interface WorkspaceModelUpdater {
       virtualFileUrlManager: VirtualFileUrlManager,
       projectBasePath: Path,
       moduleNameProvider: ModuleNameProvider,
+      pythonHelpersPath: Path,
     ): WorkspaceModelUpdater =
-      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, moduleNameProvider, projectBasePath)
+      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, moduleNameProvider, projectBasePath, pythonHelpersPath)
   }
 }

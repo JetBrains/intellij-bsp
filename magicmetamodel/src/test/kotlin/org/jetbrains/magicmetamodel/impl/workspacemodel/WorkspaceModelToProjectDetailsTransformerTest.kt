@@ -80,7 +80,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
 
       // when
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
@@ -126,7 +126,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
 
       // when
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
@@ -308,7 +308,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
       // when
 
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1, javaModule2))
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
@@ -417,7 +417,8 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         listOf(expectedSourcesItem1, expectedSourcesItem2),
         listOf(expectedResourceItem1, expectedResourceItem2),
         listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
-        listOf(expectedJavacSourceItem1, expectedJavacSourceItem2)
+        listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
+        emptyList()
       )
 
       projectDetails shouldBe expectedProjectDetails

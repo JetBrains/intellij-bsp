@@ -6,15 +6,17 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.PythonBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
 import java.nio.file.Path
 import kotlin.io.path.Path
 
 internal class ModuleDetailsToPythonModuleTransformer(
-  moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
+  moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
 ): ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
 
@@ -48,9 +50,15 @@ internal class ModuleDetailsToPythonModuleTransformer(
       pythonOptions = inputEntity.pythonOptions,
     )
 
-    // TODO add similar hack as in java
-    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).addHelpersDependency(inputEntity)
   }
+
+  private fun Module.addHelpersDependency(inputEntity: ModuleDetails): Module =
+    if (inputEntity.dependenciesSources.any { it.sources.isNotEmpty() })
+      this.copy(modulesDependencies = modulesDependencies + ModuleDependency("intellij.python.helpers"))
+    else
+      this
+
 
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)

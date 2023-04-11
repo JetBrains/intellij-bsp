@@ -24,7 +24,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
     libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 

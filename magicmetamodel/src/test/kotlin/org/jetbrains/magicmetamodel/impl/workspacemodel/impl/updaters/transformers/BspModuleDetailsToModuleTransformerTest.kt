@@ -153,7 +153,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = Module(
@@ -388,7 +388,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = Module(

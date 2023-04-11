@@ -29,8 +29,6 @@ internal class PythonModuleWithSourcesUpdater(
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    // addPythonModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
-
     val libraryEntityUpdater = PythonLibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
 
