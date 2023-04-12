@@ -47,7 +47,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target = BuildTarget(
       targetId,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target2"),
@@ -185,7 +185,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target1 = BuildTarget(
       target1Id,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target2"),
@@ -228,7 +228,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target2 = BuildTarget(
       target2Id,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target3"),
@@ -319,7 +319,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target1 = BuildTarget(
       target1Id,
       emptyList(),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("//target2"),
         BuildTargetIdentifier("//target3"),
@@ -356,7 +356,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target2 = BuildTarget(
       target2Id,
       emptyList(),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("//target3"),
       ),
@@ -431,7 +431,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target = BuildTarget(
       targetId,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       emptyList(),
       BuildTargetCapabilities()
     )

@@ -62,7 +62,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val buildTarget = BuildTarget(
       buildTargetId,
       listOf("library"),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -190,7 +190,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val buildTarget1 = BuildTarget(
       buildTargetId1,
       listOf("library"),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -239,7 +239,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val dependencySourcesItem1 = DependencySourcesItem(
       buildTargetId1,
-      listOf("externalSource1"),
+      listOf("file:///example/externalSource1.py"),
     )
     val target1PythonOptionsItem = PythonOptionsItem(
       buildTargetId1,
@@ -267,7 +267,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val buildTarget2 = BuildTarget(
       buildTargetId2,
       listOf("test"),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("module3"),
       ),
@@ -333,7 +333,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         ModuleDependency("module3"),
         ModuleDependency(helpersModuleName)
       ),
-      librariesDependencies = emptyList(),
+      librariesDependencies = listOf(LibraryDependency("BSP: externalSource1")),
     )
 
     val expectedBaseDirContentRoot1 = ContentRoot(module1Root)
@@ -366,7 +366,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       baseDirContentRoot = expectedBaseDirContentRoot1,
       sourceRoots = listOf(expectedPythonSourceRoot11, expectedPythonSourceRoot12, expectedPythonSourceRoot13),
       resourceRoots = listOf(expectedPythonResourceRoot11),
-      libraries = emptyList(),
+      libraries = listOf(PythonLibrary("BSP: externalSource1", dependencySourcesItem1.sources.first())),
       sdkInfo = null,
     )
 

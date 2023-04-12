@@ -55,7 +55,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget = BuildTarget(
       buildTargetId,
       listOf("library"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -213,7 +213,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget1 = BuildTarget(
       buildTargetId1,
       listOf("library"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -299,7 +299,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget2 = BuildTarget(
       buildTargetId2,
       listOf("test"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module3"),
         BuildTargetIdentifier("@maven//:lib1"),

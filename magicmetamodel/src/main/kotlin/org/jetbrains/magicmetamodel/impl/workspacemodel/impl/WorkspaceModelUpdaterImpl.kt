@@ -35,21 +35,28 @@ internal class WorkspaceModelUpdaterImpl(
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
-  private val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
-  private val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(moduleNameProvider, projectBasePath)
-  private val moduleDetailsToDummyJavaModulesTransformerHACK = ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
+  private val moduleDetailsToJavaModuleTransformer =
+    ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToPythonModuleTransformer =
+    ModuleDetailsToPythonModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToDummyJavaModulesTransformerHACK =
+    ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
 
   override fun loadModule(moduleDetails: ModuleDetails) {
     // TODO for now we are supporting only java and python modules
-    val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
-    javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
-    val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
-    val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
-    javaModuleUpdater.addEntity(javaModule)
-    pythonModuleUpdater.addEntity(pythonModule)
+    if (moduleDetails.target.languageIds.contains("java") || moduleDetails.target.languageIds.contains("scala") || moduleDetails.target.languageIds.contains("kotlin")) {
+      val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
+      javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
+      val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+      javaModuleUpdater.addEntity(javaModule)
+    } else if (moduleDetails.target.languageIds.contains("python")) {
+      val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+      pythonModuleUpdater.addEntity(pythonModule)
+    }
   }
 
-  private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))
+  private fun Module.isAlreadyAdded() =
+    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))
 
   override fun removeModule(module: ModuleName) {
     workspaceModuleRemover.removeEntity(module)
