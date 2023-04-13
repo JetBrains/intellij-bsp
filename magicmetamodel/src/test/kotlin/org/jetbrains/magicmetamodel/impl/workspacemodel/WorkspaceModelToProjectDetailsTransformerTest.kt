@@ -80,7 +80,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
 
       // when
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
@@ -126,7 +126,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
 
       // when
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
@@ -308,7 +308,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
       // when
 
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1, javaModule2))
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
@@ -321,9 +321,6 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
           loadedModules.asSequence(),
           sourceRoots.asSequence(),
           libraries.asSequence(),
-          listOf(module1, module2, module3).associate {
-            it.name to BuildTargetIdentifier(it.name)
-          }
         )
 
       // then
@@ -418,7 +415,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         listOf(expectedResourceItem1, expectedResourceItem2),
         listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
         listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
-        emptyList()
+        emptyList(),
       )
 
       projectDetails shouldBe expectedProjectDetails

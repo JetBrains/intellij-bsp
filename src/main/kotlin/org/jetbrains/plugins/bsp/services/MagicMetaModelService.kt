@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.services
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -7,10 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
-import com.jetbrains.python.PythonHelpersLocator
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
-import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
@@ -76,15 +75,13 @@ public class MagicMetaModelService(private val project: Project) :
     val projectProperties = ProjectPropertiesService.getInstance(project).value
     val projectBasePath = projectProperties.projectRootDir.toNioPath()
 
-    val pythonHelpersPath = PythonHelpersLocator.getHelpersRoot().toPath()
-
-    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath, pythonHelpersPath)
+    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
   }
 
   private fun obtainToolNameIfKnown(project: Project): String? =
     BspConnectionService.getInstance(project).value?.buildToolId
 
-  private fun createModuleNameProvider(toolName: String): ModuleNameProvider {
+  private fun createModuleNameProvider(toolName: String): (BuildTargetIdentifier) -> String {
     val targetClassifier =
       BspBuildTargetClassifierProvider(toolName, BspBuildTargetClassifierExtension.extensions())
     return {

@@ -6,7 +6,6 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 import java.net.URI
@@ -14,7 +13,7 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
-  moduleNameProvider: ModuleNameProvider,
+  moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
   private val projectBasePath: Path,
 ): ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
 

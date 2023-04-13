@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
@@ -83,19 +82,14 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
     bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId, "Generating BSP connection details...")
-
-    try {
-      val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
-        projectProperties.projectRootDir,
-        consoleOutputStream
-      )
-      // TODO
-      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)!!
-      fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
-      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details done!")
-    } catch (e: Exception) {
-      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details failed!", FailureResultImpl(e))
-    }
+    val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
+      projectProperties.projectRootDir,
+      consoleOutputStream
+    )
+    // TODO
+    val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)!!
+    fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
+    bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details done!")
   }
 
   public companion object {

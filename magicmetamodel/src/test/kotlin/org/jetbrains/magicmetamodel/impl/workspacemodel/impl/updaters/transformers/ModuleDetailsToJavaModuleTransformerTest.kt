@@ -9,7 +9,6 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 import org.junit.jupiter.api.DisplayName
@@ -31,8 +30,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val javaModules =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(emptyModulesDetails)
 
     // then
     javaModules shouldBe emptyList()
@@ -55,7 +53,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget = BuildTarget(
       buildTargetId,
       listOf("library"),
-      listOf("java"),
+      emptyList(),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -132,8 +130,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     // when
-    val javaModule =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+    val javaModule = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = Module(
@@ -142,8 +139,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath))
-      ),
+        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath))),
       librariesDependencies = listOf(
         LibraryDependency("BSP: test1-1.0.0"),
         LibraryDependency("BSP: test2-2.0.0"),
@@ -213,7 +209,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget1 = BuildTarget(
       buildTargetId1,
       listOf("library"),
-      listOf("java"),
+      emptyList(),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -299,7 +295,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget2 = BuildTarget(
       buildTargetId2,
       listOf("test"),
-      listOf("java"),
+      emptyList(),
       listOf(
         BuildTargetIdentifier("module3"),
         BuildTargetIdentifier("@maven//:lib1"),
@@ -357,8 +353,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val javaModules =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = Module(
@@ -367,8 +362,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath))
-      ),
+        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath))),
       librariesDependencies = listOf(
         LibraryDependency("BSP: test1-1.0.0"),
         LibraryDependency("BSP: test2-2.0.0"),
@@ -429,8 +423,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
         ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))
-      ),
+        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))),
       librariesDependencies = listOf(LibraryDependency("BSP: test1-1.0.0")),
     )
 

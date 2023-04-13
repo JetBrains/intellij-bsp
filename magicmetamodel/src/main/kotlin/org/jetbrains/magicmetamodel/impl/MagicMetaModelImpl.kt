@@ -79,24 +79,20 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
-    this.loadedTargetsStorage =
-      LoadedTargetsStorage(state.loadedTargetsStorageState)
 
     this.projectDetails = state.projectDetailsState.fromState() +
-      WorkspaceModelToProjectDetailsTransformer(
-        magicMetaModelProjectConfig.workspaceModel,
-        loadedTargetsStorage,
-        magicMetaModelProjectConfig.moduleNameProvider
-      )
+      WorkspaceModelToProjectDetailsTransformer(magicMetaModelProjectConfig.workspaceModel)
 
     this.targetsDetailsForDocumentProvider =
       TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
     this.overlappingTargetsGraph =
-      state.overlappingTargetsGraph.map { (key, value) ->
+      state.overlappingTargetsGraph.map { (key, value)  ->
         key.fromState() to value.map { it.fromState() }.toSet()
       }.toMap()
 
     this.targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    this.loadedTargetsStorage =
+      LoadedTargetsStorage(state.loadedTargetsStorageState)
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
@@ -113,9 +109,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
-      magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.pythonHelpersPath,
+      magicMetaModelProjectConfig.projectBasePath
     )
 
     ProgressManager.checkCanceled()
@@ -167,15 +162,14 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val loadedTargetsToRemove = targetsToRemove.filter(loadedTargetsStorage::isTargetLoaded)
 
     val modulesToRemove = loadedTargetsToRemove.map {
-      ModuleName(magicMetaModelProjectConfig.moduleNameProvider(BuildTargetIdentifier(it.uri)))
+      ModuleName(magicMetaModelProjectConfig.moduleNameProvider?.invoke(BuildTargetIdentifier(it.uri)) ?: it.uri)
     }
     val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
-      magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.pythonHelpersPath,
+      magicMetaModelProjectConfig.projectBasePath
     )
 
     ProgressManager.checkCanceled()
@@ -224,9 +218,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
-      magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.pythonHelpersPath,
+      magicMetaModelProjectConfig.projectBasePath
     )
 
     workspaceModelUpdater.clear()
@@ -258,64 +251,64 @@ public data class LoadedTargetsStorageState(
   public var notLoadedTargets: List<BuildTargetIdentifierState> = emptyList(),
 )
 
-public class LoadedTargetsStorage private constructor(
+internal class LoadedTargetsStorage private constructor(
   private val allTargets: Collection<BuildTargetIdentifier>,
   private val loadedTargets: MutableSet<BuildTargetIdentifier>,
   private val notLoadedTargets: MutableSet<BuildTargetIdentifier>,
 ) {
 
-  public constructor(allTargets: Collection<BuildTargetIdentifier>) : this(
+  constructor(allTargets: Collection<BuildTargetIdentifier>) : this(
     allTargets = allTargets,
     loadedTargets = mutableSetOf(),
     notLoadedTargets = allTargets.toMutableSet()
   )
 
-  public constructor(state: LoadedTargetsStorageState) : this(
+  constructor(state: LoadedTargetsStorageState) : this(
     allTargets = state.allTargets.map { it.fromState() },
     loadedTargets = state.loadedTargets.map { it.fromState() }.toMutableSet(),
     notLoadedTargets = state.notLoadedTargets.map { it.fromState() }.toMutableSet(),
   )
 
-  public fun clear() {
+  fun clear() {
     loadedTargets.clear()
     notLoadedTargets.clear()
     notLoadedTargets.addAll(allTargets)
   }
 
-  public fun addTargets(targets: Collection<BuildTargetIdentifier>) {
+  fun addTargets(targets: Collection<BuildTargetIdentifier>) {
     loadedTargets.addAll(targets)
     notLoadedTargets.removeAll(targets.toSet())
   }
 
-  public fun addTarget(target: BuildTargetIdentifier) {
+  fun addTarget(target: BuildTargetIdentifier) {
     loadedTargets.add(target)
     notLoadedTargets.remove(target)
   }
 
-  public fun removeTargets(targets: Collection<BuildTargetIdentifier>) {
+  fun removeTargets(targets: Collection<BuildTargetIdentifier>) {
     loadedTargets.removeAll(targets.toSet())
     notLoadedTargets.addAll(targets)
   }
 
-  public fun isTargetNotLoaded(targetId: BuildTargetIdentifier): Boolean =
+  fun isTargetNotLoaded(targetId: BuildTargetIdentifier): Boolean =
     notLoadedTargets.contains(targetId)
 
-  public fun isTargetLoaded(targetId: BuildTargetIdentifier): Boolean =
+  fun isTargetLoaded(targetId: BuildTargetIdentifier): Boolean =
     loadedTargets.contains(targetId)
 
-  public fun getLoadedTargets(): List<BuildTargetIdentifier> =
+  fun getLoadedTargets(): List<BuildTargetIdentifier> =
     loadedTargets.toList()
 
-  public fun getNotLoadedTargets(): List<BuildTargetIdentifier> =
+  fun getNotLoadedTargets(): List<BuildTargetIdentifier> =
     notLoadedTargets.toList()
 
-  public fun toState(): LoadedTargetsStorageState =
+  fun toState(): LoadedTargetsStorageState =
     LoadedTargetsStorageState(
       allTargets.map { it.toState() },
       loadedTargets.map { it.toState() },
       notLoadedTargets.map { it.toState() })
 
-  public fun copy(): LoadedTargetsStorage =
+  fun copy(): LoadedTargetsStorage =
     LoadedTargetsStorage(
       allTargets = allTargets.toList(),
       loadedTargets = loadedTargets.toMutableSet(),

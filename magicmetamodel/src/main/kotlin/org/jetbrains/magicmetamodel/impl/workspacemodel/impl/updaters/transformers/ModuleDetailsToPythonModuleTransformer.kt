@@ -6,37 +6,32 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.PythonBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
 import java.nio.file.Path
 import kotlin.io.path.Path
 
 internal class ModuleDetailsToPythonModuleTransformer(
-  moduleNameProvider: ModuleNameProvider,
+  moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
   private val projectBasePath: Path,
 ): ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
 
   override val type = "PYTHON_MODULE"
-  private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer(projectBasePath)
-  private val resourcesItemToPythonResourceRootTransformer =
-    ResourcesItemToPythonResourceRootTransformer(projectBasePath)
 
   override fun transform(inputEntity: ModuleDetails): PythonModule =
     PythonModule(
       module = toModule(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = sourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
+      sourceRoots = SourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
           inputEntity.target,
           it,
         )
       }),
-      resourceRoots = resourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
-      libraries = DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity.dependenciesSources),
+      resourceRoots = ResourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
+      libraries = emptyList(),
       sdkInfo = toSdkInfo(inputEntity)
     )
 
@@ -46,24 +41,18 @@ internal class ModuleDetailsToPythonModuleTransformer(
       allTargetsIds = inputEntity.allTargetsIds,
       dependencySources = inputEntity.dependenciesSources,
       type = type,
-      javacOptions = null,
+      javacOptions = inputEntity.javacOptions,
       pythonOptions = inputEntity.pythonOptions,
     )
 
-    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).addHelpersDependency(inputEntity)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
-
-  private fun Module.addHelpersDependency(inputEntity: ModuleDetails): Module =
-    if (inputEntity.dependenciesSources.any { it.sources.isNotEmpty() })
-      this.copy(modulesDependencies = modulesDependencies + ModuleDependency("intellij.python.helpers"))
-    else
-      this
-
 
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
     return if (pythonBuildTarget != null) PythonSdkInfo(
       version = pythonBuildTarget.version,
+      // TODO: check if the Path(...) is a valid way to do that
       interpreter = Path(pythonBuildTarget.interpreter)
     )
     else null

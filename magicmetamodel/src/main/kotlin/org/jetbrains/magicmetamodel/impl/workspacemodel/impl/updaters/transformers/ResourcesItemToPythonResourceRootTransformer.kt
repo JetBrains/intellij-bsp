@@ -2,19 +2,16 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.ResourcesItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonResourceRoot
-import java.nio.file.Path
 
-internal class ResourcesItemToPythonResourceRootTransformer(private val projectBasePath: Path) :
+internal object ResourcesItemToPythonResourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<ResourcesItem, PythonResourceRoot> {
 
   override fun transform(inputEntity: ResourcesItem): List<PythonResourceRoot> =
     inputEntity.resources
-      .map(this::toPythonResourceRoot)
-      .filter { it.resourcePath.isPathInProjectBasePath(projectBasePath) }
+      .map {
+        PythonResourceRoot(
+          resourcePath = RawUriToDirectoryPathTransformer.transform(it)
+        )
+      }
       .distinct()
-
-  private fun toPythonResourceRoot(resourcePath: String) =
-    PythonResourceRoot(
-      resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath)
-    )
 }
