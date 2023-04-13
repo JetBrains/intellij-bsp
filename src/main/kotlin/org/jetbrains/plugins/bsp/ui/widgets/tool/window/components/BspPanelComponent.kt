@@ -51,7 +51,10 @@ public class BspPanelComponent private constructor(
     targetSearch.searchBarComponent.isEnabled = !targetTree.isEmpty()
     targetSearch.addQueryChangeListener(::onSearchQueryUpdate)
     this.add(targetSearch.searchBarComponent)
-    this.add(chooseNewContent())
+    this.add(
+      if (targetTree.isEmpty()) emptyTreeMessage
+      else targetTree.treeComponent
+    )
   }
 
   private fun onSearchQueryUpdate() {
