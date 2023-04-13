@@ -321,6 +321,9 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
           loadedModules.asSequence(),
           sourceRoots.asSequence(),
           libraries.asSequence(),
+          listOf(module1, module2, module3).associate {
+            it.name to BuildTargetIdentifier(it.name)
+          }
         )
 
       // then
