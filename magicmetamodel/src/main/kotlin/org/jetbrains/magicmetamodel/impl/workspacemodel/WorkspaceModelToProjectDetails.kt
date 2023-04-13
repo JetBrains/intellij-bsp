@@ -1,17 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.Gson
 import com.intellij.util.io.isDirectory
 import com.intellij.workspaceModel.ide.WorkspaceModel
@@ -160,8 +150,16 @@ public object WorkspaceModelToProjectDetailsTransformer {
     }
 
   private fun ModuleDependencyItem.SdkDependency.addToBuildTarget(target: BuildTarget) {
-    target.dataKind = BuildTargetDataKind.JVM
-    target.data = Gson().toJson(JvmBuildTarget("", sdkName))
+    when (sdkType) {
+      "JavaSDK" -> {
+        target.dataKind = BuildTargetDataKind.JVM
+        target.data = Gson().toJson(JvmBuildTarget("", sdkName))
+      }
+      "PythonSDK" -> {
+        target.dataKind = BuildTargetDataKind.PYTHON
+        target.data = Gson().toJson(PythonBuildTarget(sdkName, ""))
+      }
+    }
   }
 }
 
