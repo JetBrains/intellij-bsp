@@ -9,8 +9,8 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDep
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-@DisplayName("DependencySourcesItemToLibraryDependencyTransformer.transformer(library) tests")
-class DependencySourcesItemToLibraryDependencyTransformerTest {
+@DisplayName("JavaDependencySourcesItemToLibraryDependencyTransformer.transformer(library) tests")
+class JavaDependencySourcesItemToLibraryDependencyTransformerTest {
 
   @Test
   fun `should return no library dependencies for no dependency sources`() {
@@ -19,7 +19,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
 
     // when
     val librariesDependencies =
-      DependencySourcesItemToLibraryDependencyTransformer.transform(emptyDependencySourcesItems)
+      JavaDependencySourcesItemToLibraryDependencyTransformer.transform(emptyDependencySourcesItems)
 
     // then
     librariesDependencies shouldBe emptyList()
@@ -44,7 +44,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     )
 
     // when
-    val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
+    val librariesDependencies = JavaDependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
 
     // then
     val expectedLibraryDependency = LibraryDependency(
@@ -79,7 +79,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     )
 
     // when
-    val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
+    val librariesDependencies = JavaDependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
 
     // then
     val expectedLibraryDependency1 = LibraryDependency(
@@ -140,7 +140,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySourceItems = listOf(dependencySourceItem1, dependencySourceItem2)
 
     // when
-    val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItems)
+    val librariesDependencies = JavaDependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItems)
 
     // then
     val expectedLibraryDependency1 = LibraryDependency(
@@ -184,7 +184,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     )
 
     // when
-    val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
+    val librariesDependencies = JavaDependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
 
     // then
     val expectedLibraryDependency1 = LibraryDependency(

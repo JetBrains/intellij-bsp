@@ -1,14 +1,17 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.util.io.isAncestor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
+import java.nio.file.Path
 
-internal object SourcesItemToPythonSourceRootTransformer :
+internal class SourcesItemToPythonSourceRootTransformer(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, PythonSourceRoot> {
 
-  private const val sourceRootType = "python-source"
-  private const val testSourceRootType = "python-test"
+  private val sourceRootType = "python-source"
+  private val testSourceRootType = "python-test"
 
   override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<PythonSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
@@ -24,16 +27,23 @@ internal object SourcesItemToPythonSourceRootTransformer :
 
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
-      .map {
-        PythonSourceRoot(
-          sourcePath = it.sourcePath,
-          generated = it.generated,
-          rootType = rootType,
-          targetId = inputEntity.buildTarget.id
-        )
-      }
+      .map { toPythonSourceRoot(it, rootType, inputEntity.buildTarget.id) }
+      .filter { it.sourcePath.isPathInProjectBasePath(projectBasePath) }
   }
 
   private fun inferRootType(buildTarget: BuildTarget): String =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
+
+  private fun toPythonSourceRoot(
+    sourceRoot: SourceRoot,
+    rootType: String,
+    targetId: BuildTargetIdentifier
+  ): PythonSourceRoot {
+    return PythonSourceRoot(
+      sourcePath = sourceRoot.sourcePath,
+      generated = sourceRoot.generated,
+      rootType = rootType,
+      targetId = targetId,
+    )
+  }
 }

@@ -800,7 +800,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
 
     test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
   }

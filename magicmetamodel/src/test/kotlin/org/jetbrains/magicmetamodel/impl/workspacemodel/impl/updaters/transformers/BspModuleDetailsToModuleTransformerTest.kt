@@ -13,6 +13,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
@@ -28,7 +29,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val emptyBspModuleDetails = listOf<BspModuleDetails>()
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(null).transform(emptyBspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(emptyBspModuleDetails)
 
     // then
     modules shouldBe emptyList()
@@ -46,7 +47,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target = BuildTarget(
       targetId,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target2"),
@@ -84,7 +85,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = Module(
@@ -152,7 +153,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = Module(
@@ -184,7 +185,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target1 = BuildTarget(
       target1Id,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target2"),
@@ -227,7 +228,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target2 = BuildTarget(
       target2Id,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target3"),
@@ -264,7 +265,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = Module(
@@ -318,7 +319,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target1 = BuildTarget(
       target1Id,
       emptyList(),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("//target2"),
         BuildTargetIdentifier("//target3"),
@@ -355,7 +356,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target2 = BuildTarget(
       target2Id,
       emptyList(),
-      emptyList(),
+      listOf("python"),
       listOf(
         BuildTargetIdentifier("//target3"),
       ),
@@ -387,7 +388,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = Module(
@@ -430,7 +431,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val target = BuildTarget(
       targetId,
       emptyList(),
-      emptyList(),
+      listOf("java"),
       emptyList(),
       BuildTargetCapabilities()
     )

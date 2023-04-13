@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
@@ -9,7 +9,7 @@ import java.net.URI
 import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity> (
-  moduleNameProvider: ((BuildTargetIdentifier) -> String)?) :
+  moduleNameProvider: ModuleNameProvider) :
   WorkspaceModelEntityTransformer<ModuleDetails, T> {
 
   protected abstract val type: String
