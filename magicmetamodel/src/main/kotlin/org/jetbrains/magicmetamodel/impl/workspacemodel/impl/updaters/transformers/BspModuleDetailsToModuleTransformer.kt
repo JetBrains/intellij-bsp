@@ -6,11 +6,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import org.jetbrains.magicmetamodel.ModuleNameProvider
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
@@ -32,19 +28,28 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
       name = moduleNameProvider(inputEntity.target.id),
       type = inputEntity.type,
       modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
-      librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer
-        .transform(inputEntity.dependencySources.map {
-          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
-        }),
+      librariesDependencies = calculateLibrariesDependencies(inputEntity),
       capabilities = inputEntity.target.capabilities.let {
         ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
       },
       languageIds = inputEntity.target.languageIds
     )
   }
+
+  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> {
+    return if (inputEntity.target.languageIds.contains("java"))
+      JavaDependencySourcesItemToLibraryDependencyTransformer
+        .transform(inputEntity.dependencySources.map {
+          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+        })
+    else if (inputEntity.target.languageIds.contains("python"))
+      PythonDependencySourcesItemToLibraryDependencyTransformer.transform(inputEntity.dependencySources)
+    else
+      emptyList()
+  }
 }
 
-internal object DependencySourcesItemToLibraryDependencyTransformer :
+internal object JavaDependencySourcesItemToLibraryDependencyTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, LibraryDependency> {
 
   override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
@@ -52,6 +57,19 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
       .map(this::toLibraryDependency)
 
   private fun toLibraryDependency(library: Library): LibraryDependency =
+    LibraryDependency(
+      libraryName = library.displayName,
+    )
+}
+
+internal object PythonDependencySourcesItemToLibraryDependencyTransformer :
+  WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, LibraryDependency> {
+
+  override fun transform(inputEntity: DependencySourcesItem): List<LibraryDependency> =
+    DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity)
+      .map(this::toLibraryDependency)
+
+  private fun toLibraryDependency(library: PythonLibrary): LibraryDependency =
     LibraryDependency(
       libraryName = library.displayName,
     )

@@ -10,10 +10,12 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToDummyJavaModulesTransformerHACK
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
@@ -21,28 +23,40 @@ internal class WorkspaceModelUpdaterImpl(
   val virtualFileUrlManager: VirtualFileUrlManager,
   moduleNameProvider: ModuleNameProvider,
   projectBasePath: Path,
+  pythonHelpersPath: Path,
 ) : WorkspaceModelUpdater {
 
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
-    projectBasePath = projectBasePath
+    projectBasePath = projectBasePath,
+    pythonHelpersPath = pythonHelpersPath
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
+  private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
-  private val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
-  private val moduleDetailsToDummyJavaModulesTransformerHACK = ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
+  private val moduleDetailsToJavaModuleTransformer =
+    ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToPythonModuleTransformer =
+    ModuleDetailsToPythonModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToDummyJavaModulesTransformerHACK =
+    ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
 
   override fun loadModule(moduleDetails: ModuleDetails) {
-    // TODO for now we are supporting only java modules
-    val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
-    javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
-    val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
-    javaModuleUpdater.addEntity(javaModule)
-
+    // TODO for now we are supporting only java and python modules
+    if (moduleDetails.target.languageIds.contains("java") || moduleDetails.target.languageIds.contains("scala") || moduleDetails.target.languageIds.contains("kotlin")) {
+      val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
+      javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
+      val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+      javaModuleUpdater.addEntity(javaModule)
+    } else if (moduleDetails.target.languageIds.contains("python")) {
+      val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+      pythonModuleUpdater.addEntity(pythonModule)
+    }
   }
 
-  private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))
+  private fun Module.isAlreadyAdded() =
+    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))
 
   override fun removeModule(module: ModuleName) {
     workspaceModuleRemover.removeEntity(module)
