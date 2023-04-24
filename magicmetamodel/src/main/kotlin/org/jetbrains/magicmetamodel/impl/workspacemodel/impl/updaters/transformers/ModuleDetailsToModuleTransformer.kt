@@ -14,6 +14,7 @@ internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelE
   WorkspaceModelEntityTransformer<ModuleDetails, T> {
 
   protected abstract val type: String
+
   val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
 
   abstract override fun transform(inputEntity: ModuleDetails): T

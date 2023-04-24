@@ -44,14 +44,14 @@ internal class WorkspaceModelUpdaterImpl(
 
   override fun loadModule(moduleDetails: ModuleDetails) {
     // TODO for now we are supporting only java and python modules
-    if (moduleDetails.target.languageIds.contains("java") || moduleDetails.target.languageIds.contains("scala") || moduleDetails.target.languageIds.contains("kotlin")) {
+    if (moduleDetails.target.languageIds.contains("python")) {
+      val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+      pythonModuleUpdater.addEntity(pythonModule)
+    } else {
       val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
       javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
       val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
       javaModuleUpdater.addEntity(javaModule)
-    } else if (moduleDetails.target.languageIds.contains("python")) {
-      val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
-      pythonModuleUpdater.addEntity(pythonModule)
     }
   }
 

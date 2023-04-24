@@ -140,8 +140,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
       librariesDependencies = emptyList(),
     )
 
-    val expectedBaseDirContentRoot = ContentRoot(projectRoot)
-
     val expectedPythonSourceRoot1 = PythonSourceRoot(
       sourcePath = file1APath,
       generated = false,
@@ -167,7 +165,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedPythonModule = PythonModule(
       module = expectedModule,
-      baseDirContentRoot = expectedBaseDirContentRoot,
       sourceRoots = listOf(expectedPythonSourceRoot1, expectedPythonSourceRoot2, expectedPythonSourceRoot3),
       resourceRoots = listOf(expectedPythonResourceRoot1),
       libraries = emptyList(),
@@ -333,10 +330,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
         ModuleDependency("module3"),
         ModuleDependency(helpersModuleName)
       ),
-      librariesDependencies = listOf(LibraryDependency("BSP: externalSource1")),
+      librariesDependencies = emptyList()
     )
-
-    val expectedBaseDirContentRoot1 = ContentRoot(module1Root)
 
     val expectedPythonSourceRoot11 = PythonSourceRoot(
       sourcePath = file1APath,
@@ -363,10 +358,9 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedPythonModule1 = PythonModule(
       module = expectedModule1,
-      baseDirContentRoot = expectedBaseDirContentRoot1,
       sourceRoots = listOf(expectedPythonSourceRoot11, expectedPythonSourceRoot12, expectedPythonSourceRoot13),
       resourceRoots = listOf(expectedPythonResourceRoot11),
-      libraries = listOf(PythonLibrary("BSP: externalSource1", dependencySourcesItem1.sources.first())),
+      libraries = listOf(PythonLibrary(dependencySourcesItem1.sources.first())),
       sdkInfo = null,
     )
 
@@ -376,8 +370,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
       modulesDependencies = listOf(ModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
-
-    val expectedBaseDirContentRoot2 = ContentRoot(module2Root)
 
     val expectedPythonSourceRoot21 = PythonSourceRoot(
       sourcePath = dir1CPath,
@@ -392,7 +384,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedPythonModule2 = PythonModule(
       module = expectedModule2,
-      baseDirContentRoot = expectedBaseDirContentRoot2,
       sourceRoots = listOf(expectedPythonSourceRoot21),
       resourceRoots = listOf(expectedPythonResourceRoot21),
       libraries = emptyList(),
@@ -418,7 +409,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
   private fun validatePythonModule(actual: PythonModule, expected: PythonModule) {
     validateModule(actual.module, expected.module)
 
-    actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
     actual.libraries shouldContainExactlyInAnyOrder expected.libraries

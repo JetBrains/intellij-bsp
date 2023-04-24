@@ -18,9 +18,10 @@ import kotlin.io.path.Path
 internal class ModuleDetailsToPythonModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
-): ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
+) : ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
 
   override val type = "PYTHON_MODULE"
+
   private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer(projectBasePath)
   private val resourcesItemToPythonResourceRootTransformer =
     ResourcesItemToPythonResourceRootTransformer(projectBasePath)
@@ -28,7 +29,6 @@ internal class ModuleDetailsToPythonModuleTransformer(
   override fun transform(inputEntity: ModuleDetails): PythonModule =
     PythonModule(
       module = toModule(inputEntity),
-      baseDirContentRoot = toBaseDirContentRoot(inputEntity),
       sourceRoots = sourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
           inputEntity.target,
@@ -59,13 +59,13 @@ internal class ModuleDetailsToPythonModuleTransformer(
     else
       this
 
-
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
-    return if (pythonBuildTarget != null) PythonSdkInfo(
-      version = pythonBuildTarget.version,
-      interpreter = Path(pythonBuildTarget.interpreter)
-    )
+    return if (pythonBuildTarget != null && pythonBuildTarget.version != null && pythonBuildTarget.interpreter != null)
+      PythonSdkInfo(
+        version = pythonBuildTarget.version,
+        interpreter = Path(pythonBuildTarget.interpreter)
+      )
     else null
   }
 

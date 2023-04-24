@@ -38,18 +38,16 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> {
     return if (inputEntity.target.languageIds.contains("java"))
-      JavaDependencySourcesItemToLibraryDependencyTransformer
+      DependencySourcesItemToLibraryDependencyTransformer
         .transform(inputEntity.dependencySources.map {
           DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
         })
-    else if (inputEntity.target.languageIds.contains("python"))
-      PythonDependencySourcesItemToLibraryDependencyTransformer.transform(inputEntity.dependencySources)
     else
       emptyList()
   }
 }
 
-internal object JavaDependencySourcesItemToLibraryDependencyTransformer :
+internal object DependencySourcesItemToLibraryDependencyTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, LibraryDependency> {
 
   override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
@@ -57,19 +55,6 @@ internal object JavaDependencySourcesItemToLibraryDependencyTransformer :
       .map(this::toLibraryDependency)
 
   private fun toLibraryDependency(library: Library): LibraryDependency =
-    LibraryDependency(
-      libraryName = library.displayName,
-    )
-}
-
-internal object PythonDependencySourcesItemToLibraryDependencyTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, LibraryDependency> {
-
-  override fun transform(inputEntity: DependencySourcesItem): List<LibraryDependency> =
-    DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity)
-      .map(this::toLibraryDependency)
-
-  private fun toLibraryDependency(library: PythonLibrary): LibraryDependency =
     LibraryDependency(
       libraryName = library.displayName,
     )

@@ -5,18 +5,20 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.toPath
 
 internal data class PythonSdkInfo(val version: String, val interpreter: Path)
 
+internal data class PythonLibrary(val sources: String?) : WorkspaceModelEntity()
+
 internal data class PythonModule(
   val module: Module,
-  val baseDirContentRoot: ContentRoot,
   val sourceRoots: List<PythonSourceRoot>,
   val resourceRoots: List<PythonResourceRoot>,
   val libraries: List<PythonLibrary>,
   val sdkInfo: PythonSdkInfo?,
-  // todo - not sure if all of these fields should stay
 ) : WorkspaceModelEntity()
 
 internal class PythonModuleWithSourcesUpdater(
@@ -29,14 +31,18 @@ internal class PythonModuleWithSourcesUpdater(
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    val libraryEntityUpdater = PythonLibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-    libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
-
     val pythonSourceEntityUpdater = PythonSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     pythonSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
 
     val pythonResourceEntityUpdater = PythonResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     pythonResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+
+    entityToAdd.libraries.forEach { library: PythonLibrary ->
+      library.sources?.let {
+        URI.create(it).toPath().toFile()
+          .copyRecursively(workspaceModelEntityUpdaterConfig.pythonHelpersPath.toFile(), true)
+      }
+    }
 
     val module = moduleEntity.findModule(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder)
     if (module != null && entityToAdd.sdkInfo != null) {
@@ -66,12 +72,7 @@ internal class PythonModuleWithoutSourcesUpdater(
 
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
-    val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
-
-    val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
-    contentRootEntityUpdater.addEntity(entityToAdd.baseDirContentRoot, moduleEntity)
-
-    return moduleEntity
+    return moduleEntityUpdater.addEntity(entityToAdd.module)
   }
 }
 

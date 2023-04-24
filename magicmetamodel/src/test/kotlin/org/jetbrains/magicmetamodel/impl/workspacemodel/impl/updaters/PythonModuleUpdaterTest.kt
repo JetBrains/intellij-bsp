@@ -3,9 +3,17 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.workspaceModel.storage.bridgeEntities.*
+import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
+import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.workspace.model.matchers.entries.*
+import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
+import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
+import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
+import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
+import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -42,10 +50,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(),
         )
 
-        val baseDirContentRoot = ContentRoot(
-          url = URI.create("file:///root/dir/python_example/").toPath()
-        )
-
         val sourcePath1 = URI.create("file:///root/dir/example/package/one").toPath()
         val sourcePath2 = URI.create("file:///root/dir/example/package/two").toPath()
 
@@ -80,7 +84,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val pythonModule = PythonModule(
           module = module,
-          baseDirContentRoot = baseDirContentRoot,
           sourceRoots = sourceRoots,
           resourceRoots = resourceRoots,
           libraries = listOf(),
@@ -217,10 +220,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(),
         )
 
-        val baseDirContentRoot1 = ContentRoot(
-          url = URI.create("file:///root/dir/example/").toPath()
-        )
-
         val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
         val sourcePath12 = URI.create("file:///root/dir/example/package/two").toPath()
         val sourceRoots1 = listOf(
@@ -256,7 +255,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRoots = sourceRoots1,
           resourceRoots = resourceRoots1,
           libraries = listOf(),
-          baseDirContentRoot = baseDirContentRoot1,
           sdkInfo = sdkInfo1,
         )
 
@@ -269,10 +267,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           ),
           librariesDependencies = listOf(),
-        )
-
-        val baseDirContentRoot2 = ContentRoot(
-          url = URI.create("file:///another/root/dir/example/").toPath()
         )
 
         val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
@@ -296,7 +290,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val pythonModule2 = PythonModule(
           module = module2,
-          baseDirContentRoot = baseDirContentRoot2,
           sourceRoots = sourceRoots2,
           resourceRoots = resourceRoots2,
           libraries = listOf(),
@@ -473,14 +466,8 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = emptyList(),
         )
 
-        val baseDirContentRootPath = URI.create("file:///root/dir/").toPath()
-        val baseDirContentRoot = ContentRoot(
-          url = baseDirContentRootPath,
-        )
-
         val pythonModule = PythonModule(
           module = module,
-          baseDirContentRoot = baseDirContentRoot,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           libraries = emptyList(),
@@ -505,16 +492,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         returnedModuleEntity shouldBeEqual expectedModuleEntity
         loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
-
-        val virtualBaseDirContentRootPath = baseDirContentRootPath.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntity = ExpectedContentRootEntity(
-          url = virtualBaseDirContentRootPath,
-          excludedPatterns = emptyList(),
-          excludedUrls = emptyList(),
-          parentModuleEntity = expectedModuleEntity.moduleEntity,
-        )
-
-        loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedContentRootEntity)
       }
     }
 
@@ -529,14 +506,8 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = emptyList(),
         )
 
-        val baseDirContentRootPath1 = URI.create("file:///root/dir1/").toPath()
-        val baseDirContentRoot1 = ContentRoot(
-          url = baseDirContentRootPath1,
-        )
-
         val pythonModule1 = PythonModule(
           module = module1,
-          baseDirContentRoot = baseDirContentRoot1,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           libraries = emptyList(),
@@ -550,14 +521,8 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = emptyList(),
         )
 
-        val baseDirContentRootPath2 = URI.create("file:///root/dir2/").toPath()
-        val baseDirContentRoot2 = ContentRoot(
-          url = baseDirContentRootPath2,
-        )
-
         val pythonModule2 = PythonModule(
           module = module2,
-          baseDirContentRoot = baseDirContentRoot2,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           libraries = emptyList(),
@@ -595,27 +560,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         returnedModuleEntries shouldContainExactlyInAnyOrder expectedModuleEntries
         loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder expectedModuleEntries
-
-        val virtualBaseDirContentRootPath1 = baseDirContentRootPath1.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntity1 = ExpectedContentRootEntity(
-          url = virtualBaseDirContentRootPath1,
-          excludedPatterns = emptyList(),
-          excludedUrls = emptyList(),
-          parentModuleEntity = expectedModuleEntity1.moduleEntity,
-        )
-
-        val virtualBaseDirContentRootPath2 = baseDirContentRootPath2.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntity2 = ExpectedContentRootEntity(
-          url = virtualBaseDirContentRootPath2,
-          excludedPatterns = emptyList(),
-          excludedUrls = emptyList(),
-          parentModuleEntity = expectedModuleEntity2.moduleEntity,
-        )
-
-        loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-          expectedContentRootEntity1,
-          expectedContentRootEntity2
-        )
       }
     }
   }
@@ -635,7 +579,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
+      WorkspaceModelEntityUpdaterConfig(
+        workspaceEntityStorageBuilder,
+        virtualFileUrlManager,
+        projectBasePath,
+        pythonHelpersPath
+      )
 
     test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
   }
