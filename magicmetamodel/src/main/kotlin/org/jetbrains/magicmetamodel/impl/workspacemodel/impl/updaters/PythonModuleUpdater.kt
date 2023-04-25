@@ -15,7 +15,7 @@ internal data class PythonLibrary(val sources: String?) : WorkspaceModelEntity()
 
 internal data class PythonModule(
   val module: Module,
-  val sourceRoots: List<PythonSourceRoot>,
+  val sourceRoots: List<GenericSourceRoot>,
   val resourceRoots: List<PythonResourceRoot>,
   val libraries: List<PythonLibrary>,
   val sdkInfo: PythonSdkInfo?,
@@ -31,8 +31,8 @@ internal class PythonModuleWithSourcesUpdater(
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    val pythonSourceEntityUpdater = PythonSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-    pythonSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
+    val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+    sourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
 
     val pythonResourceEntityUpdater = PythonResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     pythonResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)

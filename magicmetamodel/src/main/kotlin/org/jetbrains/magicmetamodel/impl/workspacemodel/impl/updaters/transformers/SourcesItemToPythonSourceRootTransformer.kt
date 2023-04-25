@@ -3,26 +3,26 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.util.io.isAncestor
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.GenericSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
 import java.nio.file.Path
 
 internal class SourcesItemToPythonSourceRootTransformer(private val projectBasePath: Path) :
-  WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, PythonSourceRoot> {
+  WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, GenericSourceRoot> {
 
   private val sourceRootType = "python-source"
   private val testSourceRootType = "python-test"
 
-  override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<PythonSourceRoot> {
+  override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<GenericSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
 
     return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
   }
 
-  private fun isNotAChildOfAnySourceDir(sourceRoot: PythonSourceRoot, allSourceRoots: List<PythonSourceRoot>): Boolean =
+  private fun isNotAChildOfAnySourceDir(sourceRoot: GenericSourceRoot, allSourceRoots: List<GenericSourceRoot>): Boolean =
     allSourceRoots.none { it.sourcePath.isAncestor(sourceRoot.sourcePath.parent) }
 
-  override fun transform(inputEntity: BuildTargetAndSourceItem): List<PythonSourceRoot> {
+  override fun transform(inputEntity: BuildTargetAndSourceItem): List<GenericSourceRoot> {
     val rootType = inferRootType(inputEntity.buildTarget)
 
     return SourceItemToSourceRootTransformer
@@ -38,10 +38,9 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
     sourceRoot: SourceRoot,
     rootType: String,
     targetId: BuildTargetIdentifier
-  ): PythonSourceRoot {
-    return PythonSourceRoot(
+  ): GenericSourceRoot {
+    return GenericSourceRoot(
       sourcePath = sourceRoot.sourcePath,
-      generated = sourceRoot.generated,
       rootType = rootType,
       targetId = targetId,
     )

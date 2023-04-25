@@ -9,7 +9,6 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -54,15 +53,13 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val sourcePath2 = URI.create("file:///root/dir/example/package/two").toPath()
 
         val sourceRoots = listOf(
-          PythonSourceRoot(
+          GenericSourceRoot(
             sourcePath = sourcePath1,
-            generated = false,
             rootType = "python-source",
             targetId = BuildTargetIdentifier("target"),
           ),
-          PythonSourceRoot(
+          GenericSourceRoot(
             sourcePath = sourcePath2,
-            generated = false,
             rootType = "python-source",
             targetId = BuildTargetIdentifier("target"),
           ),
@@ -223,15 +220,13 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
         val sourcePath12 = URI.create("file:///root/dir/example/package/two").toPath()
         val sourceRoots1 = listOf(
-          PythonSourceRoot(
+          GenericSourceRoot(
             sourcePath = sourcePath11,
-            generated = false,
             rootType = "python-source",
             targetId = BuildTargetIdentifier("target"),
           ),
-          PythonSourceRoot(
+          GenericSourceRoot(
             sourcePath = sourcePath12,
-            generated = false,
             rootType = "python-source",
             targetId = BuildTargetIdentifier("target"),
           ),
@@ -271,9 +266,8 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
         val sourceRoots2 = listOf(
-          PythonSourceRoot(
+          GenericSourceRoot(
             sourcePath = sourcePath21,
-            generated = false,
             rootType = "python-test",
             targetId = BuildTargetIdentifier("target"),
           ),

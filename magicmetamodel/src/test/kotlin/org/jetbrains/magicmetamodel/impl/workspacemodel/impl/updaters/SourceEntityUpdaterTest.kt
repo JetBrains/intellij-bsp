@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Test
 import java.net.URI
 import kotlin.io.path.toPath
 
-@DisplayName("pythonSourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
+@DisplayName("sourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
+class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
 
-  private lateinit var pythonSourceEntityUpdater: PythonSourceEntityUpdater
+  private lateinit var sourceEntityUpdater: SourceEntityUpdater
 
   @BeforeEach
   override fun beforeEach() {
@@ -25,26 +25,29 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
-    pythonSourceEntityUpdater = PythonSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+      WorkspaceModelEntityUpdaterConfig(
+        workspaceEntityStorageBuilder,
+        virtualFileUrlManager,
+        projectBasePath,
+        pythonHelpersPath
+      )
+    sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 
   @Test
   fun `should add one python source root to the workspace model`() {
     // given
     val sourceDir = URI.create("file:///root/dir/example/package/").toPath()
-    val generated = false
 
-    val pythonSourceRoot = PythonSourceRoot(
+    val genericSourceRoot = GenericSourceRoot(
       sourcePath = sourceDir,
-      generated = generated,
       rootType = "python-source",
       targetId = BuildTargetIdentifier("target"),
     )
 
     // when
     val returnedPythonSourceRootEntity = runTestWriteAction {
-      pythonSourceEntityUpdater.addEntity(pythonSourceRoot, parentModuleEntity)
+      sourceEntityUpdater.addEntity(genericSourceRoot, parentModuleEntity)
     }
 
     // then
@@ -72,30 +75,26 @@ class PythonSourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTe
   fun `should add multiple python source roots to the workspace model`() {
     // given
     val sourceDir1 = URI.create("file:///root/dir/example/package/").toPath()
-    val generated1 = false
 
-    val pythonSourceRoot1 = PythonSourceRoot(
+    val genericSourceRoot1 = GenericSourceRoot(
       sourcePath = sourceDir1,
-      generated = generated1,
       rootType = "python-source",
       targetId = BuildTargetIdentifier("target1"),
     )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
-    val generated2 = true
 
-    val pythonSourceRoot2 = PythonSourceRoot(
+    val genericSourceRoot2 = GenericSourceRoot(
       sourcePath = sourceDir2,
-      generated = generated2,
       rootType = "python-test",
       targetId = BuildTargetIdentifier("target2"),
     )
 
-    val pythonSourceRoots = listOf(pythonSourceRoot1, pythonSourceRoot2)
+    val pythonSourceRoots = listOf(genericSourceRoot1, genericSourceRoot2)
 
     // when
     val returnedPythonSourceRootEntities = runTestWriteAction {
-      pythonSourceEntityUpdater.addEntries(pythonSourceRoots, parentModuleEntity)
+      sourceEntityUpdater.addEntries(pythonSourceRoots, parentModuleEntity)
     }
 
     // then
