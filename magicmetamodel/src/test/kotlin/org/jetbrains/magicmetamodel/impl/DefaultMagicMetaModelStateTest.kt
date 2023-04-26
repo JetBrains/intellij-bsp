@@ -179,6 +179,26 @@ class JavacOptionsItemStateTest {
 }
 
 
+@DisplayName("PythonOptionsItemState tests")
+class PythonOptionsItemStateTest {
+
+  @Test
+  fun `should do toState and fromState`() {
+    // given
+    val pythonOptionsItem = PythonOptionsItem(
+      BuildTargetIdentifier("target"),
+      listOf("opt1", "opt2", "opt3")
+    )
+
+    // when
+    val state = pythonOptionsItem.toState()
+
+    // then
+    state.fromState() shouldBe pythonOptionsItem
+  }
+}
+
+
 @DisplayName("ModuleDetailsState tests")
 class ModuleDetailsStateTest {
 

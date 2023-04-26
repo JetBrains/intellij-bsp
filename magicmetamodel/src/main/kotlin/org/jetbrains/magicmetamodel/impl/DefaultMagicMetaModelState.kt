@@ -239,7 +239,8 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     sources = sources.map { it.toState() },
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
-    javacOptions = javacOptions.map { it.toState() }
+    javacOptions = javacOptions.map { it.toState() },
+    pythonOptions = pythonOptions.map { it.toState() }
   )
 
 public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetIdentifier>): ProjectDetailsState =
@@ -249,7 +250,8 @@ public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetId
     sources = sources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     resources = resources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     dependenciesSources = dependenciesSources.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() }
+    javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    pythonOptions = pythonOptions.filterNot { loaded.contains(it.target) }.map { it.toState() }
   )
 
 
