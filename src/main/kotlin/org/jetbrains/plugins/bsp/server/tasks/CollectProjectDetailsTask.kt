@@ -1,6 +1,23 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.InitializeBuildResult
+import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.PythonBuildTarget
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.SourcesResult
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.ResourcesResult
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.DependencySourcesResult
+import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.JavacOptionsResult
+import ch.epfl.scala.bsp4j.JavacOptionsParams
+import ch.epfl.scala.bsp4j.PythonOptionsResult
+import ch.epfl.scala.bsp4j.PythonOptionsParams
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.runWriteAction
@@ -11,11 +28,14 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
+import com.jetbrains.python.sdk.PythonSdkType
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
@@ -63,6 +83,8 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 
     private var uniqueJdkInfos: Set<JvmBuildTarget>? = null
 
+    private var uniquePythonSdkInfos: Set<PythonBuildTarget>? = null
+
     private val jdkTable = ProjectJdkTable.getInstance()
 
     override fun run(indicator: ProgressIndicator) {
@@ -88,6 +110,18 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
         uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
         bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
 
+        bspSyncConsole.startSubtask(
+          taskId,
+          "calculate-all-unique-python-sdk-infos",
+          "Calculating all unique python sdk infos..."
+        )
+        uniquePythonSdkInfos =
+          logPerformance("calculate-all-unique-python-sdk-infos") { calculateAllUniquePythonSdkInfos(projectDetails) }
+        bspSyncConsole.finishSubtask(
+          "calculate-all-unique-python-sdk-infos",
+          "Calculating all unique python sdk infos done!"
+        )
+
         bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
         logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
       }
@@ -96,6 +130,8 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     }
 
     private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+
+    private fun calculateAllUniquePythonSdkInfos(projectDetails: ProjectDetails): Set<PythonBuildTarget> = projectDetails.targets.mapNotNull(::extractPythonBuildTarget).toSet()
 
     override fun onSuccess() {
       logPerformance("add-bsp-fetched-jdks") { addBspFetchedJdks() }
@@ -106,6 +142,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     private fun addBspFetchedJdks() {
       bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
       logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach(::addJdkIfNotYetAdded) }
+      logPerformance("add-bsp-fetched-python-sdks") { uniquePythonSdkInfos?.forEach(::addPythonSdk) }
       bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
     }
 
@@ -117,6 +154,18 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     private fun Sdk.isJdkNotAdded(): Boolean {
       val existingJdk = jdkTable.findJdk(this.name, this.sdkType.name)
       return existingJdk == null || existingJdk.sdkAdditionalData !== this.sdkAdditionalData
+    }
+
+    private fun addPythonSdk(pythonInfo: PythonBuildTarget) {
+      val allJdks = jdkTable.allJdks.toList()
+      val newSdk = SdkConfigurationUtil.createSdk(
+        allJdks,
+        pythonInfo.interpreter,
+        PythonSdkType.getInstance(),
+        null,
+        pythonInfo.version
+      )
+      runWriteAction { SdkConfigurationUtil.addSdk(newSdk) }
     }
 
     private fun applyChangesOnWorkspaceModel() {
