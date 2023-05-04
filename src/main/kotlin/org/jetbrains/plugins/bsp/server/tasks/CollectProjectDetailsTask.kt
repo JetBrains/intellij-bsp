@@ -153,7 +153,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 
     private fun Sdk.isJdkNotAdded(): Boolean {
       val existingJdk = jdkTable.findJdk(this.name, this.sdkType.name)
-      return existingJdk == null || existingJdk.sdkAdditionalData !== this.sdkAdditionalData
+      return existingJdk == null || existingJdk.homePath != this.homePath
     }
 
     private fun addPythonSdk(pythonInfo: PythonBuildTarget) {
@@ -165,7 +165,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
         null,
         pythonInfo.version
       )
-      runWriteAction { SdkConfigurationUtil.addSdk(newSdk) }
+      if (newSdk.isJdkNotAdded()) runWriteAction { SdkConfigurationUtil.addSdk(newSdk) }
     }
 
     private fun applyChangesOnWorkspaceModel() {
