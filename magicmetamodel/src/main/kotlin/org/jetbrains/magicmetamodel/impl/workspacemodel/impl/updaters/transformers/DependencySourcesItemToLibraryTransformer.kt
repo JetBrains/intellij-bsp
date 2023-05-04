@@ -68,7 +68,7 @@ internal object DependencySourcesItemToLibraryTransformer :
     sourceJars.find { removeSourcesSuffix(it).startsWith(classJar) }
 
   /**
-   * When generating the display name, check first if a uri comes from maven repository, if it does, return
+   * When generating the display name, check first if an uri comes from maven repository, if it does, return
    * the trimmed name, if not (internal dependencies), return the whole uri path for uniqueness.
    * */
   private fun calculateDisplayName(uri: String): String {
