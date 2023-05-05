@@ -45,7 +45,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
               moduleName = "module3",
             ),
           ),
-          // todo - add libraries, what to do with sourcesJar and classesJar?
           librariesDependencies = listOf(),
         )
 
