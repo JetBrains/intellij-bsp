@@ -160,7 +160,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       val allJdks = jdkTable.allJdks.toList()
       val newSdk = SdkConfigurationUtil.createSdk(
         allJdks,
-        pythonInfo.interpreter,
+        URI.create(pythonInfo.interpreter).toPath().toString(),
         PythonSdkType.getInstance(),
         null,
         pythonInfo.version
