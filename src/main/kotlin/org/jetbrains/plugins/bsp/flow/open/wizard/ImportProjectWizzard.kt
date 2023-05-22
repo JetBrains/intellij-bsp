@@ -29,10 +29,11 @@ public class ImportProjectWizard(
 ) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
 
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  private val firstStep: ChooseConnectionFileOrNewConnectionStep
 
   init {
     val projectProperties = ProjectPropertiesService.getInstance(project).value
-    val firstStep = ChooseConnectionFileOrNewConnectionStep(
+    firstStep = ChooseConnectionFileOrNewConnectionStep(
       projectProperties.projectRootDir,
       bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators,
       this::updateWizardButtonsToGeneratorSelection
@@ -40,11 +41,12 @@ public class ImportProjectWizard(
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
 
     addStep(firstStep)
+    init()
+
     if (firstStep.canBeSkipped()) {
       proceedToNextStep()
     }
 
-    init()
     updateWizardButtonsToGeneratorSelection()
   }
 
@@ -77,6 +79,15 @@ public class ImportProjectWizard(
     mySteps.remove(emptyStep)
     return panel
   }
+
+  override fun show() {
+    if (areThereStepsToShow()) {
+      super.show()
+    }
+  }
+
+  private fun areThereStepsToShow(): Boolean =
+    !firstStep.canBeSkipped() || stepCount > 1
 
   override fun getHelpID(): String =
     "TODO"

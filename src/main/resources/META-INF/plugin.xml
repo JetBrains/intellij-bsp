@@ -33,13 +33,14 @@
       implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivity"/>
 
     <projectTaskRunner
-      implementation="org.jetbrains.plugins.bsp.actions.building.BspHackProjectTaskRunner"/>
+      implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
 
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.server.connection.BspConnectionService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.BspProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService"/>
     <registryKey defaultValue="600" description="Timeout for BSP requests in seconds" key="bsp.request.timeout.seconds"/>
     <registryKey defaultValue="true" description="Choose default connection" key="bsp.wizard.choose.default.connection"/>
     <registryKey defaultValue="true" description="Enable chunking for BSP requests" key="bsp.request.chunking.enable"/>

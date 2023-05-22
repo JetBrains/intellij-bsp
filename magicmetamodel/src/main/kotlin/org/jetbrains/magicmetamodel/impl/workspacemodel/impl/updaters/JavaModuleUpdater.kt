@@ -7,7 +7,7 @@ import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsE
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
-internal data class JvmJdkInfo(val javaVersion: String, val javaHome: String)
+internal data class JvmJdkInfo(val name: String, val javaHome: String)
 
 internal data class JavaModule(
   val module: Module,
@@ -24,22 +24,16 @@ internal class JavaModuleWithSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    val moduleEntityUpdater =
-      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
+    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    addJavaModuleSettingsEntity(
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-      entityToAdd,
-      moduleEntity
-    )
+    addJavaModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
 
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
 
-    val javaSourceEntityUpdater =
-      JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+    val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     javaSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
 
     val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
@@ -50,14 +44,11 @@ internal class JavaModuleWithSourcesUpdater(
 
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     if (entityToAdd.jvmJdkInfo != null) {
-      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkInfo.javaVersion, "JavaSDK")
-    } else defaultDependencies
+      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkInfo.name, "JavaSDK")
+    }
+    else defaultDependencies
 
-  private fun addJavaModuleSettingsEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: JavaModule,
-    moduleEntity: ModuleEntity
-  ) {
+  private fun addJavaModuleSettingsEntity(builder: MutableEntityStorage, entityToAdd: JavaModule, moduleEntity: ModuleEntity) {
     if (entityToAdd.compilerOutput != null) {
       builder.addJavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
@@ -97,11 +88,7 @@ internal class JavaModuleUpdater(
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity =
-    when (Triple(
-      entityToAdd.sourceRoots.size,
-      entityToAdd.resourceRoots.size,
-      entityToAdd.containsJavaKotlinLanguageIds()
-    )) {
+    when (Triple(entityToAdd.sourceRoots.size, entityToAdd.resourceRoots.size, entityToAdd.containsJavaKotlinLanguageIds())) {
       Triple(0, 0, true) -> javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
       else -> javaModuleWithSourcesUpdater.addEntity(entityToAdd)
     }

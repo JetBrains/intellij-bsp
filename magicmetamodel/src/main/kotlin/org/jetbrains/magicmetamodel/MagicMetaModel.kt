@@ -31,7 +31,7 @@ public data class MagicMetaModelProjectConfig(
 }
 
 public typealias ModuleNameProvider = (BuildTargetIdentifier) -> String
-internal object DefaultModuleNameProvider : ModuleNameProvider {
+public object DefaultModuleNameProvider : ModuleNameProvider {
   override fun invoke(id: BuildTargetIdentifier): String = id.uri
 }
 
