@@ -32,7 +32,6 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.jetbrains.python.sdk.PythonSdkType
-import org.jetbrains.magicmetamodel.MagicMetaModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
@@ -68,7 +67,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private lateinit var uniqueJdkInfos: Set<JvmBuildTarget>
 
-  private var uniquePythonSdkInfos: Set<PythonBuildTarget>? = null
+  private lateinit var uniquePythonSdkInfos: Set<PythonBuildTarget>
 
   private val jdkTable = ProjectJdkTable.getInstance()
 
@@ -86,41 +85,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-//  private fun initializeMagicMetaModel(): MagicMetaModel {
-//    val magicMetaModelService = MagicMetaModelService.getInstance(project)
-//    val projectDetails = logPerformance("collect-project-details") { collect(cancelOnFuture) }
-//
-//    if (projectDetails != null) {
-//      bspSyncConsole.startSubtask(taskId, "calculate-all-unique-jdk-infos", "Calculating all unique jdk infos...")
-//      uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
-//      bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
-//
-//      bspSyncConsole.startSubtask(
-//        taskId,
-//        "calculate-all-unique-python-sdk-infos",
-//        "Calculating all unique python sdk infos..."
-//      )
-//      uniquePythonSdkInfos =
-//        logPerformance("calculate-all-unique-python-sdk-infos") { calculateAllUniquePythonSdkInfos(projectDetails) }
-//      bspSyncConsole.finishSubtask(
-//        "calculate-all-unique-python-sdk-infos",
-//        "Calculating all unique python sdk infos done!"
-//      )
-//
-//      bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
-//      logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
-//    }
-
-    private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
-
-    private fun calculateAllUniquePythonSdkInfos(projectDetails: ProjectDetails): Set<PythonBuildTarget> = projectDetails.targets.mapNotNull(::extractPythonBuildTarget).toSet()
-
   private suspend fun doExecute() {
     val projectDetails = progressStep(endFraction = 0.5, text = "Collecting project details") {
       calculateProjectDetailsSubtask()
     }
     indeterminateStep(text = "Calculating all unique jdk infos") {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
+    }
+    indeterminateStep(text = "Calculating all unique python sdk infos") {
+      calculateAllPythonSdkInfosSubtask(projectDetails)
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
       updateMMMDiffSubtask(projectDetails)
@@ -192,6 +165,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
+  private fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails?) {
+    projectDetails?.let {
+      bspSyncConsole.startSubtask(taskId, "calculate-all-unique-python-sdk-infos", "Calculating all unique python sdk infos...")
+      uniquePythonSdkInfos = logPerformance("calculate-all-unique-python-sdk-infos") { calculateAllUniquePythonSdkInfos(projectDetails) }
+      bspSyncConsole.finishSubtask("calculate-all-unique-python-sdk-infos", "Calculating all unique python sdk infos done!")
+    }
+  }
+
+  private fun calculateAllUniquePythonSdkInfos(projectDetails: ProjectDetails): Set<PythonBuildTarget> = projectDetails.targets.mapNotNull(::extractPythonBuildTarget).toSet()
+
   private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
@@ -210,15 +193,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun addBspFetchedJdks() {
     bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
     logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos.forEach { addJdk(it) } }
+    logPerformanceSuspend("add-bsp-fetched-python-sdks") { uniquePythonSdkInfos.forEach { addPythonSdk(it) } }
     bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
   }
-
-//  private fun addBspFetchedJdks() {
-//    bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
-//    logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach(::addJdkIfNotYetAdded) }
-//    logPerformance("add-bsp-fetched-python-sdks") { uniquePythonSdkInfos?.forEach(::addPythonSdk) }
-//    bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
-//  }
 
   private suspend fun addJdk(jdkInfo: JvmBuildTarget) {
     val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
@@ -241,17 +218,31 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-//  private fun addPythonSdk(pythonInfo: PythonBuildTarget) {
-//    val allJdks = jdkTable.allJdks.toList()
-//    val newSdk = SdkConfigurationUtil.createSdk(
-//      allJdks,
-//      URI.create(pythonInfo.interpreter).toPath().toString(),
-//      PythonSdkType.getInstance(),
-//      null,
-//      pythonInfo.version
-//    )
-//    if (newSdk.isJdkNotAdded()) runWriteAction { SdkConfigurationUtil.addSdk(newSdk) }
-//  }
+  private suspend fun addPythonSdk(pythonInfo: PythonBuildTarget) {
+    val allJdks = jdkTable.allJdks.toList()
+    val sdk = SdkConfigurationUtil.createSdk(
+      allJdks,
+      URI.create(pythonInfo.interpreter).toPath().toString(),
+      PythonSdkType.getInstance(),
+      null,
+      pythonInfo.version
+    )
+
+    addPythonSdkIfNeeded(sdk)
+  }
+
+  private suspend fun addPythonSdkIfNeeded(sdk: Sdk) {
+    val existingJdk = jdkTable.findJdk(sdk.name, sdk.sdkType.name)
+    if (existingJdk == null || existingJdk.homePath != sdk.homePath) {
+      withContext(Dispatchers.EDT) {
+        runWriteAction {
+//          TODO: remove sdk
+//          existingJdk?.let { jdkTable.removeJdk(existingJdk) }
+          SdkConfigurationUtil.addSdk(sdk)
+        }
+      }
+    }
+  }
 
   private suspend fun applyChangesOnWorkspaceModel() {
     bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
@@ -298,7 +289,7 @@ public fun calculateProjectDetailsWithCapabilities(
     val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
