@@ -21,15 +21,13 @@ public data class MagicMetaModelProjectConfig(
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,
   val moduleNameProvider: ModuleNameProvider,
-  val pythonHelpersPath: Path
 ) {
   public constructor(
     workspaceModel: WorkspaceModel,
     virtualFileUrlManager: VirtualFileUrlManager,
     moduleNameProvider: ModuleNameProvider?,
     projectBasePath: Path,
-    pythonHelpersPath: Path,
-  ) : this(workspaceModel, virtualFileUrlManager, projectBasePath, moduleNameProvider ?: DefaultModuleNameProvider, pythonHelpersPath)
+  ) : this(workspaceModel, virtualFileUrlManager, projectBasePath, moduleNameProvider ?: DefaultModuleNameProvider)
 }
 
 public typealias ModuleNameProvider = (BuildTargetIdentifier) -> String

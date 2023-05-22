@@ -23,14 +23,12 @@ internal class WorkspaceModelUpdaterImpl(
   val virtualFileUrlManager: VirtualFileUrlManager,
   moduleNameProvider: ModuleNameProvider,
   projectBasePath: Path,
-  pythonHelpersPath: Path,
 ) : WorkspaceModelUpdater {
 
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
-    projectBasePath = projectBasePath,
-    pythonHelpersPath = pythonHelpersPath
+    projectBasePath = projectBasePath
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)

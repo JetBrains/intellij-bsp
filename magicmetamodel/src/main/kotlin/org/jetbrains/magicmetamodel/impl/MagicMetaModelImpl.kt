@@ -115,7 +115,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.pythonHelpersPath,
     )
 
     ProgressManager.checkCanceled()
@@ -175,7 +174,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.pythonHelpersPath,
     )
 
     ProgressManager.checkCanceled()
@@ -226,7 +224,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.pythonHelpersPath,
     )
 
     workspaceModelUpdater.clear()

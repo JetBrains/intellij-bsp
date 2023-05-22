@@ -25,12 +25,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(
-        workspaceEntityStorageBuilder,
-        virtualFileUrlManager,
-        projectBasePath,
-        pythonHelpersPath
-      )
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
     sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 

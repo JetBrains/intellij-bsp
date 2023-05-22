@@ -23,7 +23,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, pythonHelpersPath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
     contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 

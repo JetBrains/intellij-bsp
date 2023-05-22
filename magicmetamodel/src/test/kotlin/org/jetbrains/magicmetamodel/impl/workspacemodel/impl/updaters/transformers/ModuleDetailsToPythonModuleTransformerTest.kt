@@ -233,7 +233,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val dependencySourcesItem1 = DependencySourcesItem(
       buildTargetId1,
-      listOf("file:///example/externalSource1.py"),
+      emptyList(),
     )
     val target1PythonOptionsItem = PythonOptionsItem(
       buildTargetId1,
@@ -322,12 +322,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedModule1 = Module(
       name = "module1",
       type = "PYTHON_MODULE",
-      modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
-        ModuleDependency(helpersModuleName)
-      ),
-      librariesDependencies = emptyList()
+      modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
+      librariesDependencies = emptyList(),
     )
 
     val expectedGenericSourceRoot11 = GenericSourceRoot(

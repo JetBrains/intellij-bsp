@@ -2,14 +2,12 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.PythonBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
 import java.nio.file.Path
@@ -50,14 +48,8 @@ internal class ModuleDetailsToPythonModuleTransformer(
       pythonOptions = inputEntity.pythonOptions,
     )
 
-    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).addHelpersDependency(inputEntity)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
-
-  private fun Module.addHelpersDependency(inputEntity: ModuleDetails): Module =
-    if (inputEntity.dependenciesSources.any { it.sources.isNotEmpty() })
-      this.copy(modulesDependencies = modulesDependencies + ModuleDependency("intellij.python.helpers"))
-    else
-      this
 
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)

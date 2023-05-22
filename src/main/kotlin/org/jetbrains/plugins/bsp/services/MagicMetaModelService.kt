@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
-import com.jetbrains.python.PythonHelpersLocator
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ModuleNameProvider
@@ -76,9 +75,7 @@ public class MagicMetaModelService(private val project: Project) :
     val projectProperties = ProjectPropertiesService.getInstance(project).value
     val projectBasePath = projectProperties.projectRootDir.toNioPath()
 
-    val pythonHelpersPath = PythonHelpersLocator.getHelpersRoot().toPath()
-
-    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath, pythonHelpersPath)
+    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
   }
 
   private fun obtainToolNameIfKnown(project: Project): String? =

@@ -5,9 +5,7 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
 
 internal data class PythonSdkInfo(val version: String, val interpreter: Path)
 
@@ -36,13 +34,6 @@ internal class PythonModuleWithSourcesUpdater(
 
     val pythonResourceEntityUpdater = PythonResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     pythonResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
-
-    entityToAdd.libraries.forEach { library: PythonLibrary ->
-      library.sources?.let {
-        URI.create(it).toPath().toFile()
-          .copyRecursively(workspaceModelEntityUpdaterConfig.pythonHelpersPath.toFile(), true)
-      }
-    }
 
     val module = moduleEntity.findModule(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder)
     if (module != null && entityToAdd.sdkInfo != null) {

@@ -29,7 +29,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     testMagicMetaModelProjectConfig =
-      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, pythonHelpersPath)
+      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath)
   }
 
   @Nested
