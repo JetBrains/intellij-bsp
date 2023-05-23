@@ -35,13 +35,6 @@ internal class PythonModuleWithSourcesUpdater(
     val pythonResourceEntityUpdater = PythonResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     pythonResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
 
-    val module = moduleEntity.findModule(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder)
-    if (module != null && entityToAdd.sdkInfo != null) {
-      val modifiableModule = ModuleRootManager.getInstance(module).modifiableModel
-      modifiableModule.sdk = ProjectJdkTable.getInstance().findJdk(entityToAdd.sdkInfo.version, "PythonSDK")
-      modifiableModule.commit()
-    }
-
     return moduleEntity
   }
 

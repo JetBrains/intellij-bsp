@@ -1,23 +1,6 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.InitializeBuildResult
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.EDT
@@ -30,7 +13,10 @@ import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -67,7 +53,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private lateinit var uniqueJdkInfos: Set<JvmBuildTarget>
 
-  private lateinit var uniquePythonSdkInfos: Set<PythonBuildTarget>
+  private lateinit var pythonSdks: Set<ProjectJdkImpl>
 
   private val jdkTable = ProjectJdkTable.getInstance()
 
@@ -167,13 +153,33 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails?) {
     projectDetails?.let {
-      bspSyncConsole.startSubtask(taskId, "calculate-all-unique-python-sdk-infos", "Calculating all unique python sdk infos...")
-      uniquePythonSdkInfos = logPerformance("calculate-all-unique-python-sdk-infos") { calculateAllUniquePythonSdkInfos(projectDetails) }
-      bspSyncConsole.finishSubtask("calculate-all-unique-python-sdk-infos", "Calculating all unique python sdk infos done!")
+      bspSyncConsole.startSubtask(taskId, "calculate-all-python-sdk-infos", "Calculating all python sdk infos...")
+      pythonSdks = logPerformance("calculate-all-python-sdk-infos") { calculateAllPythonSdkInfos(projectDetails) }
+      bspSyncConsole.finishSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos done!")
     }
   }
 
-  private fun calculateAllUniquePythonSdkInfos(projectDetails: ProjectDetails): Set<PythonBuildTarget> = projectDetails.targets.mapNotNull(::extractPythonBuildTarget).toSet()
+  private fun createPythonSdk(target: BuildTarget): ProjectJdkImpl? {
+    val pythonInfo = extractPythonBuildTarget(target) ?: return null
+
+    val allJdks = jdkTable.allJdks.toList()
+
+    val virtualFiles = target.dependencies.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.uri) }.toSet()
+    val additionalData = PythonSdkAdditionalData()
+    additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
+
+    return SdkConfigurationUtil.createSdk(
+      allJdks,
+      URI.create(pythonInfo.interpreter).toPath().toString(),
+      PythonSdkType.getInstance(),
+      additionalData,
+      target.id.toString() + "-" + pythonInfo.version
+    )
+  }
+
+  private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<ProjectJdkImpl> {
+    return projectDetails.targets.mapNotNull(::createPythonSdk).toSet()
+  }
 
   private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
@@ -187,13 +193,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun postprocessingMMMSubtask() {
     addBspFetchedJdks()
+    addBspFetchedPythonSdks()
     applyChangesOnWorkspaceModel()
   }
 
   private suspend fun addBspFetchedJdks() {
     bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
     logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos.forEach { addJdk(it) } }
-    logPerformanceSuspend("add-bsp-fetched-python-sdks") { uniquePythonSdkInfos.forEach { addPythonSdk(it) } }
     bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
   }
 
@@ -218,17 +224,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private suspend fun addPythonSdk(pythonInfo: PythonBuildTarget) {
-    val allJdks = jdkTable.allJdks.toList()
-    val sdk = SdkConfigurationUtil.createSdk(
-      allJdks,
-      URI.create(pythonInfo.interpreter).toPath().toString(),
-      PythonSdkType.getInstance(),
-      null,
-      pythonInfo.version
-    )
-
-    addPythonSdkIfNeeded(sdk)
+  private suspend fun addBspFetchedPythonSdks() {
+    bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
+    logPerformanceSuspend("add-bsp-fetched-python-sdks") { pythonSdks.forEach { addPythonSdkIfNeeded(it) } }
+    bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
   }
 
   private suspend fun addPythonSdkIfNeeded(sdk: Sdk) {
@@ -236,8 +235,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     if (existingJdk == null || existingJdk.homePath != sdk.homePath) {
       withContext(Dispatchers.EDT) {
         runWriteAction {
-//          TODO: remove sdk
-//          existingJdk?.let { jdkTable.removeJdk(existingJdk) }
+          existingJdk?.let { SdkConfigurationUtil.removeSdk(existingJdk) }
           SdkConfigurationUtil.addSdk(sdk)
         }
       }
@@ -274,22 +272,28 @@ public fun calculateProjectDetailsWithCapabilities(
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
   try {
-    val workspaceBuildTargetsResult = queryForBuildTargets(server).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback).get()
+    val workspaceBuildTargetsResult =
+      queryForBuildTargets(server).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback).get()
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-    val sourcesFuture = queryForSourcesResult(server, allTargetsIds).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback)
+    val sourcesFuture =
+      queryForSourcesResult(server, allTargetsIds).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback)
 
     val resourcesFuture =
-      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
     val dependencySourcesFuture =
-      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
-    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+    val javacOptionsFuture =
+      queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture =
+      queryForPythonOptions(server, pythonTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,

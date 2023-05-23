@@ -22,7 +22,7 @@ object Platform {
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
 	// Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
-  val plugins = listOf("com.intellij.java", "PythonCore:231.8109.2")
+  val plugins = listOf("com.intellij.java", "PythonCore:232.5150.116")
 }
 
 const val javaVersion = "17"
