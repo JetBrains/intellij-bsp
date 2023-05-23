@@ -40,7 +40,8 @@ internal class PythonModuleWithSourcesUpdater(
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
     if (entityToAdd.sdkInfo != null) {
-      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.sdkInfo.version, "PythonSDK")
+      val sdkName = entityToAdd.module.name + "-" + entityToAdd.sdkInfo.version
+      defaultDependencies + ModuleDependencyItem.SdkDependency(sdkName, "PythonSDK")
     } else defaultDependencies
 
   private companion object {

@@ -16,6 +16,10 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.workspaceModel.ide.virtualFile
+import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
@@ -159,13 +163,17 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun createPythonSdk(target: BuildTarget): ProjectJdkImpl? {
+  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): ProjectJdkImpl? {
     val pythonInfo = extractPythonBuildTarget(target) ?: return null
 
     val allJdks = jdkTable.allJdks.toList()
-
-    val virtualFiles = target.dependencies.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.uri) }.toSet()
     val additionalData = PythonSdkAdditionalData()
+    val virtualFiles = dependenciesSources.mapNotNull {
+      URI.create(it.target.uri)
+        .toPath()
+        .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
+        .virtualFile
+    }.toSet()
     additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
 
     return SdkConfigurationUtil.createSdk(
@@ -178,7 +186,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<ProjectJdkImpl> {
-    return projectDetails.targets.mapNotNull(::createPythonSdk).toSet()
+    return projectDetails.targets.mapNotNull { createPythonSdk(it, projectDetails.dependenciesSources) }.toSet()
   }
 
   private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
