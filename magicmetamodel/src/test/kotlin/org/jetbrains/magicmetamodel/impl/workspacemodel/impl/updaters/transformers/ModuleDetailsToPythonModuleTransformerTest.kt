@@ -233,7 +233,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val dependencySourcesItem1 = DependencySourcesItem(
       buildTargetId1,
-      emptyList(),
+      listOf("file:///example/externalSource1.py"),
     )
     val target1PythonOptionsItem = PythonOptionsItem(
       buildTargetId1,
