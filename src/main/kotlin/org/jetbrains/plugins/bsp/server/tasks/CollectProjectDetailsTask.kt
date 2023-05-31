@@ -57,7 +57,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private lateinit var uniqueJdkInfos: Set<JvmBuildTarget>
 
-  private lateinit var pythonSdks: Set<ProjectJdkImpl>
+  private var pythonSdks: Set<PythonSdk>? = null
 
   private val jdkTable = ProjectJdkTable.getInstance()
 
@@ -163,29 +163,23 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): ProjectJdkImpl? {
+  private data class PythonSdk (
+    val name: String,
+    val interpreter: String,
+    val dependencies: List<DependencySourcesItem>
+  )
+
+  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? {
     val pythonInfo = extractPythonBuildTarget(target) ?: return null
 
-    val allJdks = jdkTable.allJdks.toList()
-    val additionalData = PythonSdkAdditionalData()
-    val virtualFiles = dependenciesSources.mapNotNull {
-      URI.create(it.target.uri)
-        .toPath()
-        .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
-        .virtualFile
-    }.toSet()
-    additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
-
-    return SdkConfigurationUtil.createSdk(
-      allJdks,
-      URI.create(pythonInfo.interpreter).toPath().toString(),
-      PythonSdkType.getInstance(),
-      additionalData,
-      target.id.toString() + "-" + pythonInfo.version
+    return PythonSdk(
+      "${target.id.uri}-${pythonInfo.version}",
+      pythonInfo.interpreter,
+      dependenciesSources
     )
   }
 
-  private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<ProjectJdkImpl> {
+  private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
     return projectDetails.targets.mapNotNull { createPythonSdk(it, projectDetails.dependenciesSources) }.toSet()
   }
 
@@ -234,11 +228,29 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedPythonSdks() {
     bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
-    logPerformanceSuspend("add-bsp-fetched-python-sdks") { pythonSdks.forEach { addPythonSdkIfNeeded(it) } }
+    logPerformanceSuspend("add-bsp-fetched-python-sdks") { pythonSdks?.forEach { addPythonSdkIfNeeded(it) } }
     bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
   }
 
-  private suspend fun addPythonSdkIfNeeded(sdk: Sdk) {
+  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk) {
+    val allJdks = jdkTable.allJdks.toList()
+    val additionalData = PythonSdkAdditionalData()
+    val virtualFiles = pythonSdk.dependencies.mapNotNull {
+      URI.create(it.target.uri)
+        .toPath()
+        .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
+        .virtualFile
+    }.toSet()
+    additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
+
+    val sdk = SdkConfigurationUtil.createSdk(
+      allJdks,
+      URI.create(pythonSdk.interpreter).toPath().toString(),
+      PythonSdkType.getInstance(),
+      additionalData,
+      pythonSdk.name
+    )
+
     val existingJdk = jdkTable.findJdk(sdk.name, sdk.sdkType.name)
     if (existingJdk == null || existingJdk.homePath != sdk.homePath) {
       withContext(Dispatchers.EDT) {
