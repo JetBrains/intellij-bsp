@@ -7,7 +7,7 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import java.nio.file.Path
 
-internal data class PythonSdkInfo(val version: String, val interpreter: Path)
+internal data class PythonSdkInfo(val version: String, val originalName: String)
 
 internal data class PythonLibrary(val sources: String?) : WorkspaceModelEntity()
 
@@ -40,7 +40,7 @@ internal class PythonModuleWithSourcesUpdater(
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
     if (entityToAdd.sdkInfo != null) {
-      val sdkName = entityToAdd.module.name + "-" + entityToAdd.sdkInfo.version
+      val sdkName = "${entityToAdd.sdkInfo.originalName}-${entityToAdd.sdkInfo.version}"
       defaultDependencies + ModuleDependencyItem.SdkDependency(sdkName, "PythonSDK")
     } else defaultDependencies
 

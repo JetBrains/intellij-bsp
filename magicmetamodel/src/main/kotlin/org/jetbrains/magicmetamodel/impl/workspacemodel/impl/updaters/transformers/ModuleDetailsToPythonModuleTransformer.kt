@@ -56,7 +56,7 @@ internal class ModuleDetailsToPythonModuleTransformer(
     return if (pythonBuildTarget != null && pythonBuildTarget.version != null && pythonBuildTarget.interpreter != null)
       PythonSdkInfo(
         version = pythonBuildTarget.version,
-        interpreter = Path(pythonBuildTarget.interpreter)
+        originalName = inputEntity.target.id.uri
       )
     else null
   }

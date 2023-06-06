@@ -13,9 +13,7 @@ import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.workspaceModel.ide.virtualFile
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
@@ -45,6 +43,12 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.toPath
+
+private data class PythonSdk(
+  val name: String,
+  val interpreter: String,
+  val dependencies: List<DependencySourcesItem>
+)
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
@@ -104,8 +108,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       e is CompletionException && e.cause is TimeoutException
 
     fun errorCallback(e: Throwable) = when {
-      isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
-      isTimeoutException(e) -> bspSyncConsole.finishTask(taskId, "Timed out", FailureResultImpl(BspTasksBundle.message("task.timeout.message")))
+      isCancellationException(e) -> bspSyncConsole.finishTask(
+        taskId,
+        "Canceled",
+        FailureResultImpl("The task has been canceled!")
+      )
+
+      isTimeoutException(e) -> bspSyncConsole.finishTask(
+        taskId,
+        "Timed out",
+        FailureResultImpl(BspTasksBundle.message("task.timeout.message"))
+      )
+
       else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
     }
 
@@ -115,7 +129,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     server.onBuildInitialized()
 
     val projectDetails =
-      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
+      calculateProjectDetailsWithCapabilities(
+        server,
+        initializeBuildResult.capabilities,
+        { errorCallback(it) },
+        cancelOn
+      )
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collecting model done!")
 
@@ -153,7 +172,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
+    projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
   private fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails?) {
     projectDetails?.let {
@@ -162,12 +182,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       bspSyncConsole.finishSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos done!")
     }
   }
-
-  private data class PythonSdk (
-    val name: String,
-    val interpreter: String,
-    val dependencies: List<DependencySourcesItem>
-  )
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? {
     val pythonInfo = extractPythonBuildTarget(target) ?: return null
@@ -180,7 +194,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
-    return projectDetails.targets.mapNotNull { createPythonSdk(it, projectDetails.dependenciesSources) }.toSet()
+    return projectDetails.targets
+      .mapNotNull {
+        createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
+      }
+      .toSet()
   }
 
   private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
@@ -195,8 +213,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun postprocessingMMMSubtask() {
     addBspFetchedJdks()
-    addBspFetchedPythonSdks()
     applyChangesOnWorkspaceModel()
+    addBspFetchedPythonSdks()
   }
 
   private suspend fun addBspFetchedJdks() {
@@ -232,24 +250,30 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
   }
 
-  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk) {
+  private fun getPythonSdk(pythonSdk: PythonSdk): Sdk {
     val allJdks = jdkTable.allJdks.toList()
     val additionalData = PythonSdkAdditionalData()
-    val virtualFiles = pythonSdk.dependencies.mapNotNull {
-      URI.create(it.target.uri)
-        .toPath()
-        .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
-        .virtualFile
-    }.toSet()
+    val virtualFiles = pythonSdk.dependencies
+      .flatMap { it.sources }
+      .mapNotNull {
+        URI.create(it)
+          .toPath()
+          .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
+          .virtualFile
+      }.toSet()
     additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
 
-    val sdk = SdkConfigurationUtil.createSdk(
+    return SdkConfigurationUtil.createSdk(
       allJdks,
       URI.create(pythonSdk.interpreter).toPath().toString(),
       PythonSdkType.getInstance(),
       additionalData,
       pythonSdk.name
     )
+  }
+
+  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk) {
+    val sdk = getPythonSdk(pythonSdk)
 
     val existingJdk = jdkTable.findJdk(sdk.name, sdk.sdkType.name)
     if (existingJdk == null || existingJdk.homePath != sdk.homePath) {

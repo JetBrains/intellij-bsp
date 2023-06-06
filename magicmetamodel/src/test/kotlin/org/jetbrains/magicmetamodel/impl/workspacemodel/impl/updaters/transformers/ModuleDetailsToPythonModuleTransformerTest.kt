@@ -52,11 +52,11 @@ class ModuleDetailsToPythonModuleTransformerTest {
     projectRoot.toFile().deleteOnExit()
 
     val version = "3"
-    val interpreter = "/fake/path/to/interpreter"
+    val originalName = "fake-original-name"
 
     val sdkInfoJsonObject = JsonObject()
     sdkInfoJsonObject.addProperty("version", version)
-    sdkInfoJsonObject.addProperty("interpreter", interpreter)
+    sdkInfoJsonObject.addProperty("originalName", originalName)
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
@@ -165,7 +165,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       sourceRoots = listOf(expectedGenericSourceRoot1, expectedGenericSourceRoot2, expectedGenericSourceRoot3),
       resourceRoots = listOf(expectedPythonResourceRoot1),
       libraries = emptyList(),
-      sdkInfo = PythonSdkInfo(version = version, interpreter = Path(interpreter)),
+      sdkInfo = PythonSdkInfo(version = version, originalName = originalName),
     )
 
     validatePythonModule(pythonModule, expectedPythonModule)

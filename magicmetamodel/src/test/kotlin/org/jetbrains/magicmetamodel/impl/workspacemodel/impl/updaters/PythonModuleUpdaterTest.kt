@@ -76,7 +76,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           ),
         )
 
-        val sdkInfo = PythonSdkInfo(version = "3", interpreter = Path("fake/path/to/interpreter"))
+        val sdkInfo = PythonSdkInfo(version = "3", originalName = "fake-interpreter-name")
 
         val pythonModule = PythonModule(
           module = module,
@@ -112,7 +112,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 productionOnTest = true,
               ),
               ModuleDependencyItem.ModuleSourceDependency,
-              ModuleDependencyItem.SdkDependency("3", "PythonSDK")
+              ModuleDependencyItem.SdkDependency("module1-3", "PythonSDK")
             )
           ) {
             type = "PYTHON_MODULE"
@@ -242,7 +242,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           ),
         )
 
-        val sdkInfo1 = PythonSdkInfo(version = "3", interpreter = Path("fake/path/to/interpreter"))
+        val sdkInfo1 = PythonSdkInfo(version = "3", originalName = "fake-interpreter-name")
 
         val pythonModule1 = PythonModule(
           module = module1,
@@ -279,7 +279,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           ),
         )
 
-        val sdkInfo2 = PythonSdkInfo(version = "3", interpreter = Path("fake/path/to/interpreter"))
+        val sdkInfo2 = PythonSdkInfo(version = "3", originalName = "fake-interpreter-name")
 
         val pythonModule2 = PythonModule(
           module = module2,
@@ -314,7 +314,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("3", "PythonSDK"),
+              ModuleDependencyItem.SdkDependency("module1-3", "PythonSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
             )
           ) {
