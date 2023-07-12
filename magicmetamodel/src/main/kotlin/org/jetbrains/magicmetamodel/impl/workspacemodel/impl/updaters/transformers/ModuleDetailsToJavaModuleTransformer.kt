@@ -13,7 +13,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.name
@@ -99,13 +98,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       moduleDependencies = inputEntity.moduleDependencies
     )
 
-    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
-  }
-
-  private fun Module.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): Module {
-    val dummyJavaModuleDependencies = calculateDummyJavaModuleNames(inputEntity, projectBasePath)
-      .map { ModuleDependency(it) }
-    return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
