@@ -1,17 +1,19 @@
 package org.jetbrains.plugins.bsp.flow.open.wizard
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
-import com.google.gson.Gson
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.observable.properties.AtomicLazyProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.*
-import com.intellij.util.io.readText
+import com.intellij.ui.dsl.builder.Cell
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
+import com.intellij.ui.dsl.builder.bind
+import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 
 private data class ConnectionChoiceContainer(var connection: ConnectionFileOrNewConnection)
 
@@ -22,9 +24,10 @@ public open class ChooseConnectionFileOrNewConnectionStep(
 ) : ImportProjectWizardStep() {
 
   private val allAvailableConnectionMap by lazy { calculateAllAvailableConnections() }
+  private val log = logger<ChooseConnectionFileOrNewConnectionStep>()
 
   private fun calculateAllAvailableConnections(): Map<String, List<ConnectionFileOrNewConnection>> {
-    val connectionsFromFiles = calculateAvailableConnectionFiles(projectPath).map { ConnectionFile(it) }
+    val connectionsFromFiles = calculateAvailableConnectionFiles(projectPath)
     val connectionsFromGenerators = availableGenerators.map { NewConnection(it) }
     return (connectionsFromFiles + connectionsFromGenerators).groupBy { it.id }
   }
@@ -41,7 +44,8 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     }
   }
 
-  private fun calculateDefaultConnection(allConnections: List<ConnectionFileOrNewConnection>): ConnectionFileOrNewConnection {
+  private fun calculateDefaultConnection(
+    allConnections: List<ConnectionFileOrNewConnection>): ConnectionFileOrNewConnection {
     val newestConnectionFile = allConnections.filterIsInstance<ConnectionFile>().maxOrNull()
 
     return newestConnectionFile ?: allConnections.filterIsInstance<NewConnection>().first()
@@ -63,19 +67,24 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     }
   }
 
-  private fun calculateAvailableConnectionFiles(projectPath: VirtualFile): List<LocatedBspConnectionDetails> =
+  private fun calculateAvailableConnectionFiles(projectPath: VirtualFile): List<ConnectionFile> =
     projectPath.findChild(".bsp")
       ?.children
-      .orEmpty().toList()
+      .orEmpty()
+      .toList()
       .filter { it.extension == "json" }
-      .map { parseConnectionFile(it) }
+      .mapNotNull { parseConnectionFile(it) }
 
-  private fun parseConnectionFile(virtualFile: VirtualFile): LocatedBspConnectionDetails {
-    val fileContent = virtualFile.toNioPath().readText()
+  private fun parseConnectionFile(virtualFile: VirtualFile): ConnectionFile? {
+    val connectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(virtualFile)
+    if (connectionDetails.bspConnectionDetails == null) {
+      log.error("Parsing file '$virtualFile' to ConnectionFile failed!\n")
+      return null
+    }
 
-    return LocatedBspConnectionDetails(
-      bspConnectionDetails = Gson().fromJson(fileContent, BspConnectionDetails::class.java),
-      connectionFileLocation = virtualFile,
+    return ConnectionFile(
+      bspConnectionDetails = connectionDetails.bspConnectionDetails,
+      connectionFile = connectionDetails.connectionFileLocation
     )
   }
 
@@ -102,9 +111,8 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     radioButton: Cell<JBRadioButton>
   ) {
     when {
-      connections.size == 1 && connections.first() is NewConnection -> {
+      connections.size == 1 && connections.first() is NewConnection ->
         label("No connection files. New file will be created.")
-      }
 
       connections.size == 1 && connections.first() is ConnectionFile -> {
         val connectionFile = connections.first() as ConnectionFile

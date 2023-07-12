@@ -1,6 +1,6 @@
 package org.jetbrains.workspace.model.matchers.entries
 
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
@@ -15,7 +15,7 @@ public infix fun LibraryEntity.shouldBeEqual(expected: ExpectedLibraryEntity): U
 public infix fun Collection<LibraryEntity>.shouldContainExactlyInAnyOrder(
   expectedValues: Collection<ExpectedLibraryEntity>,
 ): Unit =
-  this.shouldContainExactlyInAnyOrder(::validateLibraryEntity, expectedValues)
+  this.shouldContainExactlyInAnyOrder({ actual, expected -> validateLibraryEntity(actual, expected) }, expectedValues)
 
 private fun validateLibraryEntity(
   actual: LibraryEntity,

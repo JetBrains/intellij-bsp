@@ -4,6 +4,7 @@
   <vendor>JetBrains</vendor>
 
   <depends>com.intellij.modules.platform</depends>
+  <depends>org.jetbrains.kotlin</depends>
   <depends
     optional="true"
     config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
@@ -35,16 +36,15 @@
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
 
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.server.connection.BspConnectionService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.BspProjectPropertiesService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService"/>
+<!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
+<!--                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"-->
+<!--                    overrides="true"/>-->
+
     <registryKey defaultValue="600" description="Timeout for BSP requests in seconds" key="bsp.request.timeout.seconds"/>
     <registryKey defaultValue="true" description="Choose default connection" key="bsp.wizard.choose.default.connection"/>
     <registryKey defaultValue="true" description="Enable chunking for BSP requests" key="bsp.request.chunking.enable"/>
     <registryKey defaultValue="100" description="Minimum chunk size for chunked BSP requests" key="bsp.request.chunking.size.min"/>
+    <registryKey defaultValue="true" description="Log error outputs from processes to build/sync console" key="bsp.log.error.outputs"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 
@@ -61,13 +61,15 @@
             icon="/icons/disconnect.svg"/>
     <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction"
             icon="/icons/reload.svg"/>
+    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction"
+            icon="/icons/restart.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ConnectAction"
             icon="/icons/connect.svg"/>
 
     <group id="Bsp.ActionsToolbar">
-      <reference id="Bsp.DisconnectAction"/>
       <reference id="Bsp.ConnectAction"/>
       <reference id="Bsp.ReloadAction"/>
+      <reference id="Bsp.DisconnectAction"/>
     </group>
 
   </actions>

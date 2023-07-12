@@ -1,6 +1,13 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.SourceItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
 import com.intellij.openapi.module.ModuleTypeId
 import io.kotest.inspectors.forAll
@@ -93,7 +100,10 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
-      pythonOptions = null
+      pythonOptions = null,
+      outputPathUris = emptyList(),
+      libraryDependencies = null,
+      moduleDependencies = emptyList()
     )
 
     // when
@@ -120,12 +130,15 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries  = emptyList(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 
-    javaModules shouldContainExactlyInAnyOrder Pair(listOf(expectedJavaModule), this::validateJavaModule)
+    javaModules shouldContainExactlyInAnyOrder (
+      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
+    )
   }
 
   @Test
@@ -192,7 +205,10 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
-      pythonOptions = null
+      pythonOptions = null,
+      outputPathUris = emptyList(),
+      moduleDependencies = emptyList(),
+      libraryDependencies = null
     )
 
     // when
@@ -219,9 +235,10 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries = emptyList(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 
     val expectedModule2 = Module(
@@ -244,12 +261,13 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries = emptyList(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 
-    javaModules shouldContainExactlyInAnyOrder Pair(listOf(expectedJavaModule1, expectedJavaModule2), this::validateJavaModule)
+    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
@@ -269,7 +287,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
     actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
-    actual.libraries shouldContainExactlyInAnyOrder expected.libraries
+    actual.moduleLevelLibraries shouldContainExactlyInAnyOrder expected.moduleLevelLibraries
   }
 
   private fun validateModule(actual: Module, expected: Module) {

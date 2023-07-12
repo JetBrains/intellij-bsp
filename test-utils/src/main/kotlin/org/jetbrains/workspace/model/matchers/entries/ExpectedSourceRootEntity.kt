@@ -1,10 +1,12 @@
 package org.jetbrains.workspace.model.matchers.entries
 
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
+import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.javaResourceRoots
+import com.intellij.java.workspace.entities.javaSourceRoots
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
@@ -20,7 +22,10 @@ public infix fun SourceRootEntity.shouldBeEqual(expected: ExpectedSourceRootEnti
 public infix fun Collection<SourceRootEntity>.shouldContainExactlyInAnyOrder(
   expectedValues: Collection<ExpectedSourceRootEntity>,
 ): Unit =
-  this.shouldContainExactlyInAnyOrder(::validateSourceRootEntity, expectedValues)
+  this.shouldContainExactlyInAnyOrder(
+    assertion = { actual, expected -> validateSourceRootEntity(actual, expected) },
+    expectedValues = expectedValues
+  )
 
 private fun validateSourceRootEntity(
   actual: SourceRootEntity,
@@ -30,11 +35,11 @@ private fun validateSourceRootEntity(
   actual.rootType shouldBe expected.sourceRootEntity.rootType
 
   actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
-    ::validateJavaSourceRootEntity,
+    { actualEntity, expectedEntity -> validateJavaSourceRootEntity(actualEntity, expectedEntity) },
     expected.sourceRootEntity.javaSourceRoots
   )
   actual.javaResourceRoots.shouldContainExactlyInAnyOrder(
-    ::validateJavaResourceRootEntity,
+    { actualEntity, expectedEntity -> validateJavaResourceRootEntity(actualEntity, expectedEntity) },
     expected.sourceRootEntity.javaResourceRoots
   )
 
@@ -42,16 +47,16 @@ private fun validateSourceRootEntity(
 }
 
 private fun validateJavaSourceRootEntity(
-  actual: JavaSourceRootPropertiesEntity,
-  expected: JavaSourceRootPropertiesEntity
+    actual: JavaSourceRootPropertiesEntity,
+    expected: JavaSourceRootPropertiesEntity
 ) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
 }
 
 private fun validateJavaResourceRootEntity(
-  actual: JavaResourceRootPropertiesEntity,
-  expected: JavaResourceRootPropertiesEntity
+    actual: JavaResourceRootPropertiesEntity,
+    expected: JavaResourceRootPropertiesEntity
 ) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath

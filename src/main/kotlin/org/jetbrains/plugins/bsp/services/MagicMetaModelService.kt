@@ -1,19 +1,21 @@
 package org.jetbrains.plugins.bsp.services
 
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
-import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
-import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
@@ -23,6 +25,8 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClas
   storages = [Storage("magicmetamodel.xml")],
   reportStatistic = true
 )
+@Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 public class MagicMetaModelService(private val project: Project) :
   ValueServiceWhichNeedsToBeInitialized<MagicMetaModelImpl>(),
   PersistentStateComponent<DefaultMagicMetaModelState> {
@@ -42,6 +46,8 @@ public class MagicMetaModelService(private val project: Project) :
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
       pythonOptions = emptyList(),
+      outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
@@ -70,9 +76,7 @@ public class MagicMetaModelService(private val project: Project) :
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
 
     val moduleNameProvider = obtainModuleNameProvider()
-
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
-    val projectBasePath = projectProperties.projectRootDir.toNioPath()
+    val projectBasePath = project.rootDir.toNioPath()
 
     return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
   }

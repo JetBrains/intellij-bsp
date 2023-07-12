@@ -9,10 +9,11 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
+import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
@@ -70,13 +71,14 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         module = module1,
         sourceRoots = listOf(sourceRoot1),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
+        kotlinAddendum = null,
       )
 
-      val expectedSourceItem = SourceItem("/root/dir/example/package/one", SourceItemKind.FILE, false)
+      val expectedSourceItem = SourceItem("file:///root/dir/example/package/one", SourceItemKind.FILE, false)
 
       // when
       val workspaceModelEntityUpdaterConfig =
@@ -85,14 +87,14 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
       // then
-      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map(WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer::invoke)
+      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map { WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer(it) }
       actual shouldBe listOf(expectedSourceItem)
     }
 
     @Test
     fun `should return correct SourceItem for a directory`() {
       // given
-      val sourcePath11 = URI.create("file:///").toPath()
+      val sourcePath11 = FileUtil.createTempDirectory("directory", "1", true).toPath()
       val sourcePackagePrefix11 = "example.package.one"
       val sourceRoot1 = JavaSourceRoot(
         sourcePath = sourcePath11,
@@ -116,13 +118,14 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         module = module1,
         sourceRoots = listOf(sourceRoot1),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = null,
+        kotlinAddendum = null,
       )
 
-      val expectedSourceItem = SourceItem("/", SourceItemKind.DIRECTORY, false)
+      val expectedSourceItem = SourceItem(sourcePath11.toUri().toString(), SourceItemKind.DIRECTORY, false)
 
       // when
       val workspaceModelEntityUpdaterConfig =
@@ -131,7 +134,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
       // then
-      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map(WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer::invoke)
+      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map { WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer(it) }
       actual shouldBe listOf(expectedSourceItem)
     }
 
@@ -158,9 +161,11 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = listOf(
           LibraryDependency(
             libraryName = "lib1",
+            isProjectLevelLibrary = false
           ),
           LibraryDependency(
             libraryName = "lib2",
+            isProjectLevelLibrary = false
           ),
         ),
         ModuleCapabilities(canRun = true, canTest = true, canCompile = false, canDebug = false)
@@ -223,10 +228,11 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         module = module1,
         sourceRoots = sourceRoots1,
         resourceRoots = resourceRoots1,
-        libraries = libraries1,
+        moduleLevelLibraries = libraries1,
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
+        kotlinAddendum = null,
       )
 
       val module2 = Module(
@@ -240,6 +246,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = listOf(
           LibraryDependency(
             libraryName = "lib1",
+            isProjectLevelLibrary = false
           ),
         ),
         ModuleCapabilities(canRun = true, canTest = false, canCompile = true, canDebug = false)
@@ -278,9 +285,10 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot2,
         sourceRoots = sourceRoots2,
         resourceRoots = resourceRoots2,
-        libraries = libraries2,
+        moduleLevelLibraries = libraries2,
         compilerOutput = compilerOutput2,
         jvmJdkInfo = null,
+        kotlinAddendum = null,
       )
 
       val module3 = Module(
@@ -300,9 +308,33 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot3,
         sourceRoots = emptyList(),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         compilerOutput = compilerOutput3,
         jvmJdkInfo = JvmJdkInfo(name = "13", javaHome = "fake/path/to/local_jdk"),
+        kotlinAddendum = null,
+      )
+
+      val rootModule = Module(
+        name = ".root",
+        type = "JAVA_MODULE",
+        modulesDependencies = emptyList(),
+        librariesDependencies = emptyList(),
+        ModuleCapabilities()
+      )
+      val rootModuleBaseDirContentRoot = ContentRoot(
+        url = projectBasePath,
+        excludedPaths = listOf("file:///output/dir", "file:///output/file.out").map { URI.create(it).toPath() }
+      )
+
+      val rootJavaModule = JavaModule(
+        module = rootModule,
+        baseDirContentRoot = rootModuleBaseDirContentRoot,
+        sourceRoots = emptyList(),
+        resourceRoots = emptyList(),
+        moduleLevelLibraries = emptyList(),
+        compilerOutput = null,
+        jvmJdkInfo = null,
+        kotlinAddendum = null,
       )
 
       // when
@@ -310,7 +342,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
       val workspaceModelEntityUpdaterConfig =
         WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
-        JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1, javaModule2))
+        JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1, javaModule2, rootJavaModule))
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
       }
       val loadedModules = loadedEntries(ModuleEntity::class.java)
@@ -321,7 +353,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
           loadedModules.asSequence(),
           sourceRoots.asSequence(),
           libraries.asSequence(),
-          listOf(module1, module2, module3).associate {
+          listOf(module1, module2, rootModule, module3).associate {
             it.name to BuildTargetIdentifier(it.name)
           }
         )
@@ -331,6 +363,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
       val expectedBuildTargetId1 = BuildTargetIdentifier("module1")
       val expectedBuildTargetId2 = BuildTargetIdentifier("module2")
       val expectedBuildTargetId3 = BuildTargetIdentifier("module3")
+      val expectedRootBuildTargetId = BuildTargetIdentifier(".root")
       val expectedBuildTarget1 = BuildTarget(
         expectedBuildTargetId1,
         emptyList(),
@@ -360,65 +393,75 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         emptyList(),
         BuildTargetCapabilities(true, true, true, true)
       )
+      val expectedRootBuildTarget = BuildTarget(
+        expectedRootBuildTargetId,
+        emptyList(),
+        emptyList(),
+        emptyList(),
+        BuildTargetCapabilities()
+      ).also { it.baseDirectory = projectBasePath.toUri().toString() }
 
       val expectedSourcesItem1 = SourcesItem(
         expectedBuildTargetId1,
         listOf(
-          SourceItem("/root/dir/example/package/one", SourceItemKind.FILE, false),
-          SourceItem("/root/dir/example/package/two", SourceItemKind.FILE, false)
+          SourceItem("file:///root/dir/example/package/one", SourceItemKind.FILE, false),
+          SourceItem("file:///root/dir/example/package/two", SourceItemKind.FILE, false)
         )
       )
       val expectedSourcesItem2 = SourcesItem(
         expectedBuildTargetId2,
         listOf(
-          SourceItem("/another/root/dir/another/example/package", SourceItemKind.FILE, false)
+          SourceItem("file:///another/root/dir/another/example/package", SourceItemKind.FILE, false)
         )
       )
       val expectedResourceItem1 = ResourcesItem(
         expectedBuildTargetId1, listOf(
-          "/root/dir/example/resource/File1.txt",
-          "/root/dir/example/resource/File2.txt",
+          "file:///root/dir/example/resource/File1.txt",
+          "file:///root/dir/example/resource/File2.txt",
         )
       )
       val expectedResourceItem2 = ResourcesItem(
         expectedBuildTargetId2, listOf(
-          "/another/root/dir/another/example/resource/File1.txt"
+          "file:///another/root/dir/another/example/resource/File1.txt"
         )
       )
       val expectedDependencySourceItem1 = DependencySourcesItem(
         expectedBuildTargetId1,
         listOf(
-          "/lib1/1.0.0/lib1-1.0.0-sources.jar",
-          "/lib2/2.0.0/lib2-2.0.0-sources.jar"
+          "file:///lib1/1.0.0/lib1-1.0.0-sources.jar",
+          "file:///lib2/2.0.0/lib2-2.0.0-sources.jar"
         )
       )
       val expectedDependencySourceItem2 = DependencySourcesItem(
         expectedBuildTargetId2,
-        listOf("/lib1/1.0.0/lib1-1.0.0-sources.jar")
+        listOf("file:///lib1/1.0.0/lib1-1.0.0-sources.jar")
       )
       val expectedJavacSourceItem1 = JavacOptionsItem(
         expectedBuildTargetId1,
         emptyList(),
         listOf(
-          "/lib1/1.0.0/lib1-1.0.0.jar",
-          "/lib2/2.0.0/lib2-2.0.0.jar"
+          "file:///lib1/1.0.0/lib1-1.0.0.jar",
+          "file:///lib2/2.0.0/lib2-2.0.0.jar"
         ),
         "",
       )
       val expectedJavacSourceItem2 = JavacOptionsItem(
         expectedBuildTargetId2,
         emptyList(),
-        listOf("/lib1/1.0.0/lib1-1.0.0.jar"),
+        listOf("file:///lib1/1.0.0/lib1-1.0.0.jar"),
         "",
       )
       val expectedProjectDetails = ProjectDetails(
-        listOf(expectedBuildTargetId1, expectedBuildTargetId2, expectedBuildTargetId3),
-        setOf(expectedBuildTarget1, expectedBuildTarget2, expectedBuildTarget3),
-        listOf(expectedSourcesItem1, expectedSourcesItem2),
-        listOf(expectedResourceItem1, expectedResourceItem2),
-        listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
-        listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
-        emptyList()
+        targetsId =
+          listOf(expectedBuildTargetId1, expectedBuildTargetId2, expectedRootBuildTargetId, expectedBuildTargetId3),
+        targets = setOf(expectedBuildTarget1, expectedBuildTarget2, expectedRootBuildTarget, expectedBuildTarget3),
+        sources = listOf(expectedSourcesItem1, expectedSourcesItem2),
+        resources = listOf(expectedResourceItem1, expectedResourceItem2),
+        dependenciesSources = listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
+        javacOptions = listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
+        pythonOptions = emptyList(),
+        outputPathUris = rootModuleBaseDirContentRoot.excludedPaths.map { it.toUri().toString() },
+        libraries = null
       )
 
       projectDetails shouldBe expectedProjectDetails

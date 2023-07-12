@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod")
-
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
@@ -53,7 +51,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target2"),
         BuildTargetIdentifier("//target3"),
       ),
-      BuildTargetCapabilities(),
+      BuildTargetCapabilities()
     )
 
     val dependencySourceItem1 = DependencySourcesItem(
@@ -79,9 +77,14 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
       ),
       dependencySources = listOf(dependencySourceItem1),
-      type = "JAVA_MODULE",
       javacOptions = javacOptions,
       pythonOptions = null,
+      type = "JAVA_MODULE",
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      ),
+      libraryDependencies = null
     )
 
     // when
@@ -102,9 +105,83 @@ class BspModuleDetailsToModuleTransformerTest {
       librariesDependencies = listOf(
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+          false,
         ),
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
+          false
+        ),
+      )
+    )
+
+    shouldBeIgnoringDependenciesOrder(module, expectedModule)
+  }
+
+  @Test
+  fun `should return module with associates when specified in BspModuleDetails`() {
+    // given
+    val targetName = "//target1"
+    val targetId = BuildTargetIdentifier(targetName)
+    val target = BuildTarget(
+      targetId,
+      emptyList(),
+      emptyList(),
+      listOf(
+        BuildTargetIdentifier("@maven//:test"),
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      ),
+      BuildTargetCapabilities()
+    )
+    val bspModuleDetails = BspModuleDetails(
+      target = target,
+      allTargetsIds = listOf(
+        BuildTargetIdentifier("//target1"),
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+        BuildTargetIdentifier("//target4"),
+        BuildTargetIdentifier("//target5"),
+      ),
+      dependencySources = listOf(),
+      type = "JAVA_MODULE",
+      javacOptions = null,
+      associates = listOf(
+        BuildTargetIdentifier("//target4"),
+        BuildTargetIdentifier("//target5"),
+      ),
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3")
+      ),
+      libraryDependencies = listOf(
+        BuildTargetIdentifier("@maven//:test")
+      )
+    )
+
+    // when
+    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+
+    // then
+    val expectedModule = Module(
+      name = targetName,
+      type = "JAVA_MODULE",
+      modulesDependencies = listOf(
+        ModuleDependency(
+          moduleName = "//target2",
+        ),
+        ModuleDependency(
+          moduleName = "//target3",
+        ),
+      ),
+      librariesDependencies = listOf(
+        LibraryDependency("@maven//:test", true)
+      ),
+      associates = listOf(
+        ModuleDependency(
+          moduleName = "//target4",
+        ),
+        ModuleDependency(
+          moduleName = "//target5",
         ),
       )
     )
@@ -168,6 +245,7 @@ class BspModuleDetailsToModuleTransformerTest {
         ),
       ),
       librariesDependencies = emptyList(),
+      associates = emptyList()
     )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -217,9 +295,14 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
       ),
       dependencySources = listOf(dependencySourceItem1),
-      type = "JAVA_MODULE",
       javacOptions = javacOptionsItem1,
+      type = "JAVA_MODULE",
       pythonOptions = null,
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      ),
+      libraryDependencies = null
     )
 
     val target2Name = "//target2"
@@ -233,7 +316,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target3"),
       ),
-      BuildTargetCapabilities(),
+      BuildTargetCapabilities()
     )
 
     val dependencySourceItem2 = DependencySourcesItem(
@@ -257,8 +340,12 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
       ),
       dependencySources = listOf(dependencySourceItem2),
-      type = "JAVA_MODULE",
       javacOptions = javacOptionsItem2,
+      type = "JAVA_MODULE",
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target3"),
+      ),
+      libraryDependencies = null,
       pythonOptions = null,
     )
 
@@ -286,7 +373,7 @@ class BspModuleDetailsToModuleTransformerTest {
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
         ),
-      ),
+      )
     )
 
     val expectedModule2 = Module(
@@ -304,10 +391,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
     )
 
-    modules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedModule1, expectedModule2),
-      this::shouldBeIgnoringDependenciesOrder
-    )
+    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test
@@ -416,10 +500,7 @@ class BspModuleDetailsToModuleTransformerTest {
       librariesDependencies = emptyList(),
     )
 
-    modules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedModule1, expectedModule2),
-      this::shouldBeIgnoringDependenciesOrder
-    )
+    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test
@@ -453,8 +534,10 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target2"),
       ),
       dependencySources = emptyList(),
-      type = "JAVA_MODULE",
       javacOptions = javacOptions,
+      type = "JAVA_MODULE",
+      moduleDependencies = emptyList(),
+      libraryDependencies = emptyList(),
       pythonOptions = null,
     )
 

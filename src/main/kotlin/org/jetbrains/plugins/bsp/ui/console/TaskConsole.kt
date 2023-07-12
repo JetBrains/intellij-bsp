@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction
 import java.io.File
 import java.net.URI
 
@@ -29,7 +30,7 @@ public class TaskConsole(
   private val basePath: String
 ) {
   private val tasksInProgress: MutableList<Any> = mutableListOf()
-  private val subtaskParentMap: MutableMap<Any, SubtaskParents> = mutableMapOf()
+  private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
 
   /**
    * Displays start of a task in this console.
@@ -49,6 +50,7 @@ public class TaskConsole(
   private fun doStartTask(taskId: Any, title: String, message: String, cancelAction: () -> Unit) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
+    addReloadActionToTheDescriptor(taskDescriptor)
     addCancelActionToTheDescriptor(taskId, taskDescriptor, cancelAction)
 
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
@@ -63,6 +65,15 @@ public class TaskConsole(
     val cancelAction = CancelSyncAction(doCancelAction, taskId)
     taskDescriptor.withAction(cancelAction)
   }
+
+  private fun addReloadActionToTheDescriptor(
+    taskDescriptor: DefaultBuildDescriptor
+  ) {
+    val reloadAction = ReloadAction()
+    taskDescriptor.withAction(reloadAction)
+  }
+
+  public fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
   /**
    * Displays finish of a task (and all its children) in this console.
@@ -195,6 +206,16 @@ public class TaskConsole(
       filePosition
     )
     taskView.onEvent(taskId, event)
+  }
+
+  /**
+   * Adds a message to the latest task in this console.
+   */
+  @Synchronized
+  public fun addMessage(message: String) {
+    val entry = subtaskParentMap.entries.lastOrNull()
+    val taskId = tasksInProgress.lastOrNull()
+    entry?.let { addMessage(it.key, message) } ?: taskId?.let { addMessage(taskId, message) }
   }
 
   /**

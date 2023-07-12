@@ -9,14 +9,16 @@ import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizard
 import org.jetbrains.plugins.bsp.flow.open.wizard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.plugins.bsp.server.connection.BspConnection
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
@@ -34,9 +36,7 @@ import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 public class BspStartupActivity : ProjectActivity {
 
   override suspend fun execute(project: Project) {
-    val projectProperties = BspProjectPropertiesService.getInstance(project).value
-
-    if (projectProperties.isBspProject) {
+    if (project.isBspProject) {
       doRunActivity(project)
     }
   }
@@ -44,15 +44,29 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun doRunActivity(project: Project) {
     RunConfigurationProducersDisabler(project)
 
-    val bspSyncConsoleService = BspConsoleService.getInstance(project)
-    bspSyncConsoleService.init()
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-    val isBspConnectionKnown = BspConnectionService.getInstance(project).value != null
+    try {
+      showWizardAndInitializeConnectionIfApplicable(project)
+    } catch (e: Exception) {
+      bspSyncConsole.startTask(
+        taskId = "bsp-pre-import",
+        title = "Pre-import",
+        message = "Pre-importing..."
+      )
+      bspSyncConsole.finishTask("bsp-pre-import", "Pre-import failed!", FailureResultImpl(e))
+    }
+  }
+
+  private suspend fun showWizardAndInitializeConnectionIfApplicable(project: Project) {
+    val connection = BspConnectionService.getInstance(project).value
+    val isBspConnectionKnown = isBspConnectionKnownOrThrow(connection)
 
     if (project.isNewProject() || !isBspConnectionKnown) {
       val connectionFileOrNewConnection = withContext(Dispatchers.EDT) {
         showWizardAndGetResult(project)
       }
+
       initializeConnectionOrCloseProject(connectionFileOrNewConnection, project)
       connectionFileOrNewConnection?.let {
         collectProject(project)
@@ -61,12 +75,20 @@ public class BspStartupActivity : ProjectActivity {
     }
   }
 
+  private fun isBspConnectionKnownOrThrow(connection: BspConnection?): Boolean =
+    if (connection is BspFileConnection) {
+      if (connection.locatedConnectionFile.bspConnectionDetails == null)
+        error("Parsing connection file '${connection.locatedConnectionFile.connectionFileLocation}' failed!")
+      true
+    } else {
+      connection != null
+    }
+
   private fun showWizardAndGetResult(
     project: Project,
   ): ConnectionFileOrNewConnection? {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
     val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
-      projectProperties.projectRootDir,
+      project.rootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
     )
     val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)
@@ -74,7 +96,10 @@ public class BspStartupActivity : ProjectActivity {
     else null
   }
 
-  private fun initializeConnectionOrCloseProject(connectionFileOrNewConnection: ConnectionFileOrNewConnection?, project: Project) =
+  private fun initializeConnectionOrCloseProject(
+    connectionFileOrNewConnection: ConnectionFileOrNewConnection?,
+    project: Project
+  ) =
     when (connectionFileOrNewConnection) {
       is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
       is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
@@ -98,7 +123,13 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private fun initializeConnectionFromFile(project: Project, connectionFileInfo: ConnectionFile) {
-    val bspFileConnection = BspFileConnection(project, connectionFileInfo.locatedBspConnectionDetails)
+    val bspFileConnection = BspFileConnection(
+      project,
+      LocatedBspConnectionDetails(
+        connectionFileInfo.bspConnectionDetails,
+        connectionFileInfo.connectionFile
+      )
+    )
 
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.value = bspFileConnection
@@ -116,7 +147,8 @@ public class BspStartupActivity : ProjectActivity {
       cancelAction = { collectProjectDetailsTask.cancelExecution() }
     )
     try {
-      BspConnectionService.getInstance(project).value!!.connect("bsp-import")
+      BspConnectionService.getInstance(project).value!!
+        .connect("bsp-import") { collectProjectDetailsTask.cancelExecution() }
       collectProjectDetailsTask.execute(
         name = "Syncing...",
         cancelable = true

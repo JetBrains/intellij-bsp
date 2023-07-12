@@ -2,8 +2,8 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest
@@ -33,11 +33,11 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentPath = Path("/root/dir/example/resource/File.txt")
     val contentRoot = ContentRoot(
       url = contentPath,
-      excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
+      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
     )
 
     // when
-    val returnedContentRootEntity = runTestWriteAction {
+    runTestWriteAction {
       contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
     }
 
@@ -60,7 +60,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentPath1 = Path("/root/dir/example/resource/File1.txt")
     val contentRoot1 = ContentRoot(
       url = contentPath1,
-      excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
+      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
     )
 
     val contentPath2 = Path("/root/dir/example/resource/File2.txt")
@@ -76,7 +76,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentRoots = listOf(contentRoot1, contentRoot2, contentRoot3)
 
     // when
-    val returnedContentRootEntries = runTestWriteAction {
+    runTestWriteAction {
       contentRootEntityUpdater.addEntries(contentRoots, parentModuleEntity)
     }
 

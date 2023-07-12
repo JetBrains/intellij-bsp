@@ -1,15 +1,15 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addContentRootEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
 internal data class ContentRoot(
   val url: Path,
-  val excludedUrls: List<Path> = ArrayList(),
+  val excludedPaths: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 
 internal class ContentRootEntityUpdater(
@@ -28,17 +28,26 @@ internal class ContentRootEntityUpdater(
     moduleEntity: ModuleEntity,
     entityToAdd: ContentRoot,
   ): ContentRootEntity {
-    val toExclude = if (moduleEntity.name == ".bsp-workspace-root") listOf("bazel-*") else DEFAULT_PATTERNS_URLS // todo this should be done only for bazelbsp projects
-    return builder.addContentRootEntity(
-      url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-      excludedUrls = entityToAdd.excludedUrls
-        .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) },
-      excludedPatterns = toExclude,
-      module = moduleEntity,
+    val url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    val excludedUrls = entityToAdd.excludedPaths
+            .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) }
+    val excludes = excludedUrls.map {
+      builder.addEntity(
+        ExcludeUrlEntity(
+          url = it,
+          entitySource = moduleEntity.entitySource
+        )
+      )
+    }
+    return builder.addEntity(
+      ContentRootEntity(
+        url = url,
+        excludedPatterns = ArrayList(),
+        entitySource = moduleEntity.entitySource
+      ) {
+        this.excludedUrls = excludes
+        this.module = moduleEntity
+      }
     )
-  }
-
-  private companion object {
-    private val DEFAULT_PATTERNS_URLS = ArrayList<String>()
   }
 }

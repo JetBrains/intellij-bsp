@@ -1,7 +1,14 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.*
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.modifyEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 
 internal data class ModuleDependency(
@@ -10,6 +17,7 @@ internal data class ModuleDependency(
 
 internal data class LibraryDependency(
   val libraryName: String,
+  val isProjectLevelLibrary: Boolean = false
 ) : WorkspaceModelEntity()
 
 internal data class Module(
@@ -19,6 +27,7 @@ internal data class Module(
   val librariesDependencies: List<LibraryDependency>,
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val languageIds: List<String> = listOf(),
+  val associates: List<ModuleDependency> = listOf(),
 ) : WorkspaceModelEntity()
 
 internal class ModuleCapabilities(private val map: Map<String, String> = mapOf()) :
@@ -61,20 +70,27 @@ internal class ModuleEntityUpdater(
     builder: MutableEntityStorage,
     entityToAdd: Module,
   ): ModuleEntity {
-    val modulesDependencies = entityToAdd.modulesDependencies.map(this::toModuleDependencyItemModuleDependency)
+    val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
+    val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
-    val moduleEntity = builder.addModuleEntity(
-      name = entityToAdd.name,
-      dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
-      source = DoNotSaveInDotIdeaDirEntitySource,
-      type = entityToAdd.type
+    val moduleEntity = builder.addEntity(
+      ModuleEntity(
+        name = entityToAdd.name,
+        dependencies = modulesDependencies + associatesDependencies + librariesDependencies + defaultDependencies,
+        entitySource = BspEntitySource
+      ) {
+        this.type = entityToAdd.type
+      }
     )
-    val imlData = builder.addModuleCustomImlDataEntity(
-      null,
-      entityToAdd.capabilities,
-      moduleEntity,
-      DoNotSaveInDotIdeaDirEntitySource
+    val imlData = builder.addEntity(
+      ModuleCustomImlDataEntity(
+        customModuleOptions = HashMap(entityToAdd.capabilities),
+        entitySource = BspEntitySource
+      ) {
+        this.rootManagerTagCustomData = null
+        this.module = moduleEntity
+      }
     )
     builder.modifyEntity(moduleEntity) {
       this.customImlData = imlData
@@ -93,17 +109,20 @@ internal class ModuleEntityUpdater(
     )
 
   private fun toModuleDependencyItemLibraryDependency(
-    libraryDependency: LibraryDependency,
-    moduleName: String
-  ): ModuleDependencyItem.Exportable.LibraryDependency =
-    ModuleDependencyItem.Exportable.LibraryDependency(
-      library = LibraryId(
-        name = libraryDependency.libraryName,
-        tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName)),
-      ),
-      exported = false,
-      scope = ModuleDependencyItem.DependencyScope.COMPILE,
+          libraryDependency: LibraryDependency,
+          moduleName: String
+  ): ModuleDependencyItem.Exportable.LibraryDependency {
+    val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
+      LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
+    return ModuleDependencyItem.Exportable.LibraryDependency(
+            library = LibraryId(
+                    name = libraryDependency.libraryName,
+                    tableId = libraryTableId,
+            ),
+            exported = false,
+            scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
+  }
 }
 
 // TODO TEST TEST TEST TEST TEST !!11!1!
@@ -123,7 +142,7 @@ internal class WorkspaceModuleRemover(
     val allModules =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(ModuleEntity::class.java)
 
-    allModules.forEach(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder::removeEntity)
+    allModules.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
 
     val allLibraries =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(LibraryEntity::class.java)

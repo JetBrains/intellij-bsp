@@ -3,9 +3,10 @@ package org.jetbrains.plugins.bsp.server.connection
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
@@ -49,12 +50,12 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     this.buildToolId = state.generatorId
   }
 
-  public override fun connect(taskId: Any) {
+  public override fun connect(taskId: Any, errorCallback: () -> Unit) {
     if (fileConnection == null) {
       generateNewConnectionFile(taskId)
     }
 
-    fileConnection?.connect(taskId)
+    fileConnection?.connect(taskId, errorCallback)
   }
 
   public override fun disconnect() {
@@ -66,6 +67,9 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
   public fun hasFileConnectionDefined(): Boolean =
     fileConnection != null
+
+  public fun getLocatedBspConnectionDetails(): LocatedBspConnectionDetails? =
+    fileConnection?.locatedConnectionFile
 
   override fun toState(): BspGeneratorConnectionState =
     BspGeneratorConnectionState(
@@ -80,8 +84,6 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   }
 
   private fun generateNewConnectionFile(taskId: Any) {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
-
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
@@ -89,15 +91,20 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
     try {
       val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
-        projectProperties.projectRootDir,
-        consoleOutputStream
+        project.rootDir,
+        consoleOutputStream,
+        project
       )
       // TODO
-      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)!!
+      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
       fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
       bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details done!")
     } catch (e: Exception) {
-      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details failed!", FailureResultImpl(e))
+      bspSyncConsole.finishSubtask(
+        subtaskId = generateConnectionFileSubtaskId,
+        message = "Generating BSP connection details failed!",
+        result = FailureResultImpl(e)
+      )
     }
   }
 

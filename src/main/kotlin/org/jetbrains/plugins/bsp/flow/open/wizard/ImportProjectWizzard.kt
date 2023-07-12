@@ -5,7 +5,7 @@ import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import javax.swing.JComponent
 
@@ -32,12 +32,10 @@ public class ImportProjectWizard(
   private val firstStep: ChooseConnectionFileOrNewConnectionStep
 
   init {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
     firstStep = ChooseConnectionFileOrNewConnectionStep(
-      projectProperties.projectRootDir,
-      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators,
-      this::updateWizardButtonsToGeneratorSelection
-    )
+      project.rootDir,
+      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators
+    ) { updateWizardButtonsToGeneratorSelection() }
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
 
     addStep(firstStep)
@@ -93,13 +91,13 @@ public class ImportProjectWizard(
     "TODO"
 
   override fun proceedToNextStep() {
-    doIfOnConnectionChoiceStep(::addGeneratorSteps)
+    doIfOnConnectionChoiceStep { addGeneratorSteps() }
     super.proceedToNextStep()
   }
 
   private fun addGeneratorSteps() {
     removeAllFollowingSteps()
-    calculateGeneratorSteps().forEach(::addStep)
+    calculateGeneratorSteps().forEach { addStep(it) }
   }
 
   private fun removeAllFollowingSteps() {

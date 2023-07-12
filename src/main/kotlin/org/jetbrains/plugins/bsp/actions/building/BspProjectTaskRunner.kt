@@ -3,27 +3,27 @@ package org.jetbrains.plugins.bsp.actions.building
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
-import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.util.toPromise
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
-import com.intellij.util.ModalityUiUtil
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
-import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {
 
-  override fun canRun(project: Project, projectTask: ProjectTask): Boolean {
-    val isBspProject = BspProjectPropertiesService.getInstance(project).value.isBspProject
-    return isBspProject && canRun(projectTask)
-  }
+  override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
+    project.isBspProject && canRun(projectTask)
 
   override fun canRun(projectTask: ProjectTask): Boolean = projectTask is ModuleBuildTask
 
@@ -34,10 +34,8 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   ): Promise<Result> {
     val result = AsyncPromise<Result>()
 
-    ModalityUiUtil.invokeLaterIfNeeded(ModalityState.defaultModalityState(), project.disposed) {
-      val res = runModuleBuildTasks(project, tasks.filterIsInstance<ModuleBuildTask>())
-      result.setResult(res)
-    }
+    val res = runModuleBuildTasks(project, tasks.filterIsInstance<ModuleBuildTask>())
+    res.then { result.setResult(it) }
 
     return result
   }
@@ -45,7 +43,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private fun runModuleBuildTasks(
     project: Project,
     tasks: List<ModuleBuildTask>
-  ): Result {
+  ): Promise<Result> {
     val targetsToBuild = obtainTargetsToBuild(project, tasks)
     return buildBspTargets(project, targetsToBuild)
   }
@@ -77,10 +75,17 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private infix fun String.isSubmoduleOf(module: String): Boolean =
     this.startsWith("$module.", false)
 
-  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Result {
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
-    val result = BuildTargetTask(project).executeIfConnected(targetIdentifiers)
-    return result?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE
+    val result = BspCoroutineService.getInstance(project).startAsync {
+      withBackgroundProgress(project, "Building project...") {
+        BuildTargetTask(project).connectAndExecute(targetIdentifiers)
+      }
+    }
+    return result
+      .toPromise()
+      .then { it?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE }
   }
 
   private fun CompileResult.toTaskRunnerResult() =

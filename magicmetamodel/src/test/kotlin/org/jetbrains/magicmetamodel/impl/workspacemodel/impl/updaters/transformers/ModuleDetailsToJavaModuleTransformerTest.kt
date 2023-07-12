@@ -1,8 +1,15 @@
-@file:Suppress("LongMethod")
-
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
@@ -11,19 +18,32 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinAddendum
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
+import org.jetbrains.workspace.model.constructors.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
+import kotlin.io.path.toPath
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest {
 
-  val projectBasePath = Path("").toAbsolutePath()
+  val projectBasePath: Path = Path("").toAbsolutePath()
 
   @Test
   fun `should return no java modules roots for no modules details`() {
@@ -55,7 +75,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget = BuildTarget(
       buildTargetId,
       listOf("library"),
-      listOf("java"),
+      emptyList(),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -117,6 +137,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       "file:///compiler/output.jar",
     )
 
+    val outputPathUris = listOf("file:///output/file1.out", "file:///output/file2.out")
+
     val moduleDetails = ModuleDetails(
       target = buildTarget,
       allTargetsIds = listOf(
@@ -129,6 +151,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = javacOptionsItem,
       pythonOptions = null,
+      outputPathUris = outputPathUris,
+      libraryDependencies = null,
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
+      ),
     )
 
     // when
@@ -150,7 +178,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
       )
     )
 
-    val expectedBaseDirContentRoot = ContentRoot(projectRoot.toAbsolutePath())
+    val expectedBaseDirContentRoot = ContentRoot(
+      url = projectRoot.toAbsolutePath(),
+      excludedPaths = outputPathUris.map { URI.create(it).toPath() },
+    )
 
     val expectedJavaSourceRoot1 = JavaSourceRoot(
       sourcePath = file1APath,
@@ -194,9 +225,116 @@ class ModuleDetailsToJavaModuleTransformerTest {
       baseDirContentRoot = expectedBaseDirContentRoot,
       sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
       resourceRoots = listOf(expectedJavaResourceRoot1),
-      libraries = listOf(expectedLibrary1, expectedLibrary2),
       compilerOutput = Path("/compiler/output.jar"),
       jvmJdkInfo = JvmJdkInfo(name = "${projectBasePath.name}-$javaVersion", javaHome = javaHome),
+      kotlinAddendum = null,
+      moduleLevelLibraries = listOf(
+        expectedLibrary1,
+        expectedLibrary2
+      )
+    )
+
+    validateJavaModule(javaModule, expectedJavaModule)
+  }
+
+  @Test
+  fun `should return java module with associates as dependencies when specified`() {
+    // given
+    val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
+    projectRoot.toFile().deleteOnExit()
+
+    val javaHome = "/fake/path/to/local_jdk"
+    val javaVersion = "11"
+
+    val kotlinBuildTarget = KotlinBuildTarget(
+      languageVersion = "1.8",
+      apiVersion = "1.8",
+      kotlincOptions = null,
+      associates = listOf(
+        BuildTargetIdentifier("//target4"),
+        BuildTargetIdentifier("//target5")
+      ),
+      jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion)
+    )
+
+    val buildTargetId = BuildTargetIdentifier("module1")
+    val buildTarget = BuildTarget(
+      buildTargetId,
+      listOf("library"),
+      emptyList(),
+      listOf(
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
+        BuildTargetIdentifier("@maven//:lib1"),
+      ),
+      BuildTargetCapabilities()
+    )
+    buildTarget.baseDirectory = projectRoot.toUri().toString()
+    buildTarget.dataKind = "kotlin"
+    buildTarget.data = kotlinBuildTarget
+
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
+    val moduleDetails = ModuleDetails(
+      target = buildTarget,
+      allTargetsIds = listOf(
+        BuildTargetIdentifier("module1"),
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
+      ),
+      sources = listOf(),
+      resources = listOf(),
+      dependenciesSources = listOf(),
+      javacOptions = null,
+      outputPathUris = listOf(),
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3")
+      ),
+      libraryDependencies = listOf(
+        BuildTargetIdentifier("@maven//:lib1")
+      )
+    )
+
+    // when
+    val javaModule =
+      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+
+    // then
+    val expectedModule = Module(
+      name = "module1",
+      type = "JAVA_MODULE",
+      modulesDependencies = listOf(
+        ModuleDependency("module2"),
+        ModuleDependency("module3"),
+      ),
+      librariesDependencies = listOf(
+        LibraryDependency("@maven//:lib1", true)
+      ),
+      associates = listOf(
+        ModuleDependency("//target4"),
+        ModuleDependency("//target5")
+      )
+    )
+
+    val expectedBaseDirContentRoot = ContentRoot(
+      url = projectRoot.toAbsolutePath(),
+      excludedPaths = listOf(),
+    )
+
+    val expectedJavaModule = JavaModule(
+      module = expectedModule,
+      baseDirContentRoot = expectedBaseDirContentRoot,
+      sourceRoots = listOf(),
+      resourceRoots = listOf(),
+      moduleLevelLibraries = listOf(),
+      compilerOutput = Path("/compiler/output.jar"),
+      jvmJdkInfo = JvmJdkInfo(name = "${projectBasePath.name}-$javaVersion", javaHome = javaHome),
+      kotlinAddendum = KotlinAddendum(
+        languageVersion = kotlinBuildTarget.languageVersion,
+        apiVersion = kotlinBuildTarget.apiVersion,
+        kotlincOptions = kotlinBuildTarget.kotlincOptions
+      ),
     )
 
     validateJavaModule(javaModule, expectedJavaModule)
@@ -213,7 +351,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget1 = BuildTarget(
       buildTargetId1,
       listOf("library"),
-      listOf("java"),
+      emptyList(),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -277,6 +415,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       "file:///compiler/output1.jar",
     )
+    val target1OutputPathUris = listOf("file:///output/dir1a", "file:///output/file1b.out")
 
     val moduleDetails1 = ModuleDetails(
       target = buildTarget1,
@@ -290,6 +429,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = target1JavacOptionsItem,
       pythonOptions = null,
+      outputPathUris = target1OutputPathUris,
+      libraryDependencies = null,
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3")
+      ),
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -299,7 +444,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget2 = BuildTarget(
       buildTargetId2,
       listOf("test"),
-      listOf("java"),
+      emptyList(),
       listOf(
         BuildTargetIdentifier("module3"),
         BuildTargetIdentifier("@maven//:lib1"),
@@ -339,6 +484,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
       "file:///compiler/output2.jar",
     )
+    val target2OutputPathUris = listOf("file:///output/dir2a", "file:///output/file2b.out")
 
     val moduleDetails2 = ModuleDetails(
       target = buildTarget2,
@@ -352,6 +498,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = target2JavacOptionsItem,
       pythonOptions = null,
+      outputPathUris = target2OutputPathUris,
+      libraryDependencies = null,
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("module3"),
+      ),
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -375,7 +526,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
       )
     )
 
-    val expectedBaseDirContentRoot1 = ContentRoot(module1Root)
+    val expectedBaseDirContentRoot1 = ContentRoot(
+      url = module1Root,
+      excludedPaths = target1OutputPathUris.map { URI.create(it).toPath() },
+    )
 
     val expectedJavaSourceRoot11 = JavaSourceRoot(
       sourcePath = file1APath,
@@ -403,25 +557,15 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resourcePath = resourceFilePath11.parent,
     )
 
-    val expectedLibrary11 = Library(
-      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
-    )
-    val expectedLibrary12 = Library(
-      displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
-    )
-
     val expectedJavaModule1 = JavaModule(
       module = expectedModule1,
       baseDirContentRoot = expectedBaseDirContentRoot1,
       sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12, expectedJavaSourceRoot13),
       resourceRoots = listOf(expectedJavaResourceRoot11),
-      libraries = listOf(expectedLibrary11, expectedLibrary12),
       compilerOutput = Path("/compiler/output1.jar"),
       jvmJdkInfo = null,
+      kotlinAddendum = null,
+      moduleLevelLibraries = null,
     )
 
     val expectedModule2 = Module(
@@ -431,10 +575,15 @@ class ModuleDetailsToJavaModuleTransformerTest {
         ModuleDependency("module3"),
         ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))
       ),
-      librariesDependencies = listOf(LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")),
+      librariesDependencies = listOf(
+        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")
+      ),
     )
 
-    val expectedBaseDirContentRoot2 = ContentRoot(module2Root)
+    val expectedBaseDirContentRoot2 = ContentRoot(
+      url = module2Root,
+      excludedPaths = target2OutputPathUris.map { URI.create(it).toPath() },
+    )
 
     val expectedJavaSourceRoot21 = JavaSourceRoot(
       sourcePath = dir1CPath,
@@ -448,24 +597,19 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resourcePath = resourceDirPath21,
     )
 
-    val expectedLibrary21 = Library(
-      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
-    )
-
     val expectedJavaModule2 = JavaModule(
       module = expectedModule2,
       baseDirContentRoot = expectedBaseDirContentRoot2,
       sourceRoots = listOf(expectedJavaSourceRoot21),
       resourceRoots = listOf(expectedJavaResourceRoot21),
-      libraries = listOf(expectedLibrary21),
       compilerOutput = Path("/compiler/output2.jar"),
       jvmJdkInfo = null,
+      kotlinAddendum = null,
+      moduleLevelLibraries = null
     )
 
-    javaModules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedJavaModule1, expectedJavaModule2), this::validateJavaModule
+    javaModules shouldContainExactlyInAnyOrder (
+      listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
     )
   }
 
@@ -486,7 +630,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
     actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
-    actual.libraries shouldContainExactlyInAnyOrder expected.libraries
     actual.jvmJdkInfo shouldBe expected.jvmJdkInfo
   }
 

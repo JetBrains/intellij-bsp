@@ -25,6 +25,7 @@ dependencies {
   testImplementation(project(":test-utils"))
   implementation(libs.bsp4j)
   implementation(libs.gson)
+  implementation(libs.coursier)
 
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)

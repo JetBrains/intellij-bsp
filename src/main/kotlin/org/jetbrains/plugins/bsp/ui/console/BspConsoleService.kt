@@ -2,24 +2,23 @@ package org.jetbrains.plugins.bsp.ui.console
 
 import com.intellij.build.BuildViewManager
 import com.intellij.build.SyncViewManager
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.rootDir
 
-public class BspConsoleService(private val project: Project) {
+@Service(Service.Level.PROJECT)
+public class BspConsoleService(project: Project) {
 
-  public lateinit var bspBuildConsole: TaskConsole
-    private set
+  public val bspBuildConsole: TaskConsole
 
-  public lateinit var bspSyncConsole: TaskConsole
-    private set
+  public val bspSyncConsole: TaskConsole
 
   public val bspTestConsole: BspTargetTestConsole = BspTargetTestConsole()
 
   public val bspRunConsole: BspTargetRunConsole = BspTargetRunConsole()
 
-  public fun init() {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
-    val basePath = projectProperties.projectRootDir.path
+  init {
+    val basePath = project.rootDir.path
 
     bspBuildConsole = TaskConsole(project.getService(BuildViewManager::class.java), basePath)
     bspSyncConsole = TaskConsole(project.getService(SyncViewManager::class.java), basePath)

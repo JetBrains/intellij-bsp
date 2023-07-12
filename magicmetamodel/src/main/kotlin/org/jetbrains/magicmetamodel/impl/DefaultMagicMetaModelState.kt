@@ -2,16 +2,21 @@ package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
+import com.google.gson.Gson
+import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlinBuildTarget
 
 // TODO, we can do it better, but for now it should be good enough:
 // the pros (in my opinion @abrams27) of this solution:
@@ -43,6 +48,13 @@ public data class BuildTargetIdentifierState(
 public fun BuildTargetIdentifier.toState(): BuildTargetIdentifierState =
   BuildTargetIdentifierState(uri)
 
+public fun LibraryItem.toState(): LibraryItemState =
+        LibraryItemState(
+                id = this.id.toState(),
+                dependencies = this.dependencies.map { it.toState() },
+                uris = this.jars
+        )
+
 
 public data class BuildTargetCapabilitiesState(
   public var canCompile: Boolean = false,
@@ -63,6 +75,19 @@ public fun BuildTargetCapabilities.toState(): BuildTargetCapabilitiesState =
     canDebug = canDebug,
   )
 
+public data class LibraryItemState(
+        public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
+        public var dependencies: List<BuildTargetIdentifierState> = emptyList(),
+        public var uris: List<String> = emptyList(),
+) : ConvertableFromState<LibraryItem> {
+
+  public override fun fromState(): LibraryItem =
+          LibraryItem(
+                  id.fromState(),
+                  dependencies.map { it.fromState() },
+                  emptyList()
+          )
+}
 
 public data class BuildTargetState(
   public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
@@ -73,8 +98,7 @@ public data class BuildTargetState(
   public var dependencies: List<BuildTargetIdentifierState> = emptyList(),
   public var capabilities: BuildTargetCapabilitiesState = BuildTargetCapabilitiesState(),
   public var dataKind: String? = null,
-  // TODO: it cant be Any - we cant serialize it
-  public var data: Any? = null,
+  public var data: String? = null,
 ) : ConvertableFromState<BuildTarget> {
 
   public override fun fromState(): BuildTarget =
@@ -88,7 +112,11 @@ public data class BuildTargetState(
       displayName = this@BuildTargetState.displayName
       baseDirectory = this@BuildTargetState.baseDirectory
       dataKind = this@BuildTargetState.dataKind
-      data = this@BuildTargetState.data
+      data = when(this@BuildTargetState.dataKind) {
+        BuildTargetDataKind.JVM -> Gson().fromJson(this@BuildTargetState.data, JvmBuildTarget::class.java)
+        "kotlin" -> Gson().fromJson(this@BuildTargetState.data, KotlinBuildTarget::class.java)
+        else -> null
+      }
     }
 }
 
@@ -102,7 +130,7 @@ public fun BuildTarget.toState(): BuildTargetState =
     dependencies = dependencies.map { it.toState() },
     capabilities = capabilities.toState(),
     dataKind = dataKind,
-    data = data,
+    data = Gson().toJson(data),
   )
 
 
@@ -170,10 +198,10 @@ public class DependencySourcesItemState(
 }
 
 public fun DependencySourcesItem.toState(): DependencySourcesItemState =
-  DependencySourcesItemState(
-    target = target.toState(),
-    sources = sources,
-  )
+    DependencySourcesItemState(
+      target = target.toState(),
+      sources = sources,
+    )
 
 
 public class JavacOptionsItemState(
@@ -190,7 +218,7 @@ public class JavacOptionsItemState(
 public fun JavacOptionsItem.toState(): JavacOptionsItemState =
   JavacOptionsItemState(
     target = target.toState(),
-    options = options,
+    options= options,
     classpath = classpath,
     classDirectory = classDirectory,
   )
@@ -218,7 +246,9 @@ public data class ProjectDetailsState(
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: List<JavacOptionsItemState> = emptyList(),
   public var pythonOptions: List<PythonOptionsItemState> = emptyList(),
-) : ConvertableFromState<ProjectDetails> {
+  public var outputPathUris: List<String> = emptyList(),
+  public var libraries: List<LibraryItemState>? = emptyList(),
+  ) : ConvertableFromState<ProjectDetails> {
 
   public override fun fromState(): ProjectDetails =
     ProjectDetails(
@@ -229,6 +259,8 @@ public data class ProjectDetailsState(
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions.map { it.fromState() },
       pythonOptions = pythonOptions.map { it.fromState() },
+      outputPathUris = outputPathUris,
+      libraries = libraries?.map { it.fromState() },
     )
 }
 
@@ -240,7 +272,8 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions.map { it.toState() },
-    pythonOptions = pythonOptions.map { it.toState() }
+    pythonOptions = pythonOptions.map { it.toState() },
+    libraries = libraries?.map { it.toState() }
   )
 
 public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetIdentifier>): ProjectDetailsState =
@@ -251,7 +284,8 @@ public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetId
     resources = resources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     dependenciesSources = dependenciesSources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    pythonOptions = pythonOptions.filterNot { loaded.contains(it.target) }.map { it.toState() }
+    pythonOptions = pythonOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    libraries = libraries?.map { it.toState() }
   )
 
 
@@ -263,7 +297,10 @@ public data class ModuleDetailsState(
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: JavacOptionsItemState? = null,
   public var pythonOptions: PythonOptionsItemState? = null,
-) : ConvertableFromState<ModuleDetails> {
+  public var outputPathUris: List<String> = emptyList(),
+  public var libraryDependencies: List<BuildTargetIdentifierState>? = emptyList(),
+  public var moduleDependencies: List<BuildTargetIdentifierState> = emptyList(),
+  ) : ConvertableFromState<ModuleDetails> {
 
   public override fun fromState(): ModuleDetails =
     ModuleDetails(
@@ -274,6 +311,9 @@ public data class ModuleDetailsState(
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions?.fromState(),
       pythonOptions = pythonOptions?.fromState(),
+      outputPathUris = outputPathUris,
+      libraryDependencies = libraryDependencies?.map { it.fromState() },
+      moduleDependencies = moduleDependencies.map { it.fromState() }
     )
 }
 
@@ -286,12 +326,16 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions?.toState(),
     pythonOptions = pythonOptions?.toState(),
+    outputPathUris = outputPathUris,
+    libraryDependencies = libraryDependencies?.map { it.toState() },
+    moduleDependencies = moduleDependencies.map { it.toState() }
   )
 
 
 public data class DefaultMagicMetaModelState(
   public var projectDetailsState: ProjectDetailsState = ProjectDetailsState(),
-  public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState = TargetsDetailsForDocumentProviderState(),
+  public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState =
+    TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetIdentifierState, List<BuildTargetIdentifierState>> = emptyMap(),
   public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
 )

@@ -6,7 +6,11 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import org.jetbrains.magicmetamodel.ModuleNameProvider
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
@@ -14,27 +18,25 @@ internal data class BspModuleDetails(
   val dependencySources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
   val pythonOptions: PythonOptionsItem?,
-  val type: String
+  val type: String,
+  val associates: List<BuildTargetIdentifier> = listOf(),
+  val moduleDependencies: List<BuildTargetIdentifier>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
 )
 
 internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ModuleNameProvider) :
   WorkspaceModelEntityTransformer<BspModuleDetails, Module> {
 
-  override fun transform(inputEntity: BspModuleDetails): Module {
-    val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(inputEntity.allTargetsIds, moduleNameProvider)
-
-    return Module(
+  override fun transform(inputEntity: BspModuleDetails): Module =
+    Module(
       name = moduleNameProvider(inputEntity.target.id),
       type = inputEntity.type,
-      modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
+      modulesDependencies = inputEntity.moduleDependencies
+          .map { ModuleDependency(moduleName = moduleNameProvider(it)) },
       librariesDependencies = calculateLibrariesDependencies(inputEntity),
-      capabilities = inputEntity.target.capabilities.let {
-        ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
-      },
-      languageIds = inputEntity.target.languageIds
+      languageIds = inputEntity.target.languageIds,
+      associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
     )
-  }
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> {
     return if (inputEntity.target.languageIds.contains("java"))
@@ -52,11 +54,12 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 
   override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
     DependencySourcesItemToLibraryTransformer.transform(inputEntity)
-      .map(this::toLibraryDependency)
+      .map { toLibraryDependency(it) }
 
   private fun toLibraryDependency(library: Library): LibraryDependency =
     LibraryDependency(
       libraryName = library.displayName,
+      isProjectLevelLibrary = false
     )
 }
 
@@ -66,12 +69,13 @@ internal class BuildTargetToModuleDependencyTransformer(
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
 
   override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
-    inputEntity.dependencies
+    inputEntity
+      .dependencies
       .filter { allTargetsIds.contains(it) }
-      .map(this::toModuleDependency)
-
-  private fun toModuleDependency(targetId: BuildTargetIdentifier): ModuleDependency =
-    ModuleDependency(
-      moduleName = moduleNameProvider(targetId),
-    )
+      .map { it.toModuleDependency(moduleNameProvider) }
 }
+
+internal fun BuildTargetIdentifier.toModuleDependency(moduleNameProvider: ModuleNameProvider): ModuleDependency =
+  ModuleDependency(
+    moduleName = moduleNameProvider(this),
+  )

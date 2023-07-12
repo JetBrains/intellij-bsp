@@ -1,14 +1,17 @@
-@file:Suppress("LongMethod", "MaxLineLength")
-
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.workspace.model.constructors.*
+import org.jetbrains.workspace.model.constructors.BuildTarget
+import org.jetbrains.workspace.model.constructors.BuildTargetId
+import org.jetbrains.workspace.model.constructors.SourceItem
+import org.jetbrains.workspace.model.constructors.SourcesItem
+import org.jetbrains.workspace.model.constructors.TextDocumentId
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -47,6 +50,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -62,7 +67,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // then 2
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldBe emptyList()
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
@@ -177,6 +182,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -216,7 +223,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // then 2
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1, targetC1, targetD1)
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
@@ -392,6 +399,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -416,7 +425,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // then 2
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff2.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         targetA1,
@@ -456,7 +465,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // then 3
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runTestWriteAction { diff3.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff3.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         targetA1,
@@ -496,7 +505,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // then 4
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runTestWriteAction { diff4.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff4.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         targetA1,
@@ -536,7 +545,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // then 5
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runTestWriteAction { diff5.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff5.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         targetA1,
@@ -585,6 +594,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -592,7 +603,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadDefaultTargets()
 
       // then
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldBe emptyList()
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
@@ -659,6 +670,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -766,6 +779,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -773,7 +788,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadDefaultTargets()
 
       // then
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1, targetC1, targetD1)
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
@@ -860,6 +875,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -867,7 +884,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadDefaultTargets()
 
       // then
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       // TODO how to make it deterministic?
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
@@ -955,6 +972,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -962,7 +981,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff1 = magicMetaModel.loadDefaultTargets()
 
       // then 1
-      runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff1.applyOnWorkspaceModel() }
 
       // TODO should be B1 not B2 - how to make it deterministic?
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
@@ -972,7 +991,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
 
       // then 2
-      runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff2.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
@@ -981,7 +1000,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff3 = magicMetaModel.loadDefaultTargets()
 
       // then 3
-      runTestWriteAction { diff3.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff3.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
@@ -1031,6 +1050,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1102,6 +1123,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1110,7 +1133,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
@@ -1175,6 +1198,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1183,88 +1208,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 1
-      runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff1.applyOnWorkspaceModel() }
 
       // when 2
       val diff2 = magicMetaModel.loadTarget(targetA1.id)
 
       // then 2
       diff2 shouldBe null
-
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
-    }
-
-    @Test
-    fun `diff should return false if previous diff was not applied, and mmm shouldn't be updated as well`() {
-      // given
-      val projectRoot = createTempDirectory("root")
-      projectRoot.toFile().deleteOnExit()
-
-      val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
-        languageIds = listOf("kotlin"),
-        dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
-        ),
-      )
-
-      val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
-        languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
-      )
-
-      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
-      targetA1Package1.toFile().deleteOnExit()
-      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
-      targetA1Package2.toFile().deleteOnExit()
-      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
-      targetA1File1.toFile().deleteOnExit()
-
-      val targetA1Source1 = SourceItem(
-        uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
-      )
-      val targetA1Sources = SourcesItem(
-        target = targetA1.id,
-        sources = listOf(targetA1Source1),
-      )
-
-      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
-      targetB1Package1.toFile().deleteOnExit()
-      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
-      targetB1Package2.toFile().deleteOnExit()
-
-      val targetB1Source1 = SourceItem(
-        uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
-      )
-      val targetB1Sources = SourcesItem(
-        target = targetB1.id,
-        sources = listOf(targetB1Source1),
-      )
-
-      val projectDetails = ProjectDetails(
-        targetsId = listOf(targetA1.id, targetB1.id),
-        targets = setOf(targetA1, targetB1),
-        sources = listOf(targetA1Sources, targetB1Sources),
-        resources = emptyList(),
-        dependenciesSources = emptyList(),
-        javacOptions = emptyList(),
-        pythonOptions = emptyList(),
-      )
-
-      // when
-      val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
-
-      val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
-      val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
-
-      // then
-      runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
-      runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe false
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
@@ -1329,6 +1279,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1337,13 +1289,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 1
-      runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff1.applyOnWorkspaceModel() }
 
       // when 2
       val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
 
       // then 2
-      runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff2.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
@@ -1445,6 +1397,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1452,13 +1406,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff1 = magicMetaModel.loadTarget(targetA2.id)!!
 
       // then 1
-      runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff1.applyOnWorkspaceModel() }
 
       // when 2
       val diff2 = magicMetaModel.loadTarget(targetA3.id)!!
 
       // then 2
-      runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff2.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA2, targetA3)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
@@ -1467,7 +1421,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff3 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 3
-      runTestWriteAction { diff3.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff3.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA2, targetA3)
@@ -1507,6 +1461,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1551,6 +1507,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1625,6 +1583,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1632,7 +1592,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadDefaultTargets()
 
       // then
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id,
@@ -1702,6 +1662,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1709,7 +1671,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then
-      runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
+      runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1A2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id,

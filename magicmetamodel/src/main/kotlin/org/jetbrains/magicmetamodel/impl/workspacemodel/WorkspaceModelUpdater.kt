@@ -7,10 +7,11 @@ import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import java.nio.file.Path
 
 // TODO vis
@@ -22,6 +23,9 @@ public data class ModuleDetails(
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
   val pythonOptions: PythonOptionsItem?,
+  val outputPathUris: List<String>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val moduleDependencies: List<BuildTargetIdentifier>,
 )
 
 internal data class ModuleName(
@@ -33,12 +37,14 @@ internal interface WorkspaceModelUpdater {
 //  fun loadRootModule()
 
   fun loadModules(modulesDetails: List<ModuleDetails>) =
-    modulesDetails.forEach(this::loadModule)
+    modulesDetails.forEach { loadModule(it) }
 
   fun loadModule(moduleDetails: ModuleDetails)
 
+  fun loadLibraries(libraries: List<Library>)
+
   fun removeModules(modules: List<ModuleName>) =
-    modules.forEach(this::removeModule)
+    modules.forEach { removeModule(it) }
 
   fun removeModule(module: ModuleName)
 
@@ -51,6 +57,11 @@ internal interface WorkspaceModelUpdater {
       projectBasePath: Path,
       moduleNameProvider: ModuleNameProvider,
     ): WorkspaceModelUpdater =
-      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, moduleNameProvider, projectBasePath)
+      WorkspaceModelUpdaterImpl(
+        workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
+        virtualFileUrlManager = virtualFileUrlManager,
+        moduleNameProvider = moduleNameProvider,
+        projectBasePath = projectBasePath
+      )
   }
 }

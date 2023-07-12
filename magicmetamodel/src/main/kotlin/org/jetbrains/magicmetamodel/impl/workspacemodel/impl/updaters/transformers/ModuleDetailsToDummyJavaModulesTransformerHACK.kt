@@ -16,7 +16,7 @@ import kotlin.io.path.toPath
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projectBasePath: Path):
+internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<ModuleDetails, JavaModule> {
 
   companion object {
@@ -26,7 +26,8 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
   override fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
-    return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames).mapNotNull { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
+    return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames)
+      .mapNotNull { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
   }
 
   private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path) =
@@ -49,12 +50,12 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries = listOf(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 }
-
 
 public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBasePath: Path): List<String> {
   val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
@@ -62,7 +63,7 @@ public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBase
 }
 
 private fun calculateDummyJavaSourceRoots(inputEntity: ModuleDetails): List<Path> =
-  inputEntity.sources.flatMap { it.roots }.map(URI::create).map { it.toPath() }
+  inputEntity.sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
 
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }

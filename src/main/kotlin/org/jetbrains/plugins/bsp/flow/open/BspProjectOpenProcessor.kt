@@ -3,17 +3,20 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.impl.ProjectUtilCore
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenedCallback
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.config.*
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Path
 import javax.swing.Icon
@@ -57,7 +60,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     this.forceOpenInNewFrame = forceOpenInNewFrame
     this.projectToClose = projectToClose
 
-    beforeOpen = { initServices(it, virtualFile); true }
+    beforeOpen = { initProperties(it, virtualFile); true }
     callback = ProjectOpenedCallback { project, _ -> initializeEmptyMagicMetaModel(project) }
   }
 
@@ -72,35 +75,18 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
     )
-    ApplicationManager.getApplication().invokeLater {
-      runWriteAction {
-        magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
-      }
+
+    BspCoroutineService.getInstance(project).start {
+      magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
     }
   }
 
-  private fun initServices(project: Project, projectRootDir: VirtualFile) {
-    initBspProjectPropertiesService(project)
-    initProjectPropertiesService(project, projectRootDir)
-  }
-
-  private fun initBspProjectPropertiesService(project: Project) {
-    val bspProjectPropertiesService = BspProjectPropertiesService.getInstance(project)
-
-    val bspProjectProperties = BspProjectProperties(
-      isBspProject = true,
-    )
-    bspProjectPropertiesService.init(bspProjectProperties)
-  }
-
-  private fun initProjectPropertiesService(project: Project, projectRootDir: VirtualFile) {
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-
-    val projectProperties = ProjectProperties(
-      projectRootDir = projectRootDir,
-    )
-    projectPropertiesService.init(projectProperties)
+  private fun initProperties(project: Project, projectRootDir: VirtualFile) {
+    project.isBspProject = true
+    project.rootDir = projectRootDir
   }
 }

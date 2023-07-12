@@ -1,11 +1,11 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addJavaSourceRootEntity
+import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import java.nio.file.Path
 
 internal data class JavaSourceRoot(
@@ -13,7 +13,7 @@ internal data class JavaSourceRoot(
   val generated: Boolean,
   val packagePrefix: String,
   val rootType: String,
-  val excludedFiles: List<Path> = ArrayList(),
+  val excludedPaths: List<Path> = ArrayList(),
   val targetId: BuildTargetIdentifier
 ) : WorkspaceModelEntity()
 
@@ -47,9 +47,14 @@ internal class JavaSourceEntityUpdater(
     builder: MutableEntityStorage,
     sourceRoot: SourceRootEntity,
     entityToAdd: JavaSourceRoot,
-  ): JavaSourceRootPropertiesEntity = builder.addJavaSourceRootEntity(
-    sourceRoot = sourceRoot,
-    generated = entityToAdd.generated,
-    packagePrefix = entityToAdd.packagePrefix,
-  )
+  ): JavaSourceRootPropertiesEntity =
+    builder.addEntity(
+      JavaSourceRootPropertiesEntity(
+        generated = entityToAdd.generated,
+        packagePrefix = entityToAdd.packagePrefix,
+        entitySource = sourceRoot.entitySource
+      ) {
+        this.sourceRoot = sourceRoot
+      }
+    )
 }
