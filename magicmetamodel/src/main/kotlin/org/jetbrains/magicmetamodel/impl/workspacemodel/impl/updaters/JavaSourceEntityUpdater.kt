@@ -3,7 +3,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import java.nio.file.Path
@@ -31,7 +30,7 @@ internal class JavaSourceEntityUpdater(
       GenericSourceRoot(
         sourcePath,
         rootType,
-        excludedFiles,
+        excludedPaths,
         targetId
       )
     }, parentModuleEntity)

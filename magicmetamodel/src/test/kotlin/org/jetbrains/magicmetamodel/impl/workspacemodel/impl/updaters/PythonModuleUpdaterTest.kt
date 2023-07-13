@@ -3,12 +3,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.net.URI
-import kotlin.io.path.Path
 import kotlin.io.path.toPath
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -96,12 +95,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module2"),
                 exported = true,
-                // todo - why is it COMPILE?
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
@@ -112,7 +110,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 productionOnTest = true,
               ),
               ModuleDependencyItem.ModuleSourceDependency,
-              ModuleDependencyItem.SdkDependency("module1-3", "PythonSDK")
+              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK")
             )
           ) {
             type = "PYTHON_MODULE"
@@ -135,7 +133,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             url = virtualSourceDir1,
             rootType = "python-source",
           ) {
-            // todo - anything here to check for python?
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
@@ -212,7 +209,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
               moduleName = "module3",
             ),
           ),
-          // todo - add libraries
           librariesDependencies = listOf(),
         )
 
@@ -300,7 +296,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity1 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module2"),
@@ -314,7 +310,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("module1-3", "PythonSDK"),
+              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
             )
           ) {
@@ -325,7 +321,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module2",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module3"),
@@ -333,7 +329,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("3", "PythonSDK"),
+              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
             )
           ) {
@@ -476,7 +472,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = emptyList(),
           ) {
             type = "PYTHON_MODULE"
@@ -533,7 +529,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity1 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = emptyList(),
           ) {
             type = "PYTHON_MODULE"
@@ -542,7 +538,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module2",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = emptyList(),
           ) {
             type = "PYTHON_MODULE"

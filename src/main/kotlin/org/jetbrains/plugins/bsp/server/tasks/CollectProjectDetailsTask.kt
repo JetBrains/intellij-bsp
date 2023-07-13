@@ -4,18 +4,18 @@ import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.InitializeBuildResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
 import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.OutputPathsParams
 import ch.epfl.scala.bsp4j.OutputPathsResult
+import ch.epfl.scala.bsp4j.PythonOptionsParams
+import ch.epfl.scala.bsp4j.PythonOptionsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -23,6 +23,8 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
@@ -33,10 +35,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
+import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
-import com.intellij.workspaceModel.ide.virtualFile
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
@@ -378,11 +380,7 @@ public fun calculateProjectDetailsWithCapabilities(
     val pythonOptionsFuture =
       queryForPythonOptions(server, pythonTargetsIds)
         ?.reactToExceptionIn(cancelOn)
-        .exceptionally {
-          log.warn(it)
-          null
-        }
-        .get()
+        ?.catchSyncErrors(errorCallback)
 
     val outputPathsFuture =
       queryForOutputPaths(server, allTargetsIds)

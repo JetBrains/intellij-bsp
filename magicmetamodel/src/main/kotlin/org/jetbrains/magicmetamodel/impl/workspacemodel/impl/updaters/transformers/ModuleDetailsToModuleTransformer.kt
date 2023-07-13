@@ -1,6 +1,5 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
@@ -24,6 +23,7 @@ internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelE
   protected fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
     ContentRoot(
       // TODO what if null?
-      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath()
-    )
+      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath(),
+      excludedPaths = inputEntity.outputPathUris.map { URI.create(it).toPath() },
+      )
 }

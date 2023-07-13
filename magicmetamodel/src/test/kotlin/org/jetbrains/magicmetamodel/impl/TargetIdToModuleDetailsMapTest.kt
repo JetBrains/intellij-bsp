@@ -244,7 +244,7 @@ class TargetIdToModuleDetailsMapTest {
       target4Id,
       emptyList(),
       emptyList(),
-      listOf(BuildTargetIdentifier("target1")),
+      listOf(target1Id),
       BuildTargetCapabilities(),
     )
     val target4Sources = SourcesItem(
@@ -305,10 +305,10 @@ class TargetIdToModuleDetailsMapTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = target3JavacOptionsItem,
+      pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id),
-      pythonOptions = null,
     )
     val expectedModuleDetails4 = ModuleDetails(
       target = target4,
@@ -318,6 +318,9 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = emptyList(),
       javacOptions = null,
       pythonOptions = target4PythonOptionsItem,
+      outputPathUris = emptyList(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = listOf(target1Id),
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -404,6 +407,7 @@ class TargetIdToModuleDetailsMapTest {
       resources = listOf(targetResources1, targetResources2),
       dependenciesSources = listOf(targetDependencySources1, targetDependencySources2),
       javacOptions = listOf(javacOptions1, javacOptions2),
+      pythonOptions = emptyList(),
       outputPathUris = listOf(outputPaths1, outputPaths2).flatten(),
       libraries = emptyList(),
     )
@@ -419,6 +423,7 @@ class TargetIdToModuleDetailsMapTest {
       resources = listOf(targetResources1),
       dependenciesSources = listOf(targetDependencySources1),
       javacOptions = javacOptions1,
+      pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
@@ -430,6 +435,7 @@ class TargetIdToModuleDetailsMapTest {
       resources = listOf(targetResources2),
       dependenciesSources = listOf(targetDependencySources2),
       javacOptions = javacOptions2,
+      pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
@@ -441,6 +447,7 @@ class TargetIdToModuleDetailsMapTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = null,
+      pythonOptions = null,
       outputPathUris = listOf(outputPaths1, outputPaths2).flatten(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),

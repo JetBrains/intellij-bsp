@@ -38,15 +38,14 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
       associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
     )
 
-  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> {
-    return if (inputEntity.target.languageIds.contains("java"))
-      DependencySourcesItemToLibraryDependencyTransformer
-        .transform(inputEntity.dependencySources.map {
-          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
-        })
-    else
-      emptyList()
-  }
+  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> =
+    inputEntity.libraryDependencies?.map { LibraryDependency(it.uri, true) }
+      ?: (if (inputEntity.target.languageIds.contains("java"))
+          DependencySourcesItemToLibraryDependencyTransformer
+            .transform(inputEntity.dependencySources.map {
+              DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+            }) else
+          emptyList())
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :

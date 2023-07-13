@@ -1,12 +1,11 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addSourceRootEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
 internal data class SourceRoot(
@@ -18,7 +17,7 @@ internal data class SourceRoot(
 internal data class GenericSourceRoot(
   val sourcePath: Path,
   val rootType: String,
-  val excludedFiles: List<Path> = ArrayList(),
+  val excludedPaths: List<Path> = ArrayList(),
   val targetId: BuildTargetIdentifier,
 ) : WorkspaceModelEntity()
 
@@ -44,7 +43,7 @@ internal open class SourceEntityUpdater(
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
       url = entityToAdd.sourcePath,
-      excludedUrls = entityToAdd.excludedFiles,
+      excludedPaths = entityToAdd.excludedPaths,
     )
 
     return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
@@ -54,10 +53,14 @@ internal open class SourceEntityUpdater(
     builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: GenericSourceRoot,
-  ): SourceRootEntity = builder.addSourceRootEntity(
-    contentRoot = contentRootEntity,
-    url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-    rootType = entityToAdd.rootType,
-    source = DoNotSaveInDotIdeaDirEntitySource,
-  )
+  ): SourceRootEntity =
+    builder.addEntity(
+      SourceRootEntity(
+        url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        rootType = entityToAdd.rootType,
+        entitySource = BspEntitySource
+      ) {
+        this.contentRoot = contentRootEntity
+      }
+    )
 }

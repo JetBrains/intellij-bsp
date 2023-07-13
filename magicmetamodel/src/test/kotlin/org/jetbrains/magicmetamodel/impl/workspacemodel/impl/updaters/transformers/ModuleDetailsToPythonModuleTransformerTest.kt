@@ -31,7 +31,6 @@ import kotlin.io.path.*
 class ModuleDetailsToPythonModuleTransformerTest {
 
   val projectBasePath = Path("")
-  val helpersModuleName = "intellij.python.helpers"
 
   @Test
   fun `should return no python modules roots for no modules details`() {
@@ -127,6 +126,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = null,
       pythonOptions = pythonOptionsItem,
+      outputPathUris = emptyList(),
+      libraryDependencies = null,
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
+      ),
     )
 
     // when
@@ -181,14 +186,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
     module1Root.toFile().deleteOnExit()
 
     val buildTargetId1 = BuildTargetIdentifier("module1")
+    val buildTargetId2 = BuildTargetIdentifier("module2")
+    val buildTargetId3 = BuildTargetIdentifier("module3")
+
     val buildTarget1 = BuildTarget(
       buildTargetId1,
       listOf("library"),
       listOf("python"),
-      listOf(
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
-      ),
+      listOf(buildTargetId2, buildTargetId2),
       BuildTargetCapabilities()
     )
     buildTarget1.baseDirectory = module1Root.toUri().toString()
@@ -243,28 +248,31 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val moduleDetails1 = ModuleDetails(
       target = buildTarget1,
       allTargetsIds = listOf(
-        BuildTargetIdentifier("module1"),
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
+        buildTargetId1,
+        buildTargetId2,
+        buildTargetId3
       ),
       sources = listOf(sourcesItem1),
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = null,
       pythonOptions = target1PythonOptionsItem,
+      outputPathUris = emptyList(),
+      libraryDependencies = null,
+      moduleDependencies = listOf(
+        buildTargetId2,
+        buildTargetId3
+      )
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
     module2Root.toFile().deleteOnExit()
 
-    val buildTargetId2 = BuildTargetIdentifier("module2")
     val buildTarget2 = BuildTarget(
       buildTargetId2,
       listOf("test"),
       listOf("python"),
-      listOf(
-        BuildTargetIdentifier("module3"),
-      ),
+      listOf(buildTargetId3),
       BuildTargetCapabilities()
     )
     buildTarget2.baseDirectory = module2Root.toUri().toString()
@@ -302,15 +310,18 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val moduleDetails2 = ModuleDetails(
       target = buildTarget2,
       allTargetsIds = listOf(
-        BuildTargetIdentifier("module1"),
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
+        buildTargetId1,
+        buildTargetId2,
+        buildTargetId3
       ),
       sources = listOf(sourcesItem2),
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = null,
       pythonOptions = target2PythonOptionsItem,
+      outputPathUris = emptyList(),
+      libraryDependencies = null,
+      moduleDependencies = listOf(buildTargetId3)
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)

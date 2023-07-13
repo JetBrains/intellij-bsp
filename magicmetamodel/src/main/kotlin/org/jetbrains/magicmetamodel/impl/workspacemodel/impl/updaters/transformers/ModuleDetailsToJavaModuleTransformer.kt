@@ -61,7 +61,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   override val type = "JAVA_MODULE"
 
-  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(projectBasePath)
 

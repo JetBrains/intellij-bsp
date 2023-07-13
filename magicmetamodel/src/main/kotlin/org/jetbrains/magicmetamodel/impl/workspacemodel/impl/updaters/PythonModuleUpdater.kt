@@ -3,8 +3,8 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import java.nio.file.Path
 
 internal data class PythonSdkInfo(val version: String, val originalName: String)

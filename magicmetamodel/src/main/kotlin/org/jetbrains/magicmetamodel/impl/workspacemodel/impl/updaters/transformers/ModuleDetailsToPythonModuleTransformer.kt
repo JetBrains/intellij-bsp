@@ -46,6 +46,8 @@ internal class ModuleDetailsToPythonModuleTransformer(
       type = type,
       javacOptions = null,
       pythonOptions = inputEntity.pythonOptions,
+      libraryDependencies = inputEntity.libraryDependencies,
+      moduleDependencies = inputEntity.moduleDependencies
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)

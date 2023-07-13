@@ -145,6 +145,7 @@ class BspModuleDetailsToModuleTransformerTest {
       dependencySources = listOf(),
       type = "JAVA_MODULE",
       javacOptions = null,
+      pythonOptions = null,
       associates = listOf(
         BuildTargetIdentifier("//target4"),
         BuildTargetIdentifier("//target5"),
@@ -227,6 +228,11 @@ class BspModuleDetailsToModuleTransformerTest {
       type = "PYTHON_MODULE",
       javacOptions = null,
       pythonOptions = pythonOptions,
+      libraryDependencies = emptyList(),
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      )
     )
 
     // when
@@ -432,6 +438,11 @@ class BspModuleDetailsToModuleTransformerTest {
       type = "PYTHON_MODULE",
       javacOptions = null,
       pythonOptions = pythonOptionsItem1,
+      libraryDependencies = emptyList(),
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      )
     )
 
     val target2Name = "//target2"
@@ -467,6 +478,10 @@ class BspModuleDetailsToModuleTransformerTest {
       type = "PYTHON_MODULE",
       javacOptions = null,
       pythonOptions = pythonOptionsItem2,
+      libraryDependencies = emptyList(),
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target3"),
+      )
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
