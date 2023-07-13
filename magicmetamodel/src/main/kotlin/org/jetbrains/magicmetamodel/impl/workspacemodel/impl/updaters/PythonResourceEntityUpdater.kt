@@ -54,9 +54,6 @@ internal class PythonResourceEntityUpdater(
     )
 
   private companion object {
-    private const val DEFAULT_GENERATED = false
-    private const val DEFAULT_RELATIVE_OUTPUT_PATH = ""
-
     private const val ROOT_TYPE = "python-resource"
   }
 }

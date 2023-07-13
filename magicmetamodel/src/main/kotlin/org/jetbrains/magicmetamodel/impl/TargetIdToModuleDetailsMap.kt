@@ -120,6 +120,9 @@ internal object TargetIdToModuleDetailsMap {
   private fun BuildTarget.isRoot(projectBasePath: Path): Boolean =
     this.baseDirectory?.let { URI.create(it).toPath() } == projectBasePath
 
-  private fun calculatePythonOptions(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): PythonOptionsItem? =
+  private fun calculatePythonOptions(
+    projectDetails: ProjectDetails,
+    targetId: BuildTargetIdentifier
+  ): PythonOptionsItem? =
     projectDetails.pythonOptions.firstOrNull { it.target == targetId }
 }

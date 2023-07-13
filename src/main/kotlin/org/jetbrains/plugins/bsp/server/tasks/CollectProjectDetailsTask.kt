@@ -286,7 +286,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           .toPath()
           .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
           .virtualFile
-      }.toSet()
+      }
+      .toSet()
     additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
 
     return SdkConfigurationUtil.createSdk(
@@ -350,8 +351,7 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-    val sourcesFuture =
-      queryForSourcesResult(server, allTargetsIds)
+    val sourcesFuture = queryForSourcesResult(server, allTargetsIds)
       .reactToExceptionIn(cancelOn)
       .catchSyncErrors(errorCallback)
 
@@ -377,10 +377,9 @@ public fun calculateProjectDetailsWithCapabilities(
       .get()
 
     val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsFuture =
-      queryForPythonOptions(server, pythonTargetsIds)
-        ?.reactToExceptionIn(cancelOn)
-        ?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)
+      ?.reactToExceptionIn(cancelOn)
+      ?.catchSyncErrors(errorCallback)
 
     val outputPathsFuture =
       queryForOutputPaths(server, allTargetsIds)
@@ -462,7 +461,8 @@ private fun queryForJavacOptions(
   } else null
 }
 
-private fun calculatePythonTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+private fun calculatePythonTargetsIds(
+    workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("python") }.map { it.id }
 
 private fun queryForPythonOptions(

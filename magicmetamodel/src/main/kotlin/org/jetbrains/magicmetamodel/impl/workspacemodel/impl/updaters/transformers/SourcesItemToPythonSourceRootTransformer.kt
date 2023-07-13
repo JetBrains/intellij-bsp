@@ -19,7 +19,10 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
     return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
   }
 
-  private fun isNotAChildOfAnySourceDir(sourceRoot: GenericSourceRoot, allSourceRoots: List<GenericSourceRoot>): Boolean =
+  private fun isNotAChildOfAnySourceDir(
+    sourceRoot: GenericSourceRoot,
+    allSourceRoots: List<GenericSourceRoot>
+  ): Boolean =
     allSourceRoots.none { it.sourcePath.isAncestor(sourceRoot.sourcePath.parent) }
 
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<GenericSourceRoot> {

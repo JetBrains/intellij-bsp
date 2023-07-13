@@ -9,7 +9,6 @@ import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 
 internal data class BspModuleDetails(
@@ -40,12 +39,12 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> =
     inputEntity.libraryDependencies?.map { LibraryDependency(it.uri, true) }
-      ?: (if (inputEntity.target.languageIds.contains("java"))
-          DependencySourcesItemToLibraryDependencyTransformer
-            .transform(inputEntity.dependencySources.map {
-              DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
-            }) else
-          emptyList())
+      ?: if (inputEntity.target.languageIds.contains("java"))
+         DependencySourcesItemToLibraryDependencyTransformer
+           .transform(inputEntity.dependencySources.map {
+             DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+           }) else
+         emptyList()
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :

@@ -8,7 +8,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinAddendum

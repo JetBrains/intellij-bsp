@@ -4,15 +4,15 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourcesItem
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.PythonBuildTarget
+import ch.epfl.scala.bsp4j.PythonOptionsItem
+import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.SourceItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
@@ -21,11 +21,19 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonLibrary
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
 
 @DisplayName("ModuleDetailsToPythonModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToPythonModuleTransformerTest {

@@ -23,7 +23,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
-
 internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
   @Nested
