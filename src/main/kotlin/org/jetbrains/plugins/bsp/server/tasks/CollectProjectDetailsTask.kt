@@ -306,6 +306,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 }
 
+@Suppress("LongMethod")
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
   buildServerCapabilities: BuildServerCapabilities,

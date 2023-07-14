@@ -3,6 +3,4 @@
     <pythonSdkGetterExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetter" />
   </extensions>
-  <depends>com.intellij.modules.python</depends>
-  <depends>org.jetbrains.bsp</depends>
 </idea-plugin>
