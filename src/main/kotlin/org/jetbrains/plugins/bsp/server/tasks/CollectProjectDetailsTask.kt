@@ -32,7 +32,6 @@ import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +49,8 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -108,8 +109,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     indeterminateStep(text = "Calculating all unique jdk infos") {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
     }
-    indeterminateStep(text = "Calculating all unique python sdk infos") {
-      calculateAllPythonSdkInfosSubtask(projectDetails)
+    if (pythonSdkGetterExtensionExists()) {
+      indeterminateStep(text = "Calculating all unique python sdk infos") {
+        calculateAllPythonSdkInfosSubtask(projectDetails)
+      }
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
       runInterruptible { updateMMMDiffSubtask(projectDetails) }
@@ -266,14 +269,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun addBspFetchedPythonSdks() {
-    PythonSdkGetterExtension.extensions().firstOrNull().let { extension ->
-      if (extension != null) {
-        bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
-        logPerformanceSuspend("add-bsp-fetched-python-sdks") {
-          pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
-        }
-        bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
+    pythonSdkGetterExtension()?.let { extension ->
+      bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
+      logPerformanceSuspend("add-bsp-fetched-python-sdks") {
+        pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
       }
+      bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
     }
   }
 
@@ -281,13 +282,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
     val sdk = pythonSdkGetterExtension.getPythonSdk(pythonSdk, jdkTable, virtualFileUrlManager)
 
-    val existingJdk = jdkTable.findJdk(sdk.name, sdk.sdkType.name)
-    if (existingJdk == null || existingJdk.homePath != sdk.homePath) {
-      writeAction {
-        existingJdk?.let { SdkConfigurationUtil.removeSdk(existingJdk) }
-        SdkConfigurationUtil.addSdk(sdk)
-      }
-    }
+    addJdkIfNeeded(sdk)
   }
 
   private suspend fun applyChangesOnWorkspaceModel() {

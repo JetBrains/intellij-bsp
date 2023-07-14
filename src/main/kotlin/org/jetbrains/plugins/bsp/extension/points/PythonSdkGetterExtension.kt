@@ -15,23 +15,24 @@ import kotlin.io.path.toPath
 
 public interface PythonSdkGetterExtension {
 
-  public companion object {
-
-    private val ep =
-      ExtensionPointName.create<PythonSdkGetterExtension>(
-        "com.intellij.pythonSdkGetterExtension"
-      )
-
-    public fun extensions(): List<PythonSdkGetterExtension> =
-      ep.extensionList
-  }
-
   public fun getPythonSdk(
     pythonSdk: PythonSdk,
     jdkTable: ProjectJdkTable,
     virtualFileUrlManager: VirtualFileUrlManager
   ): Sdk
 }
+
+private val ep =
+  ExtensionPointName.create<PythonSdkGetterExtension>(
+    "com.intellij.pythonSdkGetterExtension"
+  )
+
+public fun pythonSdkGetterExtension(): PythonSdkGetterExtension? =
+  ep.extensionList.firstOrNull()
+
+public fun pythonSdkGetterExtensionExists(): Boolean =
+  ep.extensionList.isNotEmpty()
+
 
 public class PythonSdkGetter : PythonSdkGetterExtension {
   override fun getPythonSdk(
