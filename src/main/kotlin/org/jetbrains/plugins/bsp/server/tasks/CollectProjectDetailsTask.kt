@@ -23,8 +23,6 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
@@ -35,12 +33,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
-import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
-import com.jetbrains.python.sdk.PythonSdkAdditionalData
-import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -55,6 +49,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -68,7 +63,7 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.toPath
 
-private data class PythonSdk(
+public data class PythonSdk(
   val name: String,
   val interpreter: String,
   val dependencies: List<DependencySourcesItem>
@@ -271,44 +266,26 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun addBspFetchedPythonSdks() {
-    bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
-    logPerformanceSuspend("add-bsp-fetched-python-sdks") { pythonSdks?.forEach { addPythonSdkIfNeeded(it) } }
-    bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
-  }
-
-  private fun getPythonSdk(pythonSdk: PythonSdk): Sdk {
-    val allJdks = jdkTable.allJdks.toList()
-    val additionalData = PythonSdkAdditionalData()
-    val virtualFiles = pythonSdk.dependencies
-      .flatMap { it.sources }
-      .mapNotNull {
-        URI.create(it)
-          .toPath()
-          .toVirtualFileUrl(VirtualFileUrlManager.getInstance(project))
-          .virtualFile
+    PythonSdkGetterExtension.extensions().firstOrNull().let { extension ->
+      if (extension != null) {
+        bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
+        logPerformanceSuspend("add-bsp-fetched-python-sdks") {
+          pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
+        }
+        bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
       }
-      .toSet()
-    additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
-
-    return SdkConfigurationUtil.createSdk(
-      allJdks,
-      URI.create(pythonSdk.interpreter).toPath().toString(),
-      PythonSdkType.getInstance(),
-      additionalData,
-      pythonSdk.name
-    )
+    }
   }
 
-  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk) {
-    val sdk = getPythonSdk(pythonSdk)
+  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
+    val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
+    val sdk = pythonSdkGetterExtension.getPythonSdk(pythonSdk, jdkTable, virtualFileUrlManager)
 
     val existingJdk = jdkTable.findJdk(sdk.name, sdk.sdkType.name)
     if (existingJdk == null || existingJdk.homePath != sdk.homePath) {
-      withContext(Dispatchers.EDT) {
-        runWriteAction {
-          existingJdk?.let { SdkConfigurationUtil.removeSdk(existingJdk) }
-          SdkConfigurationUtil.addSdk(sdk)
-        }
+      writeAction {
+        existingJdk?.let { SdkConfigurationUtil.removeSdk(existingJdk) }
+        SdkConfigurationUtil.addSdk(sdk)
       }
     }
   }
