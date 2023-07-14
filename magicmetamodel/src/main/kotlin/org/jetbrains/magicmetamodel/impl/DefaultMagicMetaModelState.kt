@@ -13,6 +13,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.Gson
+import org.jetbrains.annotations.Nullable
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -247,7 +248,7 @@ public data class ProjectDetailsState(
   public var javacOptions: List<JavacOptionsItemState> = emptyList(),
   public var pythonOptions: List<PythonOptionsItemState> = emptyList(),
   public var outputPathUris: List<String> = emptyList(),
-  public var libraries: List<LibraryItemState>? = emptyList(),
+  @Nullable public var libraries: List<LibraryItemState>? = null,
   ) : ConvertableFromState<ProjectDetails> {
 
   public override fun fromState(): ProjectDetails =

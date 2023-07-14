@@ -315,8 +315,7 @@ public fun calculateProjectDetailsWithCapabilities(
   val log = logger<Any>()
 
   try {
-    val workspaceBuildTargetsResult =
-      queryForBuildTargets(server)
+    val workspaceBuildTargetsResult = queryForBuildTargets(server)
       .reactToExceptionIn(cancelOn)
       .catchSyncErrors(errorCallback)
       .get()
@@ -337,9 +336,6 @@ public fun calculateProjectDetailsWithCapabilities(
         ?.catchSyncErrors(errorCallback)
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
-    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)
-      ?.reactToExceptionIn(cancelOn)
-      ?.catchSyncErrors(errorCallback)
     val libraries: WorkspaceLibrariesResult? = server.workspaceLibraries()
       .reactToExceptionIn(cancelOn)
       .exceptionally {
@@ -347,6 +343,16 @@ public fun calculateProjectDetailsWithCapabilities(
         null
       }
       .get()
+
+    // We use javacOptions only do build dependency tree based on classpath
+    // If workspace/libraries endpoint is available (like in bazel-bsp)
+    // we don't need javacOptions at all. For other servers (like SBT)
+    // we still need to retrieve it
+    val javacOptionsFuture = if (libraries == null)
+      queryForJavacOptions(server, javaTargetsIds)
+        ?.reactToExceptionIn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
+    else null
 
     val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
     val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)
