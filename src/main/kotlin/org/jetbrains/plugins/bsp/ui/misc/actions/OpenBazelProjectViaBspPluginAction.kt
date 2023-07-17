@@ -22,7 +22,7 @@ public val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES: List<String> = listOf(
   "WORKSPACE.bazel",
 )
 
-public class OpenBazelProjectViaBspPluginAction:
+public class OpenBazelProjectViaBspPluginAction(private val callback: () -> Unit = {}):
   AnAction(BspPluginBundle.message("open.bazel.via.bsp.action.text")), DumbAware {
 
   override fun actionPerformed(e: AnActionEvent) {
@@ -33,6 +33,7 @@ public class OpenBazelProjectViaBspPluginAction:
     projectRootDir?.let {
       BspProjectOpenProcessor().doOpenProject(it, project, false)
     }
+    callback()
   }
 
   override fun update(e: AnActionEvent) {

@@ -168,7 +168,7 @@ public class BspStartupActivity : ProjectActivity {
   private fun showBazelImportNotificationIfEligible(project: Project) {
     if (isImportableBazelBspProject(project)) {
       val notification = BazelBspBalloonNotification("Bazel configuration found for '${project.name}'")
-        .addAction(OpenBazelProjectViaBspPluginAction())
+      notification.addAction(OpenBazelProjectViaBspPluginAction { notification.expire() })
       Notifications.Bus.notify(notification, project)
     }
   }
