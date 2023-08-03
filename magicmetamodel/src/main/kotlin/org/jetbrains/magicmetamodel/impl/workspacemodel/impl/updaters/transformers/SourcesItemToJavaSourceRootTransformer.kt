@@ -18,15 +18,6 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
   private val sourceRootType = "java-source"
   private val testSourceRootType = "java-test"
 
-  override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<JavaSourceRoot> {
-    val allSourceRoots = super.transform(inputEntities)
-
-    return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
-  }
-
-  private fun isNotAChildOfAnySourceDir(sourceRoot: JavaSourceRoot, allSourceRoots: List<JavaSourceRoot>): Boolean =
-    allSourceRoots.none { it.sourcePath.isAncestor(sourceRoot.sourcePath.parent) }
-
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<JavaSourceRoot> {
     val sourceRoots = getSourceRootsAsURIs(inputEntity.sourcesItem)
     val rootType = inferRootType(inputEntity.buildTarget)
