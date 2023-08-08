@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetCapabilities
 import org.jetbrains.magicmetamodel.impl.ModuleState
 import java.nio.file.Path
 
@@ -131,7 +131,7 @@ public data class ModuleCapabilities(
 }
 
 internal fun BuildTargetCapabilities.toModuleCapabilities() =
-  ModuleCapabilities(canRun, canTest, canCompile, canDebug)
+  ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
 
 public interface Module {
   public fun toState(): ModuleState

@@ -1,8 +1,8 @@
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import com.jetbrains.bsp.bsp4kt.SourceItem
+import com.jetbrains.bsp.bsp4kt.SourcesItem
+import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import org.jetbrains.magicmetamodel.extensions.allSubdirectoriesSequence

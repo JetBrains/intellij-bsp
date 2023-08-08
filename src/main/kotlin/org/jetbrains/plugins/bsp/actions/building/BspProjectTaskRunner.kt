@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.actions.building
 
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.StatusCode
+import com.jetbrains.bsp.bsp4kt.CompileResult
+import com.jetbrains.bsp.bsp4kt.StatusCode
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
@@ -91,8 +91,8 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
 
   private fun CompileResult.toTaskRunnerResult() =
     when (statusCode) {
-      StatusCode.OK -> TaskRunnerResults.SUCCESS
-      StatusCode.CANCELLED -> TaskRunnerResults.ABORTED
+      StatusCode.Ok -> TaskRunnerResults.SUCCESS
+      StatusCode.Cancelled -> TaskRunnerResults.ABORTED
       else -> TaskRunnerResults.FAILURE
     }
 }

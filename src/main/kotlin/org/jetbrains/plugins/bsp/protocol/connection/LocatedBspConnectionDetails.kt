@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import com.google.gson.Gson
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VfsUtil

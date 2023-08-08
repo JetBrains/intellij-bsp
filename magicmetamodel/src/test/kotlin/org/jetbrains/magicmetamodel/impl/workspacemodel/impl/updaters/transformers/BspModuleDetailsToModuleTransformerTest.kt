@@ -1,11 +1,11 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.PythonOptionsItem
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
+import com.jetbrains.bsp.bsp4kt.JavacOptionsItem
+import com.jetbrains.bsp.bsp4kt.PythonOptionsItem
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder

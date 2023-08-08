@@ -1,16 +1,16 @@
 package org.jetbrains.plugins.bsp.integrationtest
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BuildClient
+import com.jetbrains.bsp.bsp4kt.BuildClientCapabilities
+import com.jetbrains.bsp.bsp4kt.DidChangeBuildTarget
+import com.jetbrains.bsp.bsp4kt.InitializeBuildParams
+import com.jetbrains.bsp.bsp4kt.LogMessageParams
+import com.jetbrains.bsp.bsp4kt.PublishDiagnosticsParams
+import com.jetbrains.bsp.bsp4kt.ShowMessageParams
+import com.jetbrains.bsp.bsp4kt.TaskFinishParams
+import com.jetbrains.bsp.bsp4kt.TaskProgressParams
+import com.jetbrains.bsp.bsp4kt.TaskStartParams
 import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
 import java.nio.file.Path

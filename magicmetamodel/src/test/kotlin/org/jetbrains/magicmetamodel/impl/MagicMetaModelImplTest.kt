@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking

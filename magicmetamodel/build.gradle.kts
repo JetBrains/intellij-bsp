@@ -4,7 +4,8 @@ plugins {
 }
 
 dependencies {
-  implementation(libs.bsp4j)
+  implementation(libs.bsp4kt)
+  implementation(libs.jsonrpc4kt)
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
   testImplementation(project(":test-utils"))

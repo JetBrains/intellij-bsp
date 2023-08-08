@@ -1,15 +1,15 @@
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.PythonOptionsItem
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
+import com.jetbrains.bsp.bsp4kt.JavacOptionsItem
+import com.jetbrains.bsp.bsp4kt.PythonOptionsItem
+import com.jetbrains.bsp.bsp4kt.ResourcesItem
+import com.jetbrains.bsp.bsp4kt.SourceItem
+import com.jetbrains.bsp.bsp4kt.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourcesItem
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails

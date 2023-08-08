@@ -1,20 +1,20 @@
 package org.jetbrains.plugins.bsp.server
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CleanCacheParams
-import ch.epfl.scala.bsp4j.CleanCacheResult
-import ch.epfl.scala.bsp4j.DependencyModulesParams
-import ch.epfl.scala.bsp4j.DependencyModulesResult
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.OutputPathsParams
-import ch.epfl.scala.bsp4j.OutputPathsResult
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.CleanCacheParams
+import com.jetbrains.bsp.bsp4kt.CleanCacheResult
+import com.jetbrains.bsp.bsp4kt.DependencyModulesParams
+import com.jetbrains.bsp.bsp4kt.DependencyModulesResult
+import com.jetbrains.bsp.bsp4kt.DependencySourcesParams
+import com.jetbrains.bsp.bsp4kt.DependencySourcesResult
+import com.jetbrains.bsp.bsp4kt.JavacOptionsParams
+import com.jetbrains.bsp.bsp4kt.JavacOptionsResult
+import com.jetbrains.bsp.bsp4kt.OutputPathsParams
+import com.jetbrains.bsp.bsp4kt.OutputPathsResult
+import com.jetbrains.bsp.bsp4kt.ResourcesParams
+import com.jetbrains.bsp.bsp4kt.ResourcesResult
+import com.jetbrains.bsp.bsp4kt.SourcesParams
+import com.jetbrains.bsp.bsp4kt.SourcesResult
 import java.util.concurrent.CompletableFuture
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import kotlin.math.sqrt
@@ -26,7 +26,7 @@ public class ChunkingBuildServer<S : BspServer>(
   private val minChunkSize: Int
 ) : BspServer by base {
 
-  override fun buildTargetSources(params: SourcesParams?): CompletableFuture<SourcesResult> =
+  override fun buildTargetSources(params: SourcesParams): CompletableFuture<SourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { SourcesParams(it) },
@@ -35,7 +35,7 @@ public class ChunkingBuildServer<S : BspServer>(
       wrapRes = { SourcesResult(it) }
     )(params)
 
-  override fun buildTargetResources(params: ResourcesParams?): CompletableFuture<ResourcesResult> =
+  override fun buildTargetResources(params: ResourcesParams): CompletableFuture<ResourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { ResourcesParams(it) },
@@ -45,7 +45,7 @@ public class ChunkingBuildServer<S : BspServer>(
     )(params)
 
   override fun buildTargetDependencySources(
-    params: DependencySourcesParams?): CompletableFuture<DependencySourcesResult> =
+    params: DependencySourcesParams): CompletableFuture<DependencySourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { DependencySourcesParams(it) },
@@ -54,7 +54,7 @@ public class ChunkingBuildServer<S : BspServer>(
       wrapRes = { DependencySourcesResult(it) }
     )(params)
 
-  override fun buildTargetOutputPaths(params: OutputPathsParams?): CompletableFuture<OutputPathsResult> =
+  override fun buildTargetOutputPaths(params: OutputPathsParams): CompletableFuture<OutputPathsResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { OutputPathsParams(it) },
@@ -64,7 +64,7 @@ public class ChunkingBuildServer<S : BspServer>(
     )(params)
 
   override fun buildTargetDependencyModules(
-    params: DependencyModulesParams?): CompletableFuture<DependencyModulesResult> =
+    params: DependencyModulesParams): CompletableFuture<DependencyModulesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { DependencyModulesParams(it) },
@@ -73,7 +73,7 @@ public class ChunkingBuildServer<S : BspServer>(
       wrapRes = { DependencyModulesResult(it) }
     )(params)
 
-  override fun buildTargetJavacOptions(params: JavacOptionsParams?): CompletableFuture<JavacOptionsResult> =
+  override fun buildTargetJavacOptions(params: JavacOptionsParams): CompletableFuture<JavacOptionsResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { JavacOptionsParams(it) },
@@ -82,7 +82,7 @@ public class ChunkingBuildServer<S : BspServer>(
       wrapRes = { JavacOptionsResult(it) }
     )(params)
 
-  override fun buildTargetCleanCache(params: CleanCacheParams?): CompletableFuture<CleanCacheResult> =
+  override fun buildTargetCleanCache(params: CleanCacheParams): CompletableFuture<CleanCacheResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { CleanCacheParams(it) },
@@ -90,7 +90,7 @@ public class ChunkingBuildServer<S : BspServer>(
       unwrapRes = { listOf(it) },
       wrapRes = { results ->
         CleanCacheResult(
-          results.joinToString("\n") { it.message },
+          results.joinToString("\n") { it.message ?: "" },
           results.all { it.cleaned }
         )
       }
@@ -99,12 +99,11 @@ public class ChunkingBuildServer<S : BspServer>(
   private fun<ReqW, Res, ResW> chunkedRequest(
     unwrapReq: (ReqW) -> List<BTI>,
     wrapReq: (List<BTI>) -> ReqW,
-    doRequest: (ReqW?) -> CompletableFuture<ResW>,
+    doRequest: (ReqW) -> CompletableFuture<ResW>,
     unwrapRes: (ResW) -> List<Res>,
     wrapRes: (List<Res>) -> ResW,
-  ): (ReqW?) -> CompletableFuture<ResW> =
-    fun (requestParams: ReqW?): CompletableFuture<ResW> {
-      if (requestParams == null) return doRequest(null)
+  ): (ReqW) -> CompletableFuture<ResW> =
+    fun (requestParams: ReqW): CompletableFuture<ResW> {
       val allTargetsIds = unwrapReq(requestParams)
       val requests = allTargetsIds.chunked(chunkSize(allTargetsIds))
         .map { doRequest(wrapReq(it)) }

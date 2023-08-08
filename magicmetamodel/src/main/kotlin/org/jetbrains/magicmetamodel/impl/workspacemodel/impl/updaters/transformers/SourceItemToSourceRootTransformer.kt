@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourceItem
+import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 import java.net.URI
 import java.nio.file.Path
@@ -19,6 +19,6 @@ internal object SourceItemToSourceRootTransformer :
   override fun transform(inputEntity: SourceItem): SourceRoot {
     val sourceURI = URI.create(inputEntity.uri).toPath()
 
-    return SourceRoot(sourceURI, inputEntity.generated, inputEntity.kind == SourceItemKind.FILE)
+    return SourceRoot(sourceURI, inputEntity.generated, inputEntity.kind == SourceItemKind.File)
   }
 }

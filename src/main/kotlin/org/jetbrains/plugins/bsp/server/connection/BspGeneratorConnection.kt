@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState

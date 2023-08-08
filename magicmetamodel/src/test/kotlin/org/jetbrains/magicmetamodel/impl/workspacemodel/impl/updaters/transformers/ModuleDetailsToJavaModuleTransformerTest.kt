@@ -1,15 +1,15 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetDataKind
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
+import com.jetbrains.bsp.bsp4kt.JavacOptionsItem
+import com.jetbrains.bsp.bsp4kt.JvmBuildTarget
+import com.jetbrains.bsp.bsp4kt.ResourcesItem
+import com.jetbrains.bsp.bsp4kt.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourcesItem
 import com.google.gson.JsonObject
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny

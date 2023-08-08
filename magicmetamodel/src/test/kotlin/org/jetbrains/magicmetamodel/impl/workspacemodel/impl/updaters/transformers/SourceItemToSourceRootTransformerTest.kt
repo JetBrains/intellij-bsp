@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourceItem
+import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.DisplayName

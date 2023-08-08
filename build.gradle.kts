@@ -24,7 +24,8 @@ version = Plugin.version
 dependencies {
   implementation(project(":magicmetamodel"))
   testImplementation(project(":test-utils"))
-  implementation(libs.bsp4j)
+  implementation(libs.bsp4kt)
+  implementation(libs.jsonrpc4kt)
   implementation(libs.gson)
   implementation(libs.coursier)
 

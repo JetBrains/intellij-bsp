@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.InitializeBuildParams
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BuildClient
+import com.jetbrains.bsp.bsp4kt.BuildClientCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.InitializeBuildParams
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil
@@ -15,7 +15,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
-import org.eclipse.lsp4j.jsonrpc.Launcher
+import com.jetbrains.jsonrpc4kt.Launcher
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
@@ -235,8 +237,6 @@ public class BspFileConnection(
     server = startServerAndAddDisconnectActions(process, client)
     capabilities = server?.initializeAndObtainCapabilities()
 
-    client.onConnectWithServer(server)
-
     bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
     bspSyncConsole.finishSubtask(connectSubtaskId, "Connecting to the server done!")
   }
@@ -263,13 +263,9 @@ public class BspFileConnection(
     ) as BspServer
   }
 
-  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
-    Launcher.Builder<BspServer>()
-      .setRemoteInterface(BspServer::class.java)
-      .setExecutorService(AppExecutorUtil.getAppExecutorService())
-      .setInput(bspIn)
-      .setOutput(bspOut)
-      .setLocalService(client)
+  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BuildClient, BspServer> =
+    Launcher.Builder(input = bspIn, output = bspOut, localService = client, executorService = AppExecutorUtil.getAppExecutorService(),
+      remoteInterface = BspServer::class)
       .create()
 
   private fun BspServer.initializeAndObtainCapabilities(): BuildServerCapabilities {
@@ -283,14 +279,14 @@ public class BspFileConnection(
     val params = InitializeBuildParams(
       "IntelliJ-BSP",
       "0.0.1",
-      "2.1.0-M5",
+      "2.1.0",
       projectBaseDir.toString(),
-      BuildClientCapabilities(listOf("java"))
+      BuildClientCapabilities(listOf("java")),
+      null,
+      buildJsonObject {
+        put("clientClassesRootDir", "$projectBaseDir/out")
+      }
     )
-    val dataJson = JsonObject()
-    dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
-    params.data = dataJson
-
     return params
   }
 

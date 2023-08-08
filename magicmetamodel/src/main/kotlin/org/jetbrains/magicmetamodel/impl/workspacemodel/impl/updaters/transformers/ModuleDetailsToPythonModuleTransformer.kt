@@ -1,10 +1,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.PythonBuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetDataKind
+import com.jetbrains.bsp.bsp4kt.PythonBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -53,9 +55,9 @@ internal class ModuleDetailsToPythonModuleTransformer(
 
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
-    return if (pythonBuildTarget != null && pythonBuildTarget.version != null && pythonBuildTarget.interpreter != null)
+    return if (pythonBuildTarget?.version != null && pythonBuildTarget.interpreter != null)
       PythonSdkInfo(
-        version = pythonBuildTarget.version,
+        version = pythonBuildTarget.version!!,
         originalName = inputEntity.target.id.uri
       )
     else null
@@ -64,8 +66,8 @@ internal class ModuleDetailsToPythonModuleTransformer(
 }
 
 public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =
-  if (target.dataKind == BuildTargetDataKind.PYTHON) Gson().fromJson(
-    target.data as JsonObject,
-    PythonBuildTarget::class.java
-  )
+  if (target.dataKind == BuildTargetDataKind.Python)
+    target.data?.let {
+      Json.decodeFromJsonElement<PythonBuildTarget>(it)
+    }
   else null

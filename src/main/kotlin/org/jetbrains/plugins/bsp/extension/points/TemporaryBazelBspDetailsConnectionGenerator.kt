@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.extension.points
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.observable.properties.ObservableProperty

@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.flow.open.wizard
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.comparables.shouldBeLessThan

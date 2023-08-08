@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.StatusCode
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.CompileParams
+import com.jetbrains.bsp.bsp4kt.CompileResult
+import com.jetbrains.bsp.bsp4kt.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -71,19 +71,16 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
 
   private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
-    CompileParams(targetIds)
-      .apply {
-        this.originId = originId
-      }
+    CompileParams(targetIds, originId, null)
 
   private fun finishBuildConsoleTaskWithProperResult(
     compileResult: CompileResult,
     bspBuildConsole: TaskConsole,
     uuid: String
   ) = when (compileResult.statusCode) {
-    StatusCode.OK -> bspBuildConsole.finishTask(uuid, "Successfully completed!")
-    StatusCode.CANCELLED -> bspBuildConsole.finishTask(uuid, "Cancelled!")
-    StatusCode.ERROR -> bspBuildConsole.finishTask(uuid, "Ended with an error!", FailureResultImpl())
+    StatusCode.Ok -> bspBuildConsole.finishTask(uuid, "Successfully completed!")
+    StatusCode.Cancelled -> bspBuildConsole.finishTask(uuid, "Cancelled!")
+    StatusCode.Error -> bspBuildConsole.finishTask(uuid, "Ended with an error!", FailureResultImpl())
     else -> bspBuildConsole.finishTask(uuid, "Finished!")
   }
 
@@ -124,7 +121,7 @@ public suspend fun runBuildTargetTask(
   } catch (e: Exception) {
     when {
       doesCompletableFutureGetThrowCancelledException(e) ->
-        CompileResult(StatusCode.CANCELLED)
+        CompileResult(statusCode = StatusCode.Cancelled)
 
       else -> {
         log.error(e)

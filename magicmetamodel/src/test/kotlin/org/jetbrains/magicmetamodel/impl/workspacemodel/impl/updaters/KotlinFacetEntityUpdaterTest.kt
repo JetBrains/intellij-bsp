@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.JvmBuildTarget
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.platform.workspace.jps.entities.FacetEntity

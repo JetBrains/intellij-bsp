@@ -1,23 +1,23 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.OutputPathsParams
-import ch.epfl.scala.bsp4j.OutputPathsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
+import com.jetbrains.bsp.bsp4kt.DependencySourcesParams
+import com.jetbrains.bsp.bsp4kt.DependencySourcesResult
+import com.jetbrains.bsp.bsp4kt.JavacOptionsParams
+import com.jetbrains.bsp.bsp4kt.JavacOptionsResult
+import com.jetbrains.bsp.bsp4kt.JvmBuildTarget
+import com.jetbrains.bsp.bsp4kt.OutputPathsParams
+import com.jetbrains.bsp.bsp4kt.OutputPathsResult
+import com.jetbrains.bsp.bsp4kt.PythonOptionsParams
+import com.jetbrains.bsp.bsp4kt.PythonOptionsResult
+import com.jetbrains.bsp.bsp4kt.ResourcesParams
+import com.jetbrains.bsp.bsp4kt.ResourcesResult
+import com.jetbrains.bsp.bsp4kt.SourcesParams
+import com.jetbrains.bsp.bsp4kt.SourcesResult
+import com.jetbrains.bsp.bsp4kt.WorkspaceBuildTargetsResult
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -202,7 +202,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         ?.let {
           PythonSdk(
             name = "${target.id.uri}-${it.version}",
-            interpreter = it.interpreter,
+            interpreter = it.interpreter.orEmpty(),
             dependencies = dependenciesSources
           )
         }
@@ -242,8 +242,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addJdk(jdkInfo: JvmBuildTarget) {
     val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
-      jdkInfo.javaVersion.javaVersionToJdkName(project.name),
-      URI.create(jdkInfo.javaHome).toPath().toString()
+      jdkInfo.javaVersion?.javaVersionToJdkName(project.name),
+      URI.create(jdkInfo.javaHome!!).toPath().toString()
     )
 
     addJdkIfNeeded(jdk)
@@ -402,7 +402,7 @@ private fun queryForTargetResources(
 ): CompletableFuture<ResourcesResult>? {
   val resourcesParams = ResourcesParams(allTargetsIds)
 
-  return if (capabilities.resourcesProvider) server.buildTargetResources(resourcesParams)
+  return if (capabilities.resourcesProvider == true) server.buildTargetResources(resourcesParams)
   else null
 }
 
@@ -413,7 +413,7 @@ private fun queryForDependencySources(
 ): CompletableFuture<DependencySourcesResult>? {
   val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
 
-  return if (capabilities.dependencySourcesProvider) server.buildTargetDependencySources(dependencySourcesParams)
+  return if (capabilities.dependencySourcesProvider == true) server.buildTargetDependencySources(dependencySourcesParams)
   else null
 }
 

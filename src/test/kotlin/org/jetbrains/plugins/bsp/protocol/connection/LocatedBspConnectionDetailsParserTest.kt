@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.AfterEach

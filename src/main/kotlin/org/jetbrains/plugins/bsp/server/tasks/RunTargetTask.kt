@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.RunResult
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.RunParams
+import com.jetbrains.bsp.bsp4kt.RunResult
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import java.util.*
@@ -21,9 +21,6 @@ public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResu
   }
 
   private fun createRunParams(targetId: BuildTargetIdentifier): RunParams =
-    RunParams(targetId).apply {
-      // TODO
-      originId = "run-" + UUID.randomUUID().toString()
-      arguments = listOf()
-    }
+    // TODO
+    RunParams(targetId, originId = "run-" + UUID.randomUUID().toString(), arguments = listOf())
 }

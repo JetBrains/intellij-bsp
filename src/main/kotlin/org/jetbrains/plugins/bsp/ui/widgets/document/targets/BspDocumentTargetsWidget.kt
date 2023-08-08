@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.document.targets
 
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

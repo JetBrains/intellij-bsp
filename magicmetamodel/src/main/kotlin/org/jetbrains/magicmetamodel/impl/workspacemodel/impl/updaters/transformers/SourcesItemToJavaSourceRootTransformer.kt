@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.SourcesItem
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.SourcesItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import java.net.URI
 import java.nio.file.Path

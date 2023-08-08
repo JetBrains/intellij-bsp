@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.jsonrpc4kt.services.JsonRequest
 import java.util.concurrent.CompletableFuture
 
 public data class LibraryItem(

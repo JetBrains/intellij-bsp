@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 
 public typealias BuildTargetId = String
 

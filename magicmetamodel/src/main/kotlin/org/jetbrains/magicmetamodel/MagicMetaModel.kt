@@ -1,13 +1,13 @@
 package org.jetbrains.magicmetamodel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.PythonOptionsItem
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
+import com.jetbrains.bsp.bsp4kt.JavacOptionsItem
+import com.jetbrains.bsp.bsp4kt.PythonOptionsItem
+import com.jetbrains.bsp.bsp4kt.ResourcesItem
+import com.jetbrains.bsp.bsp4kt.SourcesItem
+import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.WorkspaceModel

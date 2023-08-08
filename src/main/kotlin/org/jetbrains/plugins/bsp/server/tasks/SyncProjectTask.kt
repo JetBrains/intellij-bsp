@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project

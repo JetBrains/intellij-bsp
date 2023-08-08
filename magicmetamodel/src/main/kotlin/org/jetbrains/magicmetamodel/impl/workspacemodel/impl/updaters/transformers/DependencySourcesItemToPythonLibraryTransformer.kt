@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.DependencySourcesItem
+import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
 
 internal object DependencySourcesItemToPythonLibraryTransformer :

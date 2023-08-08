@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.StatusCode
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -72,9 +72,9 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
           try {
             RunTargetTask(project).connectAndExecute(BuildTargetIdentifier(uri))?.apply {
               when (statusCode) {
-                StatusCode.OK -> processHandler.printOutput("Successfully completed!")
-                StatusCode.CANCELLED -> processHandler.printOutput("Cancelled!")
-                StatusCode.ERROR -> processHandler.printOutput("Ended with an error!")
+                StatusCode.Ok -> processHandler.printOutput("Successfully completed!")
+                StatusCode.Cancelled -> processHandler.printOutput("Cancelled!")
+                StatusCode.Error -> processHandler.printOutput("Ended with an error!")
                 else -> processHandler.printOutput("Finished!")
               }
             }

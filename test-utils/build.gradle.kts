@@ -3,7 +3,8 @@ plugins {
 }
 
 dependencies {
-  implementation(libs.bsp4j)
+  implementation(libs.bsp4kt)
+  implementation(libs.jsonrpc4kt)
   implementation(libs.junitJupiter)
   implementation(libs.kotest)
 }

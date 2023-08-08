@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.BuildServer
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.JavaBuildServer
-import ch.epfl.scala.bsp4j.PythonBuildServer
+import com.jetbrains.bsp.bsp4kt.BuildServer
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.JavaBuildServer
+import com.jetbrains.bsp.bsp4kt.PythonBuildServer
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State

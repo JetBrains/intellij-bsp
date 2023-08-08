@@ -2,8 +2,8 @@
 
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.constructors.BuildTargetId

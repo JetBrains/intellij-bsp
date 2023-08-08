@@ -1,21 +1,25 @@
 package org.jetbrains.plugins.bsp.server.client
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskDataKind
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
+import com.jetbrains.bsp.bsp4kt.BuildClient
+import com.jetbrains.bsp.bsp4kt.DiagnosticSeverity
+import com.jetbrains.bsp.bsp4kt.DidChangeBuildTarget
+import com.jetbrains.bsp.bsp4kt.LogMessageParams
+import com.jetbrains.bsp.bsp4kt.PublishDiagnosticsParams
+import com.jetbrains.bsp.bsp4kt.ShowMessageParams
+import com.jetbrains.bsp.bsp4kt.TaskStartDataKind
+import com.jetbrains.bsp.bsp4kt.TaskProgressDataKind
+import com.jetbrains.bsp.bsp4kt.TaskFinishDataKind
+import com.jetbrains.bsp.bsp4kt.TaskFinishParams
+import com.jetbrains.bsp.bsp4kt.TaskProgressParams
+import com.jetbrains.bsp.bsp4kt.TaskStartParams
+import com.jetbrains.bsp.bsp4kt.TestFinish
+import com.jetbrains.bsp.bsp4kt.TestStart
+import com.jetbrains.bsp.bsp4kt.TestStatus
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.plugins.bsp.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
 import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
@@ -41,41 +45,33 @@ public class BspClient(
     addMessageToConsole(params.originId, params.message)
   }
 
-  override fun onBuildTaskStart(params: TaskStartParams?) {
+  override fun onBuildTaskStart(params: TaskStartParams) {
     onBuildEvent()
-    when (params?.dataKind) {
-      TaskDataKind.TEST_START -> {
-        val gson = Gson()
-        val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
-        val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
+    when (params.dataKind) {
+      TaskStartDataKind.TestStart -> {
+        val testStart = Json.decodeFromJsonElement<TestStart>(params.data!!)
+        val isSuite = if (params.message.isNullOrBlank()) false else params.message!!.take(3) == "<S>"
         bspTestConsole.startTest(isSuite, testStart.displayName)
-      }
-
-      TaskDataKind.TEST_TASK -> {
-        // ignore
       }
     }
   }
 
-  override fun onBuildTaskProgress(params: TaskProgressParams?) {
+  override fun onBuildTaskProgress(params: TaskProgressParams) {
     onBuildEvent()
   }
 
-  override fun onBuildTaskFinish(params: TaskFinishParams?) {
+  override fun onBuildTaskFinish(params: TaskFinishParams) {
     onBuildEvent()
-    when (params?.dataKind) {
-      TaskDataKind.TEST_FINISH -> {
-        val gson = Gson()
-        val testFinish = gson.fromJson(params.data as JsonObject, TestFinish::class.java)
-        val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
+    when (params.dataKind) {
+      TaskFinishDataKind.TestFinish -> {
+        val testFinish = Json.decodeFromJsonElement<TestFinish>(params.data!!)
+        val isSuite = if (params.message.isNullOrBlank()) false else params.message!!.take(3) == "<S>"
         when (testFinish.status) {
-          TestStatus.FAILED -> bspTestConsole.failTest(testFinish.displayName, testFinish.message.orEmpty())
-          TestStatus.PASSED -> bspTestConsole.passTest(isSuite, testFinish.displayName)
+          TestStatus.Failed -> bspTestConsole.failTest(testFinish.displayName, testFinish.message.orEmpty())
+          TestStatus.Passed -> bspTestConsole.passTest(isSuite, testFinish.displayName)
           else -> bspTestConsole.ignoreTest(testFinish.displayName)
         }
       }
-
-      TaskDataKind.TEST_REPORT -> {}
     }
   }
 
@@ -84,7 +80,7 @@ public class BspClient(
     addDiagnosticToConsole(params)
   }
 
-  override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) {
+  override fun onBuildTargetDidChange(params: DidChangeBuildTarget) {
     onBuildEvent()
   }
 
@@ -105,11 +101,11 @@ public class BspClient(
   }
 
   private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
-    if (params.originId != null && params.textDocument != null) {
+    if (params.originId != null) {
       val targetConsole = if (params.originId?.startsWith("build") == true) bspBuildConsole else bspSyncConsole
       params.diagnostics.forEach {
         targetConsole.addDiagnosticMessage(
-          params.originId,
+          params.originId!!,
           params.textDocument.uri,
           it.range.start.line,
           it.range.start.character,
@@ -122,10 +118,10 @@ public class BspClient(
 
   private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
     when (severity) {
-      DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-      DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-      DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-      DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+      DiagnosticSeverity.Error -> MessageEvent.Kind.ERROR
+      DiagnosticSeverity.Warning -> MessageEvent.Kind.WARNING
+      DiagnosticSeverity.Information -> MessageEvent.Kind.INFO
+      DiagnosticSeverity.Hint -> MessageEvent.Kind.INFO
       null -> MessageEvent.Kind.SIMPLE
     }
 }
