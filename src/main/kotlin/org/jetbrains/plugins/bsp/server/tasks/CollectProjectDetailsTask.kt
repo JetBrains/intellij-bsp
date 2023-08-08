@@ -413,7 +413,8 @@ private fun queryForDependencySources(
 ): CompletableFuture<DependencySourcesResult>? {
   val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
 
-  return if (capabilities.dependencySourcesProvider == true) server.buildTargetDependencySources(dependencySourcesParams)
+  return if (capabilities.dependencySourcesProvider == true)
+    server.buildTargetDependencySources(dependencySourcesParams)
   else null
 }
 

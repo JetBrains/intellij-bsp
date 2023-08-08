@@ -7,7 +7,6 @@ import com.jetbrains.bsp.bsp4kt.LogMessageParams
 import com.jetbrains.bsp.bsp4kt.PublishDiagnosticsParams
 import com.jetbrains.bsp.bsp4kt.ShowMessageParams
 import com.jetbrains.bsp.bsp4kt.TaskStartDataKind
-import com.jetbrains.bsp.bsp4kt.TaskProgressDataKind
 import com.jetbrains.bsp.bsp4kt.TaskFinishDataKind
 import com.jetbrains.bsp.bsp4kt.TaskFinishParams
 import com.jetbrains.bsp.bsp4kt.TaskProgressParams
@@ -15,8 +14,6 @@ import com.jetbrains.bsp.bsp4kt.TaskStartParams
 import com.jetbrains.bsp.bsp4kt.TestFinish
 import com.jetbrains.bsp.bsp4kt.TestStart
 import com.jetbrains.bsp.bsp4kt.TestStatus
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement

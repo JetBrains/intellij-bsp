@@ -5,7 +5,6 @@ import com.jetbrains.bsp.bsp4kt.BuildClient
 import com.jetbrains.bsp.bsp4kt.BuildClientCapabilities
 import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
 import com.jetbrains.bsp.bsp4kt.InitializeBuildParams
-import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
@@ -263,10 +262,19 @@ public class BspFileConnection(
     ) as BspServer
   }
 
-  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BuildClient, BspServer> =
-    Launcher.Builder(input = bspIn, output = bspOut, localService = client, executorService = AppExecutorUtil.getAppExecutorService(),
-      remoteInterface = BspServer::class)
-      .create()
+    private fun createLauncher(
+      bspIn: InputStream,
+      bspOut: OutputStream,
+      client: BuildClient
+    ): Launcher<BuildClient, BspServer> =
+    Launcher.Builder(
+      input = bspIn,
+      output = bspOut,
+      localService = client,
+      executorService = AppExecutorUtil.getAppExecutorService(),
+      remoteInterface = BspServer::class
+    )
+    .create()
 
   private fun BspServer.initializeAndObtainCapabilities(): BuildServerCapabilities {
     val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()
