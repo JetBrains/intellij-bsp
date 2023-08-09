@@ -37,8 +37,7 @@ dependencies {
 }
 
 tasks.runIde{
-  jvmArgs("-Xmx16000m",
-    "-Didea.log.trace.categories=" +
+  jvmArgs("-Didea.log.trace.categories=" +
     "#org.jetbrains.plugins.bsp," +
     "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
 }
