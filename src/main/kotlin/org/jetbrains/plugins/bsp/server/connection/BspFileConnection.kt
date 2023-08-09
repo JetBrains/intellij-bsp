@@ -1,10 +1,5 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
-import com.jetbrains.bsp.bsp4kt.BuildClient
-import com.jetbrains.bsp.bsp4kt.BuildClientCapabilities
-import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
-import com.jetbrains.bsp.bsp4kt.InitializeBuildParams
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
@@ -14,6 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
+import com.jetbrains.bsp.bsp4kt.BuildClient
+import com.jetbrains.bsp.bsp4kt.BuildClientCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.InitializeBuildParams
 import com.jetbrains.jsonrpc4kt.Launcher
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -75,8 +75,10 @@ private class CancelableInvocationHandlerWithTimeout(
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
-    log.debug("BSP method '$methodName' call took ${elapsedTime}ms. " +
-            "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
+    log.debug(
+      "BSP method '$methodName' call took ${elapsedTime}ms. " +
+          "Result: ${if (error == null) "SUCCESS" else "FAILURE"}"
+    )
 
     return when (error) {
       null -> value
@@ -262,11 +264,11 @@ public class BspFileConnection(
     ) as BspServer
   }
 
-    private fun createLauncher(
-      bspIn: InputStream,
-      bspOut: OutputStream,
-      client: BuildClient
-    ): Launcher<BuildClient, BspServer> =
+  private fun createLauncher(
+    bspIn: InputStream,
+    bspOut: OutputStream,
+    client: BuildClient
+  ): Launcher<BuildClient, BspServer> =
     Launcher.Builder(
       input = bspIn,
       output = bspOut,
@@ -274,7 +276,7 @@ public class BspFileConnection(
       executorService = AppExecutorUtil.getAppExecutorService(),
       remoteInterface = BspServer::class
     )
-    .create()
+      .create()
 
   private fun BspServer.initializeAndObtainCapabilities(): BuildServerCapabilities {
     val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()

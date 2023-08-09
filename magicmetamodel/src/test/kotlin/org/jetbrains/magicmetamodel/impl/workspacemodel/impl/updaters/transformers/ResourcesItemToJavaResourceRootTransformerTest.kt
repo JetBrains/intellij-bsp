@@ -220,7 +220,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceFilePath2.toFile().deleteOnExit()
     val resourceRawUri2 = resourceFilePath2.toUri().toString()
 
-    val resourceDirPath3 = Files.createTempDirectory(projectBasePath,"resourcedir")
+    val resourceDirPath3 = Files.createTempDirectory(projectBasePath, "resourcedir")
     resourceDirPath3.toFile().deleteOnExit()
     val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
 

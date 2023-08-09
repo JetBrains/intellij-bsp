@@ -45,7 +45,7 @@ public object PerformanceLogger {
   }
 
   private fun logMetric(key: String, usedMemory: Long) {
-    if(metricsFile() != null) {
+    if (metricsFile() != null) {
       metrics["$key.mb"] = usedMemory
     }
   }

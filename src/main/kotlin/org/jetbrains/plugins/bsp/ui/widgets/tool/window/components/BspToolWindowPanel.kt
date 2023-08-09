@@ -65,7 +65,8 @@ private class ListsUpdater(
     searchBarPanel.clearAllListeners()
     loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(magicMetaModel))
     notLoadedTargetsPanel = notLoadedTargetsPanel.createNewWithTargets(
-      targetFilter.getMatchingNotLoadedTargets(magicMetaModel))
+      targetFilter.getMatchingNotLoadedTargets(magicMetaModel)
+    )
     targetPanelUpdater(this@ListsUpdater)
   }
 }
@@ -87,7 +88,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
 
     actionGroup.childActionsOrStubs.iterator().forEach {
-      if ( it.shouldBeDisposedAfterReload() ) {
+      if (it.shouldBeDisposedAfterReload()) {
         actionGroup.remove(it)
       }
     }

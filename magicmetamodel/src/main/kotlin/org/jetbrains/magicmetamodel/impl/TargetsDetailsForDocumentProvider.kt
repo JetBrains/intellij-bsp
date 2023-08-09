@@ -1,10 +1,10 @@
 package org.jetbrains.magicmetamodel.impl
 
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.trace
 import com.jetbrains.bsp.bsp4kt.SourceItem
 import com.jetbrains.bsp.bsp4kt.SourcesItem
 import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
-import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diagnostic.trace
 import org.jetbrains.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId

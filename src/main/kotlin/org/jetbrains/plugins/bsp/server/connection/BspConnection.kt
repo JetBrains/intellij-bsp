@@ -1,15 +1,15 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import com.jetbrains.bsp.bsp4kt.BuildServer
-import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
-import com.jetbrains.bsp.bsp4kt.JavaBuildServer
-import com.jetbrains.bsp.bsp4kt.PythonBuildServer
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
+import com.jetbrains.bsp.bsp4kt.BuildServer
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.JavaBuildServer
+import com.jetbrains.bsp.bsp4kt.PythonBuildServer
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.BazelBuildServer
 

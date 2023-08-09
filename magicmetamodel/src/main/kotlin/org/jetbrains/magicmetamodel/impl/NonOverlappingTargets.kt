@@ -92,8 +92,10 @@ public object NonOverlappingTargets {
   ): BuildTargetId? =
     availableDependers.flatMap { conflictGraph.conflictMap[it].orEmpty() }.firstOrNull()
 
-  private fun chooseWorstConflict(conflictGraph: ConflictGraph,
-                                  dependers: MutableSet<BuildTargetId>): BuildTargetId? =
+  private fun chooseWorstConflict(
+    conflictGraph: ConflictGraph,
+    dependers: MutableSet<BuildTargetId>
+  ): BuildTargetId? =
     conflictingWithDependers(conflictGraph, dependers)
       ?: mostConflictingTargets(conflictGraph)
 

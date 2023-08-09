@@ -282,7 +282,14 @@ class TaskConsoleTest {
     taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 6", Kind.ERROR)
 
     // fileURI without `file://`, should be sent correctly
-    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 7", Kind.WARNING)
+    taskConsole.addDiagnosticMessage(
+      "origin",
+      "/home/directory/project/src/test/Start.kt",
+      10,
+      20,
+      "Diagnostic 7",
+      Kind.WARNING
+    )
 
     taskConsole.finishTask("origin", "finished", SuccessResultImpl())
 
@@ -290,11 +297,46 @@ class TaskConsoleTest {
     diagnosticListener.events shouldContainExactly mapOf(
       "origin" to listOf(
         TestableBuildEvent(StartBuildEventImpl::class, "origin", null, "started"),
-        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 1\n", severity = Kind.ERROR, filePositionPath = filePositionPath, 10, 20),
-        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 2\n", severity = Kind.WARNING, filePositionPath = filePositionPath, 10, 20),
-        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 3\n", severity = Kind.INFO, filePositionPath = filePositionPath, 10, 20),
-        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 6\n", severity = Kind.ERROR, filePositionPath = filePositionPath, -4, -8),
-        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 7\n", severity = Kind.WARNING, filePositionPath = filePositionPath, 10, 20),
+        TestableDiagnosticEvent(
+          id = "origin",
+          message = "Diagnostic 1\n",
+          severity = Kind.ERROR,
+          filePositionPath = filePositionPath,
+          10,
+          20
+        ),
+        TestableDiagnosticEvent(
+          id = "origin",
+          message = "Diagnostic 2\n",
+          severity = Kind.WARNING,
+          filePositionPath = filePositionPath,
+          10,
+          20
+        ),
+        TestableDiagnosticEvent(
+          id = "origin",
+          message = "Diagnostic 3\n",
+          severity = Kind.INFO,
+          filePositionPath = filePositionPath,
+          10,
+          20
+        ),
+        TestableDiagnosticEvent(
+          id = "origin",
+          message = "Diagnostic 6\n",
+          severity = Kind.ERROR,
+          filePositionPath = filePositionPath,
+          -4,
+          -8
+        ),
+        TestableDiagnosticEvent(
+          id = "origin",
+          message = "Diagnostic 7\n",
+          severity = Kind.WARNING,
+          filePositionPath = filePositionPath,
+          10,
+          20
+        ),
         TestableBuildEvent(FinishBuildEventImpl::class, "origin", null, "finished"),
       )
     )

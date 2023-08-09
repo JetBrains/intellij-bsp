@@ -33,7 +33,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
       BspConnectionDetailsGeneratorProvider(file, BspConnectionDetailsGeneratorExtension.extensions())
 
     return bspConnectionFilesProvider.isAnyBspConnectionFileDefined() or
-      bspConnectionDetailsGeneratorProvider.canGenerateAnyBspConnectionDetailsFile()
+        bspConnectionDetailsGeneratorProvider.canGenerateAnyBspConnectionDetailsFile()
   }
 
   override fun doOpenProject(

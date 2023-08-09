@@ -44,13 +44,14 @@ internal abstract class SideMenuRunnerAction(
   }
 
   private fun Executor.executeWithRunner(
-          runner: ProgramRunner<RunnerSettings>,
-          settings: RunnerAndConfigurationSettings,
-          project: Project) {
+    runner: ProgramRunner<RunnerSettings>,
+    settings: RunnerAndConfigurationSettings,
+    project: Project
+  ) {
     try {
       val executionEnvironment = ExecutionEnvironmentBuilder(project, this)
-              .runnerAndSettings(runner, settings)
-              .build()
+        .runnerAndSettings(runner, settings)
+        .build()
       // TODO shouldnt we use 'target' for that?
       executionEnvironment.putUserData(targetIdTOREMOVE, target)
       runner.execute(executionEnvironment)

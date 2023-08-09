@@ -4,6 +4,9 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -15,9 +18,6 @@ import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 
 public class BuildTargetTree(
   private val targetIcon: Icon,
@@ -181,6 +181,7 @@ private interface NodeData
 private data class DirectoryNodeData(val name: String) : NodeData {
   override fun toString(): String = name
 }
+
 private data class TargetNodeData(val target: BuildTargetInfo, val displayName: String) : NodeData {
   override fun toString(): String = target.displayName ?: target.id
 }

@@ -1,12 +1,12 @@
 package org.jetbrains.magicmetamodel.impl
 
-import com.jetbrains.bsp.bsp4kt.BuildTarget
-import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.MagicMetaModel
@@ -192,9 +192,10 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     targetIdToModule.values.any { it.doesIncludeRootDir() }
 
   private fun Module.doesIncludeRootDir() =
-    when(this) {
+    when (this) {
       is JavaModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
           || baseDirContentRoot?.path == magicMetaModelProjectConfig.projectBasePath
+
       is PythonModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
       else -> false
     }

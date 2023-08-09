@@ -48,7 +48,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
-        ),
+      ),
       librariesDependencies = listOf(LibraryDependency("@maven//:lib1"))
     )
 
@@ -64,7 +64,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenJavaModule = JavaModule(
       genericModuleInfo = givenModule,
-      baseDirContentRoot = ContentRoot(path=projectRoot.toAbsolutePath()),
+      baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = file1APath.toAbsolutePath(),
@@ -99,7 +99,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val expectedJavaModule = JavaModule(
       genericModuleInfo = expectedModule,
-      baseDirContentRoot = ContentRoot(path=projectRoot.toAbsolutePath()),
+      baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot.toAbsolutePath(),
@@ -109,15 +109,15 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      moduleLevelLibraries  = emptyList(),
+      moduleLevelLibraries = emptyList(),
       compilerOutput = null,
       jvmJdkName = null,
       kotlinAddendum = null
     )
 
     javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
+        listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
+        )
   }
 
   @Test
@@ -140,7 +140,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenJavaModule1 = JavaModule(
       genericModuleInfo = givenModule1,
-      baseDirContentRoot = ContentRoot(path=projectRoot1.toAbsolutePath()),
+      baseDirContentRoot = ContentRoot(path = projectRoot1.toAbsolutePath()),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot1.toAbsolutePath(),
@@ -165,7 +165,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenJavaModule2 = JavaModule(
       genericModuleInfo = givenModule2,
-      baseDirContentRoot = ContentRoot(path=projectRoot2.toAbsolutePath()),
+      baseDirContentRoot = ContentRoot(path = projectRoot2.toAbsolutePath()),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot2.toAbsolutePath(),
@@ -196,7 +196,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val expectedJavaModule1 = JavaModule(
       genericModuleInfo = expectedModule1,
-      baseDirContentRoot = ContentRoot(path=projectRoot1.toAbsolutePath()),
+      baseDirContentRoot = ContentRoot(path = projectRoot1.toAbsolutePath()),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot1.toAbsolutePath(),
@@ -221,7 +221,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val expectedJavaModule2 = JavaModule(
       genericModuleInfo = expectedModule2,
-      baseDirContentRoot = ContentRoot(path=projectRoot2.toAbsolutePath()),
+      baseDirContentRoot = ContentRoot(path = projectRoot2.toAbsolutePath()),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot2.toAbsolutePath(),
@@ -237,7 +237,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       kotlinAddendum = null
     )
 
-    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })
+    javaModules shouldContainExactlyInAnyOrder (listOf(
+      expectedJavaModule1,
+      expectedJavaModule2
+    ) to { actual, expected -> validateJavaModule(actual, expected) })
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(

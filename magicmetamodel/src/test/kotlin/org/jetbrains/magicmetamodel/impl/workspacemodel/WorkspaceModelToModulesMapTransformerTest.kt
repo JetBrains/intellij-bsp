@@ -25,7 +25,7 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
   inner class WorkspaceModelToMagicMetamodelTransformerTest {
 
     @Test
-    fun  `should return correct ProjectDetails`() {
+    fun `should return correct ProjectDetails`() {
       // given
       val module1 = GenericModuleInfo(
         name = "module1",
@@ -211,7 +211,13 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
       val workspaceModelEntityUpdaterConfig =
         WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
-        JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1, javaModule2, rootJavaModule))
+        JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(
+          listOf(
+            javaModule1,
+            javaModule2,
+            rootJavaModule
+          )
+        )
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
       }
       val loadedModules = loadedEntries(ModuleEntity::class.java)

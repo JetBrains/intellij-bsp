@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.extension.points
 
-import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.observable.properties.ObservableProperty
@@ -13,6 +12,7 @@ import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.rows
 import com.intellij.util.io.readText
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import org.jetbrains.plugins.bsp.config.BazelBspConstants
 import org.jetbrains.plugins.bsp.config.BspPluginTemplates
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
@@ -63,17 +63,17 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
   }
 
   private fun calculateInstallerCommand(): List<String> = listOf(
-      ExternalCommandUtils.calculateJavaExecPath(),
-      "-cp",
-      ExternalCommandUtils
-        .calculateNeededJars(
-          org = "org.jetbrains.bsp",
-          name = "bazel-bsp",
-          version = "2.7.2-20230803-9d5cd19-NIGHTLY"
-        )
-        .joinToString(":"),
-      "org.jetbrains.bsp.bazel.install.Install",
-    ) + calculateProjectViewFileInstallerOption()
+    ExternalCommandUtils.calculateJavaExecPath(),
+    "-cp",
+    ExternalCommandUtils
+      .calculateNeededJars(
+        org = "org.jetbrains.bsp",
+        name = "bazel-bsp",
+        version = "2.7.2-20230803-9d5cd19-NIGHTLY"
+      )
+      .joinToString(":"),
+    "org.jetbrains.bsp.bazel.install.Install",
+  ) + calculateProjectViewFileInstallerOption()
 
   private fun calculateProjectViewFileInstallerOption(): List<String> =
     listOf("-p", "${projectViewFilePathProperty.get()}")

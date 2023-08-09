@@ -1,21 +1,21 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
-import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
-import com.jetbrains.bsp.bsp4kt.CompileParams
-import com.jetbrains.bsp.bsp4kt.CompileResult
-import com.jetbrains.bsp.bsp4kt.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.CompileParams
+import com.jetbrains.bsp.bsp4kt.CompileResult
+import com.jetbrains.bsp.bsp4kt.StatusCode
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException

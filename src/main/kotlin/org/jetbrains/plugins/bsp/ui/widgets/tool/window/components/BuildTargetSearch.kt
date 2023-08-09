@@ -7,6 +7,11 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import java.awt.Point
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.Icon
@@ -14,11 +19,6 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
-import java.awt.Point
 
 private fun BuildTargetInfo.getBuildTargetName(): String =
   this.displayName ?: this.id

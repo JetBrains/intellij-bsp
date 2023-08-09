@@ -364,7 +364,10 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
     )
 
-    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
+    modules shouldContainExactlyInAnyOrder (listOf(
+      expectedModule1,
+      expectedModule2
+    ) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test
@@ -470,7 +473,10 @@ class BspModuleDetailsToModuleTransformerTest {
       librariesDependencies = emptyList(),
     )
 
-    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
+    modules shouldContainExactlyInAnyOrder (listOf(
+      expectedModule1,
+      expectedModule2
+    ) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test

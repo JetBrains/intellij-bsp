@@ -1,5 +1,9 @@
 package org.jetbrains.magicmetamodel
 
+import com.intellij.openapi.diagnostic.debug
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
@@ -8,10 +12,6 @@ import com.jetbrains.bsp.bsp4kt.PythonOptionsItem
 import com.jetbrains.bsp.bsp4kt.ResourcesItem
 import com.jetbrains.bsp.bsp4kt.SourcesItem
 import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
-import com.intellij.openapi.diagnostic.debug
-import com.intellij.openapi.diagnostic.logger
-import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
@@ -33,6 +33,7 @@ public data class MagicMetaModelProjectConfig(
 }
 
 public typealias ModuleNameProvider = (BuildTargetId) -> String
+
 public object DefaultModuleNameProvider : ModuleNameProvider {
   override fun invoke(id: BuildTargetId): String = id
 }
@@ -57,7 +58,7 @@ public data class ProjectDetails(
     javacOptions + old.javacOptions,
     pythonOptions + old.pythonOptions,
     outputPathUris + old.outputPathUris,
-    if(libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
+    if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
   )
 }
 

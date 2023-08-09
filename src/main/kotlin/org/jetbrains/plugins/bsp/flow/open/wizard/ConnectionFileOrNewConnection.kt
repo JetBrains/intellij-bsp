@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.flow.open.wizard
 
-import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 

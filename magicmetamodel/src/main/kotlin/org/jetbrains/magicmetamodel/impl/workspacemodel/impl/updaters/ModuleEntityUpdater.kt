@@ -65,18 +65,18 @@ internal class ModuleEntityUpdater(
     )
 
   private fun toModuleDependencyItemLibraryDependency(
-          libraryDependency: LibraryDependency,
-          moduleName: String
+    libraryDependency: LibraryDependency,
+    moduleName: String
   ): ModuleDependencyItem.Exportable.LibraryDependency {
     val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
       LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
     return ModuleDependencyItem.Exportable.LibraryDependency(
-            library = LibraryId(
-                    name = libraryDependency.libraryName,
-                    tableId = libraryTableId,
-            ),
-            exported = false,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+      library = LibraryId(
+        name = libraryDependency.libraryName,
+        tableId = libraryTableId,
+      ),
+      exported = false,
+      scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
   }
 }

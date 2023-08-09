@@ -1,7 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
-import com.jetbrains.bsp.bsp4kt.StatusCode
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -15,6 +13,8 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.StatusCode
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler

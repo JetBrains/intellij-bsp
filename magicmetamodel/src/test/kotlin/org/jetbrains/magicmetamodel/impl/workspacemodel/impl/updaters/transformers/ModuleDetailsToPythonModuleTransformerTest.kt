@@ -47,7 +47,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
+    val pythonModules =
+      ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -63,8 +64,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val interpreterUri = "python3"
 
     val sdkInfoJsonObject = buildJsonObject {
-        put("version", version)
-        put("interpreter", interpreterUri)
+      put("version", version)
+      put("interpreter", interpreterUri)
     }
 
     val buildTargetId = BuildTargetIdentifier("module1")
@@ -140,7 +141,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
 
     // when
-    val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+    val pythonModule =
+      ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -321,7 +323,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+    val pythonModules =
+      ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -425,8 +428,8 @@ class ExtractPythonBuildTargetTest {
     }
 
     val buildTarget = buildDummyTarget().copy(
-        dataKind = BuildTargetDataKind.Python,
-        data = sdkInfoJsonObject
+      dataKind = BuildTargetDataKind.Python,
+      data = sdkInfoJsonObject
     )
 
     // when

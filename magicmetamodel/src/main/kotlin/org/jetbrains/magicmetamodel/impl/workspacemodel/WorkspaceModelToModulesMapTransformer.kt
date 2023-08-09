@@ -21,9 +21,11 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.toKotlinCOption
 
 public object WorkspaceModelToModulesMapTransformer {
-  public operator fun invoke(workspaceModel: WorkspaceModel,
-                             loadedTargetsStorage: LoadedTargetsStorage,
-                             moduleNameProvider: ModuleNameProvider): Map<BuildTargetId, Module> =
+  public operator fun invoke(
+    workspaceModel: WorkspaceModel,
+    loadedTargetsStorage: LoadedTargetsStorage,
+    moduleNameProvider: ModuleNameProvider
+  ): Map<BuildTargetId, Module> =
     with(workspaceModel.currentSnapshot) {
       WorkspaceModelToMagicMetamodelTransformer(
         entities(ModuleEntity::class.java),

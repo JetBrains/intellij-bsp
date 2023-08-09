@@ -1,12 +1,12 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
+import com.intellij.openapi.project.Project
 import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
 import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.jetbrains.bsp.bsp4kt.RunParams
 import com.jetbrains.bsp.bsp4kt.RunResult
-import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspServer
-import java.util.*
+import java.util.UUID
 
 public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResult>("run target", project) {
 

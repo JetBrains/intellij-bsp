@@ -76,7 +76,7 @@ public class BspStartupActivity : ProjectActivity {
           benchmarkConnection(project)
         } else {
           withContext(Dispatchers.EDT) {
-                showWizardAndGetResult(project)
+            showWizardAndGetResult(project)
           }
         }
 

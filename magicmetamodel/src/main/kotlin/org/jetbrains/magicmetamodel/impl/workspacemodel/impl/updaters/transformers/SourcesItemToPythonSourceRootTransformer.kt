@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.intellij.util.io.isAncestor
+import com.jetbrains.bsp.bsp4kt.BuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import java.nio.file.Path
 

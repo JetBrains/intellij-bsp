@@ -16,13 +16,13 @@ public class ProjectClosingListener : ProjectManagerListener {
   }
 
   private fun doProjectClosing(project: Project) {
-      runWithModalProgressBlocking(project, "Disconnecting...") {
-        try {
-          BspConnectionService.getInstance(project).value?.disconnect()
-        } catch (e: Exception) {
-          log.warn("One of the disconnect actions has failed!", e)
-        }
+    runWithModalProgressBlocking(project, "Disconnecting...") {
+      try {
+        BspConnectionService.getInstance(project).value?.disconnect()
+      } catch (e: Exception) {
+        log.warn("One of the disconnect actions has failed!", e)
       }
+    }
   }
 
   private companion object {

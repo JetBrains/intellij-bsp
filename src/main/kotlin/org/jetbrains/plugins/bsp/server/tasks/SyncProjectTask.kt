@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService

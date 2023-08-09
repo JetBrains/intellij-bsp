@@ -7,7 +7,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 public class BazelBspBalloonNotification(
   content: String,
   contentType: NotificationType = NotificationType.INFORMATION
-): Notification("Bazel BSP", content, contentType) {
+) : Notification("Bazel BSP", content, contentType) {
 
   init {
     setIcon(BspPluginIcons.bazel)

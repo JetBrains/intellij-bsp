@@ -1,4 +1,5 @@
 @file:Suppress("MaxLineLength")
+
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe

@@ -15,8 +15,8 @@ import com.jetbrains.bsp.bsp4kt.ResourcesParams
 import com.jetbrains.bsp.bsp4kt.ResourcesResult
 import com.jetbrains.bsp.bsp4kt.SourcesParams
 import com.jetbrains.bsp.bsp4kt.SourcesResult
-import java.util.concurrent.CompletableFuture
 import org.jetbrains.plugins.bsp.server.connection.BspServer
+import java.util.concurrent.CompletableFuture
 import kotlin.math.sqrt
 
 private typealias BTI = BuildTargetIdentifier
@@ -45,7 +45,8 @@ public class ChunkingBuildServer<S : BspServer>(
     )(params)
 
   override fun buildTargetDependencySources(
-    params: DependencySourcesParams): CompletableFuture<DependencySourcesResult> =
+    params: DependencySourcesParams
+  ): CompletableFuture<DependencySourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { DependencySourcesParams(it) },
@@ -64,7 +65,8 @@ public class ChunkingBuildServer<S : BspServer>(
     )(params)
 
   override fun buildTargetDependencyModules(
-    params: DependencyModulesParams): CompletableFuture<DependencyModulesResult> =
+    params: DependencyModulesParams
+  ): CompletableFuture<DependencyModulesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { DependencyModulesParams(it) },
@@ -96,14 +98,14 @@ public class ChunkingBuildServer<S : BspServer>(
       }
     )(params)
 
-  private fun<ReqW, Res, ResW> chunkedRequest(
+  private fun <ReqW, Res, ResW> chunkedRequest(
     unwrapReq: (ReqW) -> List<BTI>,
     wrapReq: (List<BTI>) -> ReqW,
     doRequest: (ReqW) -> CompletableFuture<ResW>,
     unwrapRes: (ResW) -> List<Res>,
     wrapRes: (List<Res>) -> ResW,
   ): (ReqW) -> CompletableFuture<ResW> =
-    fun (requestParams: ReqW): CompletableFuture<ResW> {
+    fun(requestParams: ReqW): CompletableFuture<ResW> {
       val allTargetsIds = unwrapReq(requestParams)
       val requests = allTargetsIds.chunked(chunkSize(allTargetsIds))
         .map { doRequest(wrapReq(it)) }

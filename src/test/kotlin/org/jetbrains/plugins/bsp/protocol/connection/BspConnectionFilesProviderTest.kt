@@ -1,4 +1,5 @@
 @file:Suppress("LongMethod")
+
 package org.jetbrains.plugins.bsp.protocol.connection
 
 import com.jetbrains.bsp.bsp4kt.BspConnectionDetails

@@ -259,7 +259,10 @@ class TargetsDetailsForDocumentProviderTest {
 
         // then
         commonDirectoryFileInTarget1TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1")
-        commonDirectoryChildFileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1", "//target2")
+        commonDirectoryChildFileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf(
+          "//target1",
+          "//target2"
+        )
       }
     }
 

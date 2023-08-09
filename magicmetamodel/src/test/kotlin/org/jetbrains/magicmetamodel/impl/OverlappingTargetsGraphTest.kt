@@ -12,8 +12,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetIdentifier
 import java.util.concurrent.TimeUnit
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetIdentifier
 
 @DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
 class OverlappingTargetsGraphTest {
@@ -449,11 +449,13 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources.zipWithNext().zipWithNext()
-          .associateBy({ it.first.second.target.uri }, { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
-          setOf(
-            sources[0].target.uri to setOf(sources[1].target.uri),
-            sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri)
-          )
+          .associateBy(
+            { it.first.second.target.uri },
+            { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
+            setOf(
+              sources[0].target.uri to setOf(sources[1].target.uri),
+              sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri)
+            )
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
 

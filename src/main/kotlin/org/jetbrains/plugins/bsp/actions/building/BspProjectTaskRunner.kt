@@ -1,7 +1,5 @@
 package org.jetbrains.plugins.bsp.actions.building
 
-import com.jetbrains.bsp.bsp4kt.CompileResult
-import com.jetbrains.bsp.bsp4kt.StatusCode
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
@@ -10,6 +8,8 @@ import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
+import com.jetbrains.bsp.bsp4kt.CompileResult
+import com.jetbrains.bsp.bsp4kt.StatusCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise

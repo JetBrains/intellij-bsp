@@ -8,10 +8,9 @@ import com.jetbrains.bsp.bsp4kt.DependencySourcesItem
 import com.jetbrains.bsp.bsp4kt.JavacOptionsItem
 import com.jetbrains.bsp.bsp4kt.JvmBuildTarget
 import com.jetbrains.bsp.bsp4kt.ResourcesItem
+import com.jetbrains.bsp.bsp4kt.SourceItem
 import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import com.jetbrains.bsp.bsp4kt.SourcesItem
-import com.google.gson.JsonObject
-import com.jetbrains.bsp.bsp4kt.SourceItem
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -71,8 +70,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val javaVersion = "11"
 
     val jdkInfoJsonObject = buildJsonObject {
-        put("javaHome", javaHome)
-        put("javaVersion", javaVersion)
+      put("javaHome", javaHome)
+      put("javaVersion", javaVersion)
     }
 
     val buildTargetId = BuildTargetIdentifier("module1")
@@ -596,8 +595,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
+        listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
+        )
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(

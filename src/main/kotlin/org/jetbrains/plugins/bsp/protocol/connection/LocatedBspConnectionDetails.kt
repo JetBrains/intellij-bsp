@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
-import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 import com.google.gson.Gson
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 
 public data class LocatedBspConnectionDetails(
   val bspConnectionDetails: BspConnectionDetails?,

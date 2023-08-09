@@ -1,5 +1,17 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
+import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
+import com.intellij.openapi.progress.indeterminateStep
+import com.intellij.openapi.progress.progressStep
+import com.intellij.openapi.progress.withBackgroundProgress
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.workspaceModel.ide.getInstance
 import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
 import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
@@ -18,18 +30,6 @@ import com.jetbrains.bsp.bsp4kt.ResourcesResult
 import com.jetbrains.bsp.bsp4kt.SourcesParams
 import com.jetbrains.bsp.bsp4kt.SourcesResult
 import com.jetbrains.bsp.bsp4kt.WorkspaceBuildTargetsResult
-import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.openapi.application.writeAction
-import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
-import com.intellij.openapi.progress.indeterminateStep
-import com.intellij.openapi.progress.progressStep
-import com.intellij.openapi.progress.withBackgroundProgress
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.workspaceModel.ide.getInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -197,15 +197,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
-      extractPythonBuildTarget(target)
-        ?.takeIf { it.version != null && it.interpreter != null }
-        ?.let {
-          PythonSdk(
-            name = "${target.id.uri}-${it.version}",
-            interpreter = it.interpreter.orEmpty(),
-            dependencies = dependenciesSources
-          )
-        }
+    extractPythonBuildTarget(target)
+      ?.takeIf { it.version != null && it.interpreter != null }
+      ?.let {
+        PythonSdk(
+          name = "${target.id.uri}-${it.version}",
+          interpreter = it.interpreter.orEmpty(),
+          dependencies = dependenciesSources
+        )
+      }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
     return projectDetails.targets
@@ -353,8 +353,8 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val outputPathsFuture =
       queryForOutputPaths(server, allTargetsIds)
-              .reactToExceptionIn(cancelOn)
-              .catchSyncErrors(errorCallback)
+        .reactToExceptionIn(cancelOn)
+        .catchSyncErrors(errorCallback)
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
@@ -419,7 +419,8 @@ private fun queryForDependencySources(
 }
 
 private fun calculateJavaTargetsIds(
-  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult
+): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesJava() }.map { it.id }
 
 private fun queryForJavacOptions(
@@ -433,7 +434,8 @@ private fun queryForJavacOptions(
 }
 
 private fun calculatePythonTargetsIds(
-    workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult
+): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
 
 private fun queryForPythonOptions(

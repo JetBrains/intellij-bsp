@@ -1,21 +1,19 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import coursier.core.Dependency as CoursierDependency
-import coursier.core.Module as CoursierModule
-import java.io.File
-import java.nio.file.Paths
-import kotlin.collections.List
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mapOf
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
-import scala.collection.immutable.List as ScalaImmutableList
-import scala.collection.immutable.Map as ScalaImmutableMap
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.jdk.javaapi.CollectionConverters.asJava
 import scala.jdk.javaapi.CollectionConverters.asScala
+import java.io.File
+import java.nio.file.Paths
+import kotlin.collections.List
+import kotlin.collections.map
+import coursier.core.Dependency as CoursierDependency
+import coursier.core.Module as CoursierModule
+import scala.collection.immutable.List as ScalaImmutableList
+import scala.collection.immutable.Map as ScalaImmutableMap
 
 public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGenerator {
 
@@ -23,7 +21,8 @@ public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGe
 
     private val ep =
       ExtensionPointName.create<BspConnectionDetailsGeneratorExtension>(
-        "com.intellij.bspConnectionDetailsGeneratorExtension")
+        "com.intellij.bspConnectionDetailsGeneratorExtension"
+      )
 
     public fun extensions(): List<BspConnectionDetailsGeneratorExtension> =
       ep.extensionList

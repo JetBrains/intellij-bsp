@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
-import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspServer

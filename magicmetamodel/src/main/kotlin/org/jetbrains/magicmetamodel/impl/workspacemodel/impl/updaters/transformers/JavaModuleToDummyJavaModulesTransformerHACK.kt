@@ -53,6 +53,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       jvmJdkName = null,
       kotlinAddendum = null
     )
+
   private fun calculateDummyJavaSourceRoots(inputEntity: JavaModule): List<Path> =
     inputEntity.sourceRoots.map {
       restoreSourceRootFromPackagePrefix(it)

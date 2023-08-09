@@ -1,8 +1,8 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
+import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
