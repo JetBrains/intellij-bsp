@@ -25,7 +25,7 @@ import kotlin.io.path.toPath
 public data class KotlinBuildTarget(
   val languageVersion: String,
   val apiVersion: String,
-  val kotlincOptions: KotlincOpts?,
+  val kotlincOptions: KotlincOpts? = null,
   val associates: List<BuildTargetIdentifier>,
   var jvmBuildTarget: JvmBuildTarget? = null,
 )
