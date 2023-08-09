@@ -14,7 +14,6 @@ import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 
 private object GeneratorWhichCantGenerate : BspConnectionDetailsGenerator {
-
   override fun id(): String = "cant generate"
 
   override fun displayName(): String = "cant generate"
@@ -30,7 +29,6 @@ private object GeneratorWhichCantGenerate : BspConnectionDetailsGenerator {
 
 private class GeneratorWhichCanGenerate(private val name: String, private val generatedFilePath: VirtualFile) :
   BspConnectionDetailsGenerator {
-
   var hasGenerated = false
 
   override fun id(): String = name
@@ -51,7 +49,6 @@ private class GeneratorWhichCanGenerate(private val name: String, private val ge
 }
 
 class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
-
   private lateinit var projectPath: Path
   private lateinit var generatedVirtualFile: VirtualFile
   private lateinit var otherGeneratedVirtualFile: VirtualFile
@@ -157,7 +154,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.availableGeneratorsNames() shouldContainExactlyInAnyOrder listOf(
       "generator 1",
       "generator 2",
-      "generator 3"
+      "generator 3",
     )
 
     provider.generateBspConnectionDetailFileForGeneratorWithName(
@@ -189,7 +186,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
       "generator 1",
       "generator 2",
       "generator 2",
-      "generator 3"
+      "generator 3",
     )
 
     provider.generateBspConnectionDetailFileForGeneratorWithName(

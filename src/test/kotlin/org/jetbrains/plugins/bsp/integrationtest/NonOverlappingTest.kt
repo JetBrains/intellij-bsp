@@ -77,7 +77,7 @@ class NonOverlappingTest {
       "--branch", gitRevision,
       "--depth", "1",
       "https://github.com/bazelbuild/bazel",
-      bazelDir.toAbsolutePath().toString()
+      bazelDir.toAbsolutePath().toString(),
     )
       .inheritIO()
       .start()
@@ -92,7 +92,7 @@ class NonOverlappingTest {
       "cs", "launch", "org.jetbrains.bsp:bazel-bsp:$BAZEL_BSP_VERSION",
       "-M", "org.jetbrains.bsp.bazel.install.Install",
       "--",
-      "-t", target
+      "-t", target,
     ).run {
       inheritIO()
       directory(bazelDir.toFile())
@@ -108,7 +108,7 @@ class NonOverlappingTest {
     "0.0.1",
     "2.0.0",
     bazelDir.toUri().toString(),
-    BuildClientCapabilities(listOf("java"))
+    BuildClientCapabilities(listOf("java")),
   )
 
   private fun startBsp(bspServerProcess: Process): Launcher<DummyClient, BspServer> {

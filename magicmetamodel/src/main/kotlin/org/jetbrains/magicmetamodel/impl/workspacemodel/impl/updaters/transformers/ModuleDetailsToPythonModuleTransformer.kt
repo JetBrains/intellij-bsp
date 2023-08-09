@@ -16,7 +16,6 @@ internal class ModuleDetailsToPythonModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
   projectBasePath: Path,
 ) : ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
-
   override val type = "PYTHON_MODULE"
 
   private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer(projectBasePath)
@@ -34,7 +33,7 @@ internal class ModuleDetailsToPythonModuleTransformer(
       }),
       resourceRoots = resourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
       libraries = DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity.dependenciesSources),
-      sdkInfo = toSdkInfo(inputEntity)
+      sdkInfo = toSdkInfo(inputEntity),
     )
 
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
@@ -56,11 +55,10 @@ internal class ModuleDetailsToPythonModuleTransformer(
     return if (pythonBuildTarget?.version != null && pythonBuildTarget.interpreter != null)
       PythonSdkInfo(
         version = pythonBuildTarget.version!!,
-        originalName = inputEntity.target.id.uri
+        originalName = inputEntity.target.id.uri,
       )
     else null
   }
-
 }
 
 public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =

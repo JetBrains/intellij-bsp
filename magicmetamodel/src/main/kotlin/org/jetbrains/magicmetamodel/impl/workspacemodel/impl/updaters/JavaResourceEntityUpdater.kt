@@ -12,29 +12,28 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 internal class JavaResourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, JavaResourceRootPropertiesEntity> {
-
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(
     entityToAdd: ResourceRoot,
-    parentModuleEntity: ModuleEntity
+    parentModuleEntity: ModuleEntity,
   ): JavaResourceRootPropertiesEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
     val sourceRoot = addSourceRootEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       contentRootEntity,
-      entityToAdd
+      entityToAdd,
     )
     return addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
   }
 
   private fun addContentRootEntity(
     entityToAdd: ResourceRoot,
-    parentModuleEntity: ModuleEntity
+    parentModuleEntity: ModuleEntity,
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      path = entityToAdd.resourcePath
+      path = entityToAdd.resourcePath,
     )
 
     return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
@@ -49,10 +48,10 @@ internal class JavaResourceEntityUpdater(
       SourceRootEntity(
         url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         rootType = ROOT_TYPE,
-        entitySource = BspEntitySource
+        entitySource = BspEntitySource,
       ) {
         this.contentRoot = contentRootEntity
-      }
+      },
     )
 
   private fun addJavaResourceRootEntity(
@@ -63,10 +62,10 @@ internal class JavaResourceEntityUpdater(
       JavaResourceRootPropertiesEntity(
         generated = DEFAULT_GENERATED,
         relativeOutputPath = DEFAULT_RELATIVE_OUTPUT_PATH,
-        entitySource = sourceRoot.entitySource
+        entitySource = sourceRoot.entitySource,
       ) {
         this.sourceRoot = sourceRoot
-      }
+      },
     )
 
   private companion object {

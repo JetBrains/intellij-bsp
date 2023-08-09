@@ -8,7 +8,6 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 
 public class ProjectClosingListener : ProjectManagerListener {
-
   override fun projectClosing(project: Project) {
     if (project.isBspProject) {
       doProjectClosing(project)

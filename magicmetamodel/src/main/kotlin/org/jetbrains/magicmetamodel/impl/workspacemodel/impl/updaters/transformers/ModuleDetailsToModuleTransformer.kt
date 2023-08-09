@@ -10,9 +10,9 @@ import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity>(
   moduleNameProvider: ModuleNameProvider
+,
 ) :
   WorkspaceModelEntityTransformer<ModuleDetails, T> {
-
   protected abstract val type: String
 
   val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)

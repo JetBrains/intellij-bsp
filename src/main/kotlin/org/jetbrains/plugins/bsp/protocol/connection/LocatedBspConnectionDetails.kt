@@ -8,12 +8,11 @@ import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
 
 public data class LocatedBspConnectionDetails(
   val bspConnectionDetails: BspConnectionDetails?,
-  val connectionFileLocation: VirtualFile
+  val connectionFileLocation: VirtualFile,
 )
 
 // TODO visib??
 public object LocatedBspConnectionDetailsParser {
-
   private val log = logger<LocatedBspConnectionDetailsParser>()
 
   public fun parseFromFile(file: VirtualFile): LocatedBspConnectionDetails =

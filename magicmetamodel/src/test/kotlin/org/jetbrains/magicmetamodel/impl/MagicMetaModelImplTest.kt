@@ -26,7 +26,6 @@ import kotlin.io.path.createTempDirectory
 // TODO extract 'given' to separate objects
 @DisplayName("MagicMetaModelImpl tests")
 class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
-
   private lateinit var testMagicMetaModelProjectConfig: MagicMetaModelProjectConfig
 
   @BeforeEach
@@ -46,14 +45,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       capabilities = with(capabilities) {
         ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
       },
-      languageIds = languageIds
+      languageIds = languageIds,
     )
   }
 
   @Nested
   @DisplayName("MagicMetaModelImpl 'real world' flow tests")
   inner class MagicMetaModelImplTest {
-
     @Test
     fun `should handle empty project (something strange happened)`() {
       // given
@@ -228,25 +226,25 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         expectedTargetA1,
         expectedTargetB1,
         expectedTargetC1,
-        expectedTargetD1
+        expectedTargetD1,
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetA1.id.uri)
+        notLoadedTargetsIds = listOf(targetA1.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetB1.id.uri)
+        notLoadedTargetsIds = listOf(targetB1.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetC1.id.uri)
+        notLoadedTargetsIds = listOf(targetC1.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetD1.id.uri)
+        notLoadedTargetsIds = listOf(targetD1.id.uri),
       )
 
       // when 2
@@ -261,7 +259,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         expectedTargetA1,
         expectedTargetB1,
         expectedTargetC1,
-        expectedTargetD1
+        expectedTargetD1,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
 
@@ -448,7 +446,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
           targetB2.id,
           targetB1.id,
           targetC1.id,
-          targetD2.id
+          targetD2.id,
         ),
         targets = setOf(targetD1, targetA1, targetC2, targetB2, targetB1, targetC1, targetD2),
         sources = listOf(
@@ -654,7 +652,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
   @Nested
   @DisplayName("magicMetaModelImpl.loadDefaultTargets() tests")
   inner class MagicMetaModelImplLoadDefaultTargetsTest {
-
     @Test
     fun `should return no loaded and no not loaded targets for empty project`() {
       // given
@@ -890,7 +887,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         expectedTargetA1,
         expectedTargetB1,
         expectedTargetC1,
-        expectedTargetD1
+        expectedTargetD1,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
     }
@@ -1139,7 +1136,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
   @Nested
   @DisplayName("magicMetaModelImpl.loadTarget(targetId) tests")
   inner class MagicMetaModelImplLoadTargetTest {
-
     @Test
     fun `should return null for not existing target`() {
       // given
@@ -1513,7 +1509,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val targetA1A3Source1 = SourceItem(
         uri = targetA1A3File1.toUri().toString(),
         SourceItemKind.File,
-        false
+        false,
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -1600,7 +1596,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
   @Nested
   @DisplayName("magicMetaModelImpl.getTargetsDetailsForDocument(documentId) tests")
   inner class MagicMetaModelImplGetTargetsDetailsForDocumentTest {
-
     @Test
     fun `should return no loaded target and no not loaded targets for not existing document`() {
       // given
@@ -1646,7 +1641,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then
       documentTargetsDetails shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = emptyList()
+        notLoadedTargetsIds = emptyList(),
       )
     }
 
@@ -1696,7 +1691,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then
       documentTargetsDetails shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetA1.id.uri)
+        notLoadedTargetsIds = listOf(targetA1.id.uri),
       )
     }
 
@@ -1780,11 +1775,11 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
-        notLoadedTargetsIds = emptyList()
+        notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB1.id.uri,
-        notLoadedTargetsIds = emptyList()
+        notLoadedTargetsIds = emptyList(),
       )
     }
 
@@ -1866,12 +1861,12 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1A2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
-        notLoadedTargetsIds = listOf(targetA2.id.uri)
+        notLoadedTargetsIds = listOf(targetA2.id.uri),
       )
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetA2.id.uri)
+        notLoadedTargetsIds = listOf(targetA2.id.uri),
       )
     }
   }

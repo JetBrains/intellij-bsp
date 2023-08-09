@@ -23,14 +23,13 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClas
 @State(
   name = "MagicMetaModelService",
   storages = [Storage("magicmetamodel.xml")],
-  reportStatistic = true
+  reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 public class MagicMetaModelService(private val project: Project) :
   ValueServiceWhichNeedsToBeInitialized<MagicMetaModelImpl>(),
   PersistentStateComponent<DefaultMagicMetaModelState> {
-
   // TODO ugh again
   init {
     init(initEmptyMagicMetaModelTEMPORARY())
@@ -52,7 +51,6 @@ public class MagicMetaModelService(private val project: Project) :
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
   }
-
 
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)

@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod")
-
 package org.jetbrains.plugins.bsp.protocol.connection
 
 import com.jetbrains.bsp.bsp4kt.BspConnectionDetails
@@ -16,7 +14,6 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
 class BspConnectionFilesProviderTest : MockProjectBaseTest() {
-
   private lateinit var projectPath: Path
   private lateinit var provider: BspConnectionFilesProvider
 
@@ -58,7 +55,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
         | "bspVersion": "2.0.0",
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     // when & then
@@ -74,7 +71,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
           listOf("scala", "kotlin"),
         ),
         connectionFileLocation = connectionFile1.toVirtualFile(),
-      )
+      ),
     )
     provider.connectionFiles shouldContainExactlyInAnyOrder expectedConnectionFiles
   }
@@ -94,7 +91,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
         | "bspVersion": "2.0.0",
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     val connectionFile2 = dotBspDir.resolve("connection-file-2.json").createFile()
@@ -107,7 +104,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
         | "bspVersion": "2.0.0",
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     val nonConnectionFile = dotBspDir.resolve("non-connection-file.xd").createFile()
@@ -123,7 +120,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
         | "bspVersion": "2.0.0",
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     val invalidConnectionFile = dotBspDir.resolve("invalid-connection-file.json").createFile()
@@ -136,7 +133,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
         | "bspVersion": "2.0.0",
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     // when & then
@@ -175,12 +172,12 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
       ),
       LocatedBspConnectionDetails(
         bspConnectionDetails = null,
-        connectionFileLocation = invalidConnectionFile.toVirtualFile()
+        connectionFileLocation = invalidConnectionFile.toVirtualFile(),
       ),
       LocatedBspConnectionDetails(
         bspConnectionDetails = null,
-        connectionFileLocation = nonConnectionFile.toVirtualFile()
-      )
+        connectionFileLocation = nonConnectionFile.toVirtualFile(),
+      ),
     )
     provider.connectionFiles shouldContainExactlyInAnyOrder expectedConnectionFiles
   }

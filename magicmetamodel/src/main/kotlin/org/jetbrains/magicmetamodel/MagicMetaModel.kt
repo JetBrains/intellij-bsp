@@ -80,7 +80,6 @@ public data class DocumentTargetsDetails(
  * can be applied on the WorkspaceModel quickly on the UI thread.
  */
 public interface MagicMetaModelDiff {
-
   /**
    * Applies changes, should do it quickly - e.g. by using MutableEntityStorage.replaceBySource
    */
@@ -94,7 +93,6 @@ public interface MagicMetaModelDiff {
  * the BSP containing shared sources and [WorkspaceModel].
  */
 public interface MagicMetaModel {
-
   /**
    * Loads default targets to the model - can be all targets, can be subset of them.
    *

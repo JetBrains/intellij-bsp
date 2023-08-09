@@ -16,9 +16,7 @@ import scala.collection.immutable.List as ScalaImmutableList
 import scala.collection.immutable.Map as ScalaImmutableMap
 
 public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGenerator {
-
   public companion object {
-
     private val ep =
       ExtensionPointName.create<BspConnectionDetailsGeneratorExtension>(
         "com.intellij.bspConnectionDetailsGeneratorExtension"
@@ -30,7 +28,6 @@ public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGe
 }
 
 public object ExternalCommandUtils {
-
   public fun calculateJavaExecPath(): String {
     val javaHome = System.getProperty("java.home")
     if (javaHome == null) {
@@ -46,8 +43,8 @@ public object ExternalCommandUtils {
     val dependencies = listOf<CoursierDependency>(
       CoursierDependency.apply(
         CoursierModule.apply(org, name, attributes),
-        version
-      )
+        version,
+      ),
     )
     val fetchTask = coursier
       .Fetch

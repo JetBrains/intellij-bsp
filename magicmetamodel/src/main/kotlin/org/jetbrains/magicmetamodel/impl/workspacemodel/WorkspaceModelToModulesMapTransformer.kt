@@ -25,6 +25,7 @@ public object WorkspaceModelToModulesMapTransformer {
     workspaceModel: WorkspaceModel,
     loadedTargetsStorage: LoadedTargetsStorage,
     moduleNameProvider: ModuleNameProvider
+  ,
   ): Map<BuildTargetId, Module> =
     with(workspaceModel.currentSnapshot) {
       WorkspaceModelToMagicMetamodelTransformer(
@@ -36,7 +37,6 @@ public object WorkspaceModelToModulesMapTransformer {
     }
 
   internal object WorkspaceModelToMagicMetamodelTransformer {
-
     operator fun invoke(
       loadedModules: Sequence<ModuleEntity>,
       sourceRoots: Sequence<SourceRootEntity>,
@@ -68,7 +68,7 @@ public object WorkspaceModelToModulesMapTransformer {
 
   private fun Map.Entry<ModuleEntity, List<SourceRootEntity>>.parseModules(
     libraries: Sequence<Library>,
-    loadedTargetsIndex: Map<String, BuildTargetId>
+    loadedTargetsIndex: Map<String, BuildTargetId>,
   ): Pair<BuildTargetId, Module>? {
     val (entity, sources) = this
     return loadedTargetsIndex[entity.name]?.let { moduleName ->
@@ -100,7 +100,7 @@ public object WorkspaceModelToModulesMapTransformer {
           compilerOutput = entity.javaSettings?.compilerOutput?.toPath(),
           moduleLevelLibraries = libraries.toList(),
           jvmJdkName = entity.getSdkName(),
-          kotlinAddendum = kotlinConfiguration?.toKotlinAddendum()
+          kotlinAddendum = kotlinConfiguration?.toKotlinAddendum(),
         )
       }
       moduleName to module
@@ -133,7 +133,7 @@ public object WorkspaceModelToModulesMapTransformer {
     contentRoots.firstOrNull { it.sourceRoots.isEmpty() }?.let { entity ->
       ContentRoot(
         entity.url.toPath(),
-        entity.excludedUrls.map { it.url.toPath() }
+        entity.excludedUrls.map { it.url.toPath() },
       )
     }
 
@@ -180,7 +180,6 @@ private fun ModuleEntity.getPythonSdk(): PythonSdkInfo? =
   dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>()
     .firstOrNull { it.sdkType == PYTHON_SDK_ID }
     ?.let { PythonSdkInfo.fromString(it.sdkName) }
-
 
 private fun LibraryEntity.filterRoots(type: LibraryRootTypeId) =
   roots.filter { it.type == type }.map { it.url.url }

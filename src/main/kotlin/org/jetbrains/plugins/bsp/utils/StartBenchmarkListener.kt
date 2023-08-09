@@ -18,7 +18,7 @@ public class StartBenchmarkListener : ApplicationInitializedListener {
       }
       ProjectManagerEx.getInstanceEx().openProjectAsync(
         projectPath,
-        BspProjectOpenProcessor().calculateOpenProjectTask(projectPath, false, null, vf)
+        BspProjectOpenProcessor().calculateOpenProjectTask(projectPath, false, null, vf),
       )
       super.execute(asyncScope)
     }

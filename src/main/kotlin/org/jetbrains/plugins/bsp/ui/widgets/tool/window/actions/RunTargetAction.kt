@@ -7,6 +7,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
 
 internal class RunTargetAction : SideMenuRunnerAction(
   BspAllTargetsWidgetBundle.message("widget.run.target.popup.message")
+,
 ) {
   override fun getConfigurationType(): ConfigurationType = BspRunConfigurationType()
 

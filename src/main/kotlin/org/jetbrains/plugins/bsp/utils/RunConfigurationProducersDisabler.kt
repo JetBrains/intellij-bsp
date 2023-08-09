@@ -4,7 +4,6 @@ import com.intellij.execution.RunConfigurationProducerService
 import com.intellij.openapi.project.Project
 
 internal object RunConfigurationProducersDisabler {
-
   operator fun invoke(project: Project): Boolean =
     RunConfigurationProducerService.getInstance(project).state.ignoredProducers.addAll(producersNames)
 

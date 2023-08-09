@@ -10,12 +10,11 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 internal class ContentRootEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<ContentRoot, ContentRootEntity> {
-
   override fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
     addContentRootEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       parentModuleEntity,
-      entityToAdd
+      entityToAdd,
     )
 
   private fun addContentRootEntity(
@@ -30,19 +29,19 @@ internal class ContentRootEntityUpdater(
       builder.addEntity(
         ExcludeUrlEntity(
           url = it,
-          entitySource = moduleEntity.entitySource
-        )
+          entitySource = moduleEntity.entitySource,
+        ),
       )
     }
     return builder.addEntity(
       ContentRootEntity(
         url = url,
         excludedPatterns = ArrayList(),
-        entitySource = moduleEntity.entitySource
+        entitySource = moduleEntity.entitySource,
       ) {
         this.excludedUrls = excludes
         this.module = moduleEntity
-      }
+      },
     )
   }
 }

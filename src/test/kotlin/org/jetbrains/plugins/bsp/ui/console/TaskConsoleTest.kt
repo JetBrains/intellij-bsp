@@ -36,11 +36,11 @@ private data class TestableDiagnosticEvent(
   val severity: Kind,
   val filePositionPath: String,
   val line: Int,
-  val column: Int
+  val column: Int,
 ) : TestableEvent(
   FileMessageEventImpl::class,
   id,
-  message
+  message,
 )
 
 private class MockProgressEventListener : BuildProgressListener {
@@ -61,7 +61,7 @@ private class MockProgressEventListener : BuildProgressListener {
       eventToSanitize::class,
       null,
       eventToSanitize.parentId,
-      eventToSanitize.message
+      eventToSanitize.message,
     )
 
     is FileMessageEventImpl -> TestableDiagnosticEvent(
@@ -70,20 +70,21 @@ private class MockProgressEventListener : BuildProgressListener {
       eventToSanitize.kind,
       eventToSanitize.filePosition.file.absolutePath,
       eventToSanitize.filePosition.startLine,
-      eventToSanitize.filePosition.startColumn
+      eventToSanitize.filePosition.startColumn,
     )
 
     else -> TestableBuildEvent(
       eventToSanitize::class,
       eventToSanitize.id,
       eventToSanitize.parentId,
-      eventToSanitize.message
+      eventToSanitize.message,
     )
   }
 }
 
 class TestTaskConsole(
-  taskView: BuildProgressListener, basePath: String
+  taskView: BuildProgressListener,
+  basePath: String,
 ) : TaskConsole(taskView, basePath) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction = object : AnAction({ "test" }) {
     override fun actionPerformed(e: AnActionEvent) {}
@@ -93,7 +94,6 @@ class TestTaskConsole(
 }
 
 class TaskConsoleTest {
-
   @Test
   fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given
@@ -152,7 +152,7 @@ class TaskConsoleTest {
         TestableBuildEvent(FinishEventImpl::class, "subtask 3", null, "Subtask 3 finished"),
 
         TestableBuildEvent(FinishBuildEventImpl::class, "task", null, "Finished!"),
-      )
+      ),
     )
   }
 
@@ -207,7 +207,7 @@ class TaskConsoleTest {
       "task-1" to listOf(
         TestableBuildEvent(StartBuildEventImpl::class, "task-1", null, "Processing..."),
         TestableBuildEvent(FinishBuildEventImpl::class, "task-1", null, "Task 1 done!"),
-      )
+      ),
     )
   }
 
@@ -249,7 +249,7 @@ class TaskConsoleTest {
 
         TestableBuildEvent(FinishEventImpl::class, "subtask", null, "Subtask finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "task", null, "Task finished"),
-      )
+      ),
     )
   }
 
@@ -259,7 +259,7 @@ class TaskConsoleTest {
     val fileURI = "file:///home/directory/project/src/test/Start.kt"
     val osName = System.getProperty("os.name").lowercase()
     val filePositionPath =
-      if (osName.startsWith("windows")) "C:\\home\\directory\\project\\src\\test\\Start.kt"
+      if (osName.startsWith("windows")) """C:\home\directory\project\src\test\Start.kt"""
       else "/home/directory/project/src/test/Start.kt"
 
     val diagnosticListener = MockProgressEventListener()
@@ -338,7 +338,7 @@ class TaskConsoleTest {
           20
         ),
         TestableBuildEvent(FinishBuildEventImpl::class, "origin", null, "finished"),
-      )
+      ),
     )
   }
 
@@ -383,7 +383,7 @@ class TaskConsoleTest {
 
         TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
-      )
+      ),
     )
   }
 
@@ -416,7 +416,7 @@ class TaskConsoleTest {
         TestableBuildEvent(FinishEventImpl::class, "subtask2", null, "Subtask 2 finished"),
         TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
-      )
+      ),
     )
   }
 
@@ -461,7 +461,7 @@ class TaskConsoleTest {
         TestableBuildEvent(FinishEventImpl::class, "subtask2", null, "Subtask 2 finished"),
         TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
-      )
+      ),
     )
   }
 
@@ -512,7 +512,7 @@ class TaskConsoleTest {
         TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
         TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
-      )
+      ),
     )
   }
 }

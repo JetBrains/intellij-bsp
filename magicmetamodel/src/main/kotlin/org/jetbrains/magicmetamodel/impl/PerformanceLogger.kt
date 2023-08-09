@@ -14,7 +14,7 @@ public object PerformanceLogger {
   private val metrics: java.util.HashMap<String, Long> = HashMap()
 
   public fun <T> logPerformance(computationId: String, block: () -> T): T {
-    log.info("Task '${computationId}' started")
+    log.info("Task '$computationId' started")
     return measureTimedValue(block).let {
       log.info("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
       val clearKey = computationId.replace("""[\s-_]+""".toRegex(), ".").lowercase(Locale.getDefault())
@@ -29,7 +29,7 @@ public object PerformanceLogger {
   }
 
   public suspend fun <T> logPerformanceSuspend(computationId: String, block: suspend () -> T): T {
-    log.info("Task '${computationId}' started")
+    log.info("Task '$computationId' started")
     return measureTimedValue { block() }.let {
       log.info("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
       it.value
@@ -40,13 +40,13 @@ public object PerformanceLogger {
     if (isBenchmark()) {
       System.gc()
       val usedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024
-      logMetric(key, usedMemory)
+      logMetric("$key.mb", usedMemory)
     }
   }
 
   private fun logMetric(key: String, usedMemory: Long) {
     if (metricsFile() != null) {
-      metrics["$key.mb"] = usedMemory
+      metrics[key] = usedMemory
     }
   }
 

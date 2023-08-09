@@ -13,7 +13,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
 
 internal class CommonCompilerArgsHolder : CommonCompilerArguments() {
-
   override fun copyOf(): Freezable =
     copyCommonCompilerArguments(this, CommonCompilerArgsHolder())
 
@@ -43,9 +42,8 @@ public fun CommonCompilerArguments.toKotlinCOption(): KotlincOpts = KotlincOpts(
 )
 
 internal class KotlinFacetEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig
+  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> {
-
   override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): FacetEntity {
     val facetType = KotlinFacetType.INSTANCE
     val facet = facetType.createDefaultConfiguration()
@@ -68,11 +66,11 @@ internal class KotlinFacetEntityUpdater(
         name = "Kotlin",
         moduleId = parentModuleEntity.symbolicId,
         facetType = facetType.id.toString(),
-        entitySource = parentModuleEntity.entitySource
+        entitySource = parentModuleEntity.entitySource,
       ) {
         this.configurationXmlTag = facetConfigurationXml
         this.module = parentModuleEntity
-      }
+      },
     )
   }
 }

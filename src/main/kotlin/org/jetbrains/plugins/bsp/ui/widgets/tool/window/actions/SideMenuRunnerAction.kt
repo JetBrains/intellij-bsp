@@ -20,7 +20,6 @@ public val targetIdTOREMOVE: Key<BuildTargetId> = Key<BuildTargetId>("targetId")
 internal abstract class SideMenuRunnerAction(
   text: String,
 ) : AbstractActionWithTarget(text) {
-
   abstract fun getConfigurationType(): ConfigurationType
 
   abstract fun getName(target: BuildTargetId): String
@@ -47,6 +46,7 @@ internal abstract class SideMenuRunnerAction(
     runner: ProgramRunner<RunnerSettings>,
     settings: RunnerAndConfigurationSettings,
     project: Project
+  ,
   ) {
     try {
       val executionEnvironment = ExecutionEnvironmentBuilder(project, this)

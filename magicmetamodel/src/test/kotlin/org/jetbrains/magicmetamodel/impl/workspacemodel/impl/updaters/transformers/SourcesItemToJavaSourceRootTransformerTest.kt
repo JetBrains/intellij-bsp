@@ -17,7 +17,6 @@ import kotlin.io.path.toPath
 
 @DisplayName("SourcesItemToWorkspaceModelJavaSourceRootTransformer.transform(sourcesItem)")
 class SourcesItemToJavaSourceRootTransformerTest {
-
   private val projectBasePath = Path("")
   private val projectBasePathURIStr = projectBasePath.toUri().toString()
 
@@ -42,7 +41,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem = SourceItem(
       "$rootDir/example/package/File.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceRoots = listOf(rootDir)
 
@@ -84,7 +83,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem = SourceItem(
       "$rootDir/example/package/File.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceRoots = listOf(rootDir)
 
@@ -126,7 +125,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem = SourceItem(
       "$rootDir/example/package/",
       SourceItemKind.Directory,
-      false
+      false,
     )
     val sourceRoots = listOf(rootDir)
 
@@ -170,17 +169,17 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem1 = SourceItem(
       "$rootDir/example/package/File1.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem2 = SourceItem(
       "$rootDir/example/package/File2.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem3 = SourceItem(
       "$anotherRootDir/another/example/package/",
       SourceItemKind.Directory,
-      false
+      false,
     )
     val sourceRoots = listOf(
       rootDir,
@@ -242,17 +241,17 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem1 = SourceItem(
       "$rootDir/example/package/File1.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem2 = SourceItem(
       "$rootDir/example/package/File2.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem3 = SourceItem(
       "$anotherRootDir/another/example/package/",
       SourceItemKind.Directory,
-      false
+      false,
     )
     val sourceRoots = listOf(
       rootDir,
@@ -332,17 +331,17 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem1 = SourceItem(
       "$rootDir/example/package/File1.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem2 = SourceItem(
       "$rootDir/example/package/File2.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem3 = SourceItem(
       "$anotherRootDir/another/example/package/",
       SourceItemKind.Directory,
-      false
+      false,
     )
     val sourceRoots = listOf(
       rootDir,
@@ -400,17 +399,17 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val sourceItem1 = SourceItem(
       "$rootDir/example/package/File1.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem2 = SourceItem(
       "$anotherRootDir/example/package/File2.java",
       SourceItemKind.File,
-      false
+      false,
     )
     val sourceItem3 = SourceItem(
       "$rootDir/another/example/package/",
       SourceItemKind.Directory,
-      false
+      false,
     )
     val sourceRoots = listOf(
       rootDir,

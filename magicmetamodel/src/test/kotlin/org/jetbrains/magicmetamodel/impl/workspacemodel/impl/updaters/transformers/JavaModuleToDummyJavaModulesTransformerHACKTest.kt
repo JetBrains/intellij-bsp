@@ -19,7 +19,6 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.name
 
 class JavaModuleToDummyJavaModulesTransformerHACKTest {
-
   val projectBasePath = Path("")
 
   @Test
@@ -49,7 +48,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
         ModuleDependency("module2"),
         ModuleDependency("module3"),
       ),
-      librariesDependencies = listOf(LibraryDependency("@maven//:lib1"))
+      librariesDependencies = listOf(LibraryDependency("@maven//:lib1")),
     )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -77,13 +76,13 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           generated = false,
           packagePrefix = packagePrefix,
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(Library(displayName = "lib1")),
       compilerOutput = Path("file:///compiler/output.jar"),
       jvmJdkName = javaVersion,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
 
     // when
@@ -94,7 +93,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       name = projectRootName,
       type = ModuleTypeId.JAVA_MODULE,
       modulesDependencies = listOf(),
-      librariesDependencies = listOf()
+      librariesDependencies = listOf(),
     )
 
     val expectedJavaModule = JavaModule(
@@ -106,13 +105,13 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           generated = false,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = emptyList(),
       compilerOutput = null,
       jvmJdkName = null,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
 
     javaModules shouldContainExactlyInAnyOrder (
@@ -135,7 +134,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       name = projectRoot1Name,
       type = ModuleTypeId.JAVA_MODULE,
       modulesDependencies = listOf(),
-      librariesDependencies = listOf()
+      librariesDependencies = listOf(),
     )
 
     val givenJavaModule1 = JavaModule(
@@ -147,20 +146,20 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           generated = true,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
       compilerOutput = null,
       jvmJdkName = null,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
 
     val givenModule2 = GenericModuleInfo(
       name = projectRoot2Name,
       type = ModuleTypeId.JAVA_MODULE,
       modulesDependencies = listOf(),
-      librariesDependencies = listOf()
+      librariesDependencies = listOf(),
     )
 
     val givenJavaModule2 = JavaModule(
@@ -172,13 +171,13 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           generated = true,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
       compilerOutput = null,
       jvmJdkName = null,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
 
     val modulesList = listOf(givenJavaModule1, givenJavaModule2)
@@ -191,7 +190,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       name = projectRoot1Name,
       type = ModuleTypeId.JAVA_MODULE,
       modulesDependencies = listOf(),
-      librariesDependencies = listOf()
+      librariesDependencies = listOf(),
     )
 
     val expectedJavaModule1 = JavaModule(
@@ -203,20 +202,20 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           generated = false,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = emptyList(),
       compilerOutput = null,
       jvmJdkName = null,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
 
     val expectedModule2 = GenericModuleInfo(
       name = projectRoot2Name,
       type = ModuleTypeId.JAVA_MODULE,
       modulesDependencies = listOf(),
-      librariesDependencies = listOf()
+      librariesDependencies = listOf(),
     )
 
     val expectedJavaModule2 = JavaModule(
@@ -228,13 +227,13 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           generated = false,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = emptyList(),
       compilerOutput = null,
       jvmJdkName = null,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
 
     javaModules shouldContainExactlyInAnyOrder (listOf(
@@ -244,7 +243,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
-    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>
+    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>,
   ) {
     val expectedValues = expectedWithAssertion.first
     val assertion = expectedWithAssertion.second

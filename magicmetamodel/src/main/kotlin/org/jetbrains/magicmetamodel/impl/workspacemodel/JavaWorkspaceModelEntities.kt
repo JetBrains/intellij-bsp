@@ -33,7 +33,7 @@ public data class JavaModule(
     libraries = moduleLevelLibraries?.map { it.toState() },
     compilerOutput = compilerOutput?.toString(),
     jvmJdkName = jvmJdkName,
-    kotlinAddendum = kotlinAddendum?.toState()
+    kotlinAddendum = kotlinAddendum?.toState(),
   )
 
   override fun getModuleName(): String = genericModuleInfo.name
@@ -42,7 +42,7 @@ public data class JavaModule(
 public data class KotlinAddendum(
   val languageVersion: String,
   val apiVersion: String,
-  val kotlincOptions: KotlincOpts?
+  val kotlincOptions: KotlincOpts?,
 )
 
 @Serializable

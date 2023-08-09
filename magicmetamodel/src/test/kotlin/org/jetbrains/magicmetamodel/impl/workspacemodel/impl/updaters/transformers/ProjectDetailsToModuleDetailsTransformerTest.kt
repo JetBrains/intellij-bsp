@@ -1,4 +1,4 @@
-package org.jetbrains.magicmetamodel.impl
+package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.jetbrains.bsp.bsp4kt.BuildTargetCapabilities
@@ -13,7 +13,6 @@ import com.jetbrains.bsp.bsp4kt.SourcesItem
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -98,12 +97,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       targetId,
       listOf("opt1", "opt2", "opt3"),
       listOf("classpath1", "classpath2", "classpath3"),
-      "class/dir"
+      "class/dir",
     )
 
     val pythonOptions = PythonOptionsItem(
       targetId,
-      listOf("opt1", "opt2", "opt3")
+      listOf("opt1", "opt2", "opt3"),
     )
 
     val projectDetails = ProjectDetails(
@@ -132,7 +131,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = pythonOptions,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = emptyList()
+      moduleDependencies = emptyList(),
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -168,7 +167,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       target1Id,
       listOf("opt1", "opt2", "opt3"),
       listOf("classpath1", "classpath2"),
-      "class/dir1"
+      "class/dir1",
     )
 
     val target2 = BuildTarget(
@@ -219,7 +218,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       target3Id,
       listOf("opt1"),
       listOf("classpath1", "classpath2", "classpath3"),
-      "class/dir3"
+      "class/dir3",
     )
 
     val target4Id = BuildTargetIdentifier("target4")
@@ -240,7 +239,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
     val target4PythonOptionsItem = PythonOptionsItem(
       target4Id,
-      listOf("opt1", "opt2")
+      listOf("opt1", "opt2"),
     )
 
     val projectDetails = ProjectDetails(
@@ -272,7 +271,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target2Id.uri)
+      moduleDependencies = listOf(target2Id.uri),
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -343,7 +342,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       targetId1,
       listOf("opt1", "opt2", "opt3"),
       listOf("classpath1", "classpath2", "classpath3"),
-      "class/dir"
+      "class/dir",
     )
     val outputPaths1 = listOf("file:///output/file1.out", "file:///output/file2.out")
 
@@ -373,7 +372,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       targetId2,
       listOf("opt1", "opt2", "opt3"),
       listOf("classpath1", "classpath2", "classpath3"),
-      "class/dir"
+      "class/dir",
     )
     val outputPaths2 = listOf("file:///output/dir")
 
@@ -385,9 +384,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       emptyList(),
       emptyList(),
       emptyList(),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
-
 
     val projectDetails = ProjectDetails(
       targetsId = listOf(targetId1, targetId2, rootTargetId),
