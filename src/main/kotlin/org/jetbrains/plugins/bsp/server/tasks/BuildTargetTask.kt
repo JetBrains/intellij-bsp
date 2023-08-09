@@ -15,7 +15,7 @@ import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
@@ -70,7 +70,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
 
   private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
-    CompileParams(targetIds, originId, null)
+    CompileParams(targetIds, originId)
 
   private fun finishBuildConsoleTaskWithProperResult(
     compileResult: CompileResult,

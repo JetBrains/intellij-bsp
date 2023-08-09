@@ -46,7 +46,6 @@ internal class WorkspaceModelUpdaterImpl(
         javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
         javaModuleUpdater.addEntity(module)
       }
-
       is PythonModule -> pythonModuleUpdater.addEntity(module)
     }
   }

@@ -23,7 +23,7 @@ private object GeneratorWhichCantGenerate : BspConnectionDetailsGenerator {
   override fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ): VirtualFile = projectPath
 }
 
@@ -40,7 +40,7 @@ private class GeneratorWhichCanGenerate(private val name: String, private val ge
   override fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ): VirtualFile {
     hasGenerated = true
 

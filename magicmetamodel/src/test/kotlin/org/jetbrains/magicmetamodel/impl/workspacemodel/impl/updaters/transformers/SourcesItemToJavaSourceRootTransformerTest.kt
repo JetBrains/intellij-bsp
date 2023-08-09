@@ -315,11 +315,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       packagePrefix = "another.example.package",
       rootType = "java-source",
     )
-    javaSources shouldContainExactlyInAnyOrder listOf(
-      expectedJavaSourceRoot1,
-      expectedJavaSourceRoot2,
-      expectedJavaSourceRoot3
-    )
+    javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3)
   }
 
   @Test
@@ -361,7 +357,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       sourcesItem = SourcesItem(
         BuildTargetIdentifier("target"),
         listOf(sourceItem1),
-        sourceRoots
+        sourceRoots,
       )
     )
     val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
@@ -377,7 +373,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       sourcesItem = SourcesItem(
         BuildTargetIdentifier("target"),
         listOf(sourceItem2, sourceItem3),
-        sourceRoots
+        sourceRoots,
       )
     )
 
@@ -429,7 +425,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       sourcesItem = SourcesItem(
         BuildTargetIdentifier("target"),
         listOf(sourceItem1),
-        sourceRoots
+        sourceRoots,
       )
     )
     val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
@@ -445,7 +441,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       sourcesItem = SourcesItem(
         BuildTargetIdentifier("target"),
         listOf(sourceItem2, sourceItem3),
-        sourceRoots
+        sourceRoots,
       )
     )
 

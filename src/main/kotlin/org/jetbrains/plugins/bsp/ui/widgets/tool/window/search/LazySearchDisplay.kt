@@ -64,8 +64,8 @@ public abstract class LazySearchDisplay {
       }
       val endFoundIndex = foundIndex + query.length
       val updatedText = builtText +
-          text.substring(startIndex, foundIndex) +
-          "<b><u>${text.substring(foundIndex, endFoundIndex)}</u></b>"
+        text.substring(startIndex, foundIndex) +
+        "<b><u>${text.substring(foundIndex, endFoundIndex)}</u></b>"
       return highlightAllOccurrences(text, query, updatedText, endFoundIndex)
     }
   }

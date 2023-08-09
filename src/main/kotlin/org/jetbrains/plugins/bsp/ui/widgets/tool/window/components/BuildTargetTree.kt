@@ -180,7 +180,6 @@ private interface NodeData
 private data class DirectoryNodeData(val name: String) : NodeData {
   override fun toString(): String = name
 }
-
 private data class TargetNodeData(val target: BuildTargetInfo, val displayName: String) : NodeData {
   override fun toString(): String = target.displayName ?: target.id
 }

@@ -115,8 +115,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     )
 
     javaModules shouldContainExactlyInAnyOrder (
-        listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-        )
+      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
+      )
   }
 
   @Test
@@ -236,10 +236,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       kotlinAddendum = null,
     )
 
-    javaModules shouldContainExactlyInAnyOrder (listOf(
-      expectedJavaModule1,
-      expectedJavaModule2
-    ) to { actual, expected -> validateJavaModule(actual, expected) })
+    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(

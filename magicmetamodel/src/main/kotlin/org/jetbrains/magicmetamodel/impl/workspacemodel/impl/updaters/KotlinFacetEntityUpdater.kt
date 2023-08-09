@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
 
-internal class CommonCompilerArgsHolder : CommonCompilerArguments() {
+internal class CommonCompilerArgsHolder: CommonCompilerArguments() {
   override fun copyOf(): Freezable =
     copyCommonCompilerArguments(this, CommonCompilerArgsHolder())
 
@@ -28,7 +28,6 @@ internal class CommonCompilerArgsHolder : CommonCompilerArguments() {
     useK2 = kotlincOpts.xUseK2
   }
 }
-
 public fun CommonCompilerArguments.toKotlinCOption(): KotlincOpts = KotlincOpts(
   xAllowResultReturnType = allowResultReturnType,
   xExplicitApiMode = explicitApi,

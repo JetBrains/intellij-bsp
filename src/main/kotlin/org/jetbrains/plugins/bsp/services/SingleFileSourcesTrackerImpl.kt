@@ -152,8 +152,7 @@ private class SingleFileSourceData {
     dirs: HashMap<String, Int>,
     sourceDirectory: VirtualFile,
     sourceDirectories: HashMap<String, Int>,
-    moduleName: @NlsSafe String
-  ,
+    moduleName: @NlsSafe String,
   ) {
     dirs.compute(sourceDirectory.url) { _, currentOccurrence ->
       currentOccurrence?.minus(1)?.let { if (it <= 0) null else it }

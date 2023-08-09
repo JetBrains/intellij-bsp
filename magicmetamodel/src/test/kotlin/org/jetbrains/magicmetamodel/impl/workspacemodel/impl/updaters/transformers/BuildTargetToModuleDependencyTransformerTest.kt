@@ -31,7 +31,9 @@ class BuildTargetToModuleDependencyTransformerTest {
   fun `should return no module dependencies for no all targets`() {
     // given
     val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target1"), null, null,
+      BuildTargetIdentifier("//target1"),
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(
@@ -56,7 +58,9 @@ class BuildTargetToModuleDependencyTransformerTest {
   fun `should return single module dependency for target with one dependency`() {
     // given
     val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target1"), null, null,
+      BuildTargetIdentifier("//target1"),
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(
@@ -87,7 +91,9 @@ class BuildTargetToModuleDependencyTransformerTest {
   fun `should return multiple modules dependencies for target with multiple dependencies`() {
     // given
     val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target1"), null, null,
+      BuildTargetIdentifier("//target1"),
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(
@@ -130,7 +136,9 @@ class BuildTargetToModuleDependencyTransformerTest {
   fun `should return multiple modules dependencies for multiple targets`() {
     // given
     val buildTarget1 = BuildTarget(
-      BuildTargetIdentifier("//target1"), null, null,
+      BuildTargetIdentifier("//target1"),
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(
@@ -142,7 +150,9 @@ class BuildTargetToModuleDependencyTransformerTest {
       BuildTargetCapabilities(),
     )
     val buildTarget2 = BuildTarget(
-      BuildTargetIdentifier("//target1"), null, null,
+      BuildTargetIdentifier("//target1"),
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(

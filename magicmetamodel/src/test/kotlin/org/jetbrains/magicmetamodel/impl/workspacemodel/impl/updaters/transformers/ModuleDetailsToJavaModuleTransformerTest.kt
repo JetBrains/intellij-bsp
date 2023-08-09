@@ -75,7 +75,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
-      buildTargetId, null, projectRoot.toUri().toString(),
+      buildTargetId,
+      null,
+      projectRoot.toUri().toString(),
       listOf("library"),
       listOf("java"),
       listOf(
@@ -251,7 +253,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
-      buildTargetId, null, projectRoot.toUri().toString(),
+      buildTargetId,
+      null,
+      projectRoot.toUri().toString(),
       listOf("library"),
       listOf("java"),
       listOf(
@@ -338,7 +342,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val buildTargetId1 = BuildTargetIdentifier("module1")
     val buildTarget1 = BuildTarget(
-      buildTargetId1, null, module1Root.toUri().toString(),
+      buildTargetId1,
+      null,
+      module1Root.toUri().toString(),
       listOf("library"),
       listOf("java"),
       listOf(
@@ -594,8 +600,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     javaModules shouldContainExactlyInAnyOrder (
-        listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
-        )
+      listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
+      )
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
@@ -660,7 +666,6 @@ class ExtractJvmBuildTargetTest {
   }
 
   private fun buildDummyTarget(): BuildTarget {
-
     return BuildTarget(
       BuildTargetIdentifier("target"),
       "target name",

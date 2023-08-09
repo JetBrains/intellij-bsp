@@ -72,10 +72,8 @@ private class CancelableInvocationHandlerWithTimeout(
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
-    log.debug(
-      "BSP method '$methodName' call took ${elapsedTime}ms. " +
-          "Result: ${if (error == null) "SUCCESS" else "FAILURE"}"
-    )
+    log.debug("BSP method '$methodName' call took ${elapsedTime}ms. " +
+      "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
 
     return when (error) {
       null -> value
@@ -262,7 +260,7 @@ public class BspFileConnection(
   private fun createLauncher(
     bspIn: InputStream,
     bspOut: OutputStream,
-    client: BuildClient
+    client: BuildClient,
   ): Launcher<BuildClient, BspServer> =
     Launcher.Builder(
       input = bspIn,

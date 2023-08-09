@@ -418,8 +418,7 @@ private fun queryForDependencySources(
 }
 
 private fun calculateJavaTargetsIds(
-  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult
-,
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesJava() }.map { it.id }
 
@@ -434,8 +433,7 @@ private fun queryForJavacOptions(
 }
 
 private fun calculatePythonTargetsIds(
-  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult
-,
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
 

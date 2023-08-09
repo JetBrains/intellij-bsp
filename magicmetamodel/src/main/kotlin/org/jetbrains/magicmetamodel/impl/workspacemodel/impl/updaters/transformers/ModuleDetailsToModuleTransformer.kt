@@ -9,8 +9,7 @@ import java.net.URI
 import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity>(
-  moduleNameProvider: ModuleNameProvider
-,
+  moduleNameProvider: ModuleNameProvider,
 ) :
   WorkspaceModelEntityTransformer<ModuleDetails, T> {
   protected abstract val type: String

@@ -33,7 +33,6 @@ public data class MagicMetaModelProjectConfig(
 }
 
 public typealias ModuleNameProvider = (BuildTargetId) -> String
-
 public object DefaultModuleNameProvider : ModuleNameProvider {
   override fun invoke(id: BuildTargetId): String = id
 }

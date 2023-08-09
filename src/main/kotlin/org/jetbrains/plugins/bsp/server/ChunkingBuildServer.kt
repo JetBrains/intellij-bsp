@@ -44,7 +44,7 @@ public class ChunkingBuildServer<S : BspServer>(
     )(params)
 
   override fun buildTargetDependencySources(
-    params: DependencySourcesParams
+    params: DependencySourcesParams,
   ): CompletableFuture<DependencySourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
@@ -64,7 +64,7 @@ public class ChunkingBuildServer<S : BspServer>(
     )(params)
 
   override fun buildTargetDependencyModules(
-    params: DependencyModulesParams
+    params: DependencyModulesParams,
   ): CompletableFuture<DependencyModulesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },

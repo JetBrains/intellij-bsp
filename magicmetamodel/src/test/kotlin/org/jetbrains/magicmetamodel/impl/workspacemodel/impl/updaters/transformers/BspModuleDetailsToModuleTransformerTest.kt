@@ -42,7 +42,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetId = BuildTargetIdentifier(targetName)
 
     val target = BuildTarget(
-      targetId, null, null,
+      targetId,
+      null,
+      null,
       emptyList(),
       listOf("java"),
       listOf(
@@ -116,7 +118,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetName = "//target1"
     val targetId = BuildTargetIdentifier(targetName)
     val target = BuildTarget(
-      targetId, null, null,
+      targetId,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(
@@ -182,7 +186,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetId = BuildTargetIdentifier(targetName)
 
     val target = BuildTarget(
-      targetId, null, null,
+      targetId,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(
@@ -246,7 +252,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val target1Id = BuildTargetIdentifier(target1Name)
 
     val target1 = BuildTarget(
-      target1Id, null, null,
+      target1Id,
+      null,
+      null,
       emptyList(),
       listOf("java"),
       listOf(
@@ -288,7 +296,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val target2Id = BuildTargetIdentifier(target2Name)
 
     val target2 = BuildTarget(
-      target2Id, null, null,
+      target2Id,
+      null,
+      null,
       emptyList(),
       listOf("java"),
       listOf(
@@ -363,10 +373,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
     )
 
-    modules shouldContainExactlyInAnyOrder (listOf(
-      expectedModule1,
-      expectedModule2
-    ) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
+    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test
@@ -376,7 +383,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val target1Id = BuildTargetIdentifier(target1Name)
 
     val target1 = BuildTarget(
-      target1Id, null, null,
+      target1Id,
+      null,
+      null,
       emptyList(),
       listOf("python"),
       listOf(
@@ -412,7 +421,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val target2Id = BuildTargetIdentifier(target2Name)
 
     val target2 = BuildTarget(
-      target2Id, null, null,
+      target2Id,
+      null,
+      null,
       emptyList(),
       listOf("python"),
       listOf(
@@ -485,7 +496,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetId = BuildTargetIdentifier(targetName)
 
     val target = BuildTarget(
-      targetId, null, null,
+      targetId,
+      null,
+      null,
       emptyList(),
       listOf("java"),
       emptyList(),

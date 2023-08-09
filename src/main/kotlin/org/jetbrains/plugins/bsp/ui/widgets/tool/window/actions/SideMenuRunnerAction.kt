@@ -45,8 +45,7 @@ internal abstract class SideMenuRunnerAction(
   private fun Executor.executeWithRunner(
     runner: ProgramRunner<RunnerSettings>,
     settings: RunnerAndConfigurationSettings,
-    project: Project
-  ,
+    project: Project,
   ) {
     try {
       val executionEnvironment = ExecutionEnvironmentBuilder(project, this)

@@ -25,7 +25,7 @@ public val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES: List<String> = listOf(
   "WORKSPACE.bazel",
 )
 
-public class OpenBazelProjectViaBspPluginAction :
+public class OpenBazelProjectViaBspPluginAction:
   AnAction(BspPluginBundle.message("open.bazel.via.bsp.action.text")), DumbAware {
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
@@ -63,7 +63,7 @@ public fun isImportableBazelBspProject(project: Project?, psiFile: PsiFile? = nu
     .firstOrNull { it.bspConnectionDetails?.name == BazelBspConstants.ID }
 
   return bazelBspGenerator?.canGenerateBspConnectionDetailsFile(projectRootDir) == true ||
-      bazelBspConnectionFile != null
+    bazelBspConnectionFile != null
 }
 
 private fun calculateProjectRootDir(project: Project?, psiFile: PsiFile?): VirtualFile? =

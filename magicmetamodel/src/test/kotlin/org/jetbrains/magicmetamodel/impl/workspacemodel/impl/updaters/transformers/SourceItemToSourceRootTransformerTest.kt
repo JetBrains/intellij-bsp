@@ -84,12 +84,7 @@ class SourceItemToSourceRootTransformerTest {
       val expectedSource2Path = URI.create("file:///example/source2/File1.java").toPath()
       val expectedSource2 = SourceRoot(expectedSource2Path, generated, true)
 
-      sourcesDirs shouldContainExactlyInAnyOrder listOf(
-        expectedSource1A,
-        expectedSource1B,
-        expectedSource1Subpackage,
-        expectedSource2
-      )
+      sourcesDirs shouldContainExactlyInAnyOrder listOf(expectedSource1A, expectedSource1B, expectedSource1Subpackage, expectedSource2)
     }
   }
 
@@ -147,12 +142,7 @@ class SourceItemToSourceRootTransformerTest {
       val expectedSource2FilePath = URI.create("file:///example/source2/File1.java").toPath()
       val expectedSource2File = SourceRoot(expectedSource2FilePath, generated, true)
 
-      sourcesDirs shouldContainExactlyInAnyOrder listOf(
-        expectedSource1,
-        expectedSource1Subpackage,
-        expectedSource2,
-        expectedSource2File
-      )
+      sourcesDirs shouldContainExactlyInAnyOrder listOf(expectedSource1, expectedSource1Subpackage, expectedSource2, expectedSource2File)
     }
   }
 

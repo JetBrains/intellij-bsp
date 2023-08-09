@@ -445,13 +445,11 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources.zipWithNext().zipWithNext()
-          .associateBy(
-            { it.first.second.target.uri },
-            { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
-            setOf(
-              sources[0].target.uri to setOf(sources[1].target.uri),
-              sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri),
-            )
+          .associateBy({ it.first.second.target.uri }, { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
+          setOf(
+            sources[0].target.uri to setOf(sources[1].target.uri),
+            sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri),
+          )
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
 
@@ -468,11 +466,13 @@ class OverlappingTargetsGraphTest {
           sources = (0..numberOfSourcesPerTarget).map { rand ->
             SourceItem(
               uri = "file:///project/target$it$rand/src/main/kotlin/File.kt",
-              kind = SourceItemKind.File, generated = false
+              kind = SourceItemKind.File,
+              generated = false
             )
           } + SourceItem(
             uri = "file:///project/target/src/main/kotlin/File.kt",
-            kind = SourceItemKind.File, generated = false
+            kind = SourceItemKind.File,
+            generated = false
           ),
         )
       }
@@ -503,7 +503,8 @@ class OverlappingTargetsGraphTest {
           sources = (0..numberOfSharedSources).map { rand ->
             SourceItem(
               uri = "file:///project/target$rand/src/main/kotlin/File.kt",
-              kind = SourceItemKind.File, generated = false
+              kind = SourceItemKind.File,
+              generated = false
             )
           },
         )

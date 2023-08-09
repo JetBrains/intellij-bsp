@@ -46,8 +46,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules =
-      ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -140,8 +139,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
 
     // when
-    val pythonModule =
-      ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+    val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -322,8 +320,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val pythonModules =
-      ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(

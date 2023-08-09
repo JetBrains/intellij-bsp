@@ -65,8 +65,7 @@ private class ListsUpdater(
     searchBarPanel.clearAllListeners()
     loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(magicMetaModel))
     notLoadedTargetsPanel = notLoadedTargetsPanel.createNewWithTargets(
-      targetFilter.getMatchingNotLoadedTargets(magicMetaModel)
-    )
+      targetFilter.getMatchingNotLoadedTargets(magicMetaModel))
     targetPanelUpdater(this@ListsUpdater)
   }
 }

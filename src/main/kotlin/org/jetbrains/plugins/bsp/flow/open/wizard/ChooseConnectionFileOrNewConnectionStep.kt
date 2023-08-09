@@ -44,8 +44,7 @@ public open class ChooseConnectionFileOrNewConnectionStep(
   }
 
   private fun calculateDefaultConnection(
-    allConnections: List<ConnectionFileOrNewConnection>
-  ,
+    allConnections: List<ConnectionFileOrNewConnection>,
   ): ConnectionFileOrNewConnection {
     val newestConnectionFile = allConnections.filterIsInstance<ConnectionFile>().maxOrNull()
 

@@ -24,8 +24,7 @@ public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
     workspaceModel: WorkspaceModel,
     loadedTargetsStorage: LoadedTargetsStorage,
-    moduleNameProvider: ModuleNameProvider
-  ,
+    moduleNameProvider: ModuleNameProvider,
   ): Map<BuildTargetId, Module> =
     with(workspaceModel.currentSnapshot) {
       WorkspaceModelToMagicMetamodelTransformer(

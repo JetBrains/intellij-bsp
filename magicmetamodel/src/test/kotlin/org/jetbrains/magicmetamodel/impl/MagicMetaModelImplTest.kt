@@ -108,7 +108,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         languageIds = listOf("kotlin"),
         tags = emptyList(),
         capabilities = BuildTargetCapabilities(),
-        dependencies = emptyList()
+        dependencies = emptyList(),
       )
 
       val targetC1 = BuildTarget(
@@ -161,7 +161,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val targetB1Source1 = SourceItem(
         uri = targetB1File.toUri().toString(),
         kind = SourceItemKind.File,
-        generated = false
+        generated = false,
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,

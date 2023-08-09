@@ -98,17 +98,13 @@ public class LoadedTargetsMouseListener(
     }
   }
 
-  override fun mousePressed(e: MouseEvent?) { /* nothing to do */
-  }
+  override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */
-  }
+  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */
-  }
+  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseExited(e: MouseEvent?) { /* nothing to do */
-  }
+  override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
 
   private companion object {
     val actions = HashMap<Class<out AbstractActionWithTarget>, AbstractActionWithTarget>()
