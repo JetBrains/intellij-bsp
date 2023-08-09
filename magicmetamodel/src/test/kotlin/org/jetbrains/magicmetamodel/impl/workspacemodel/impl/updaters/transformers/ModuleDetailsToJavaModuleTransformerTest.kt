@@ -11,11 +11,16 @@ import com.jetbrains.bsp.bsp4kt.ResourcesItem
 import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import com.jetbrains.bsp.bsp4kt.SourcesItem
 import com.google.gson.JsonObject
+import com.jetbrains.bsp.bsp4kt.SourceItem
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.put
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -27,7 +32,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
-import org.jetbrains.workspace.model.constructors.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -66,13 +70,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val javaHome = "/fake/path/to/local_jdk"
     val javaVersion = "11"
 
-    val jdkInfoJsonObject = JsonObject()
-    jdkInfoJsonObject.addProperty("javaVersion", javaVersion)
-    jdkInfoJsonObject.addProperty("javaHome", javaHome)
+    val jdkInfoJsonObject = buildJsonObject {
+        put("javaHome", javaHome)
+        put("javaVersion", javaVersion)
+    }
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
-      buildTargetId,
+      buildTargetId, null, projectRoot.toUri().toString(),
       listOf("library"),
       listOf("java"),
       listOf(
@@ -80,11 +85,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
         BuildTargetIdentifier("module3"),
         BuildTargetIdentifier("@maven//:lib1"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
+      BuildTargetDataKind.Jvm,
+      jdkInfoJsonObject
     )
-    buildTarget.baseDirectory = projectRoot.toUri().toString()
-    buildTarget.dataKind = BuildTargetDataKind.JVM
-    buildTarget.data = jdkInfoJsonObject
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
     packageA1Path.toFile().deleteOnExit()
@@ -108,9 +112,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
         SourceItem(file1APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(file2APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(dir1BPath.toUri().toString(), SourceItemKind.Directory, false),
-      )
+      ),
+      listOf(projectRoot.toUri().toString())
     )
-    sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
@@ -249,7 +253,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
-      buildTargetId,
+      buildTargetId, null, projectRoot.toUri().toString(),
       listOf("library"),
       listOf("java"),
       listOf(
@@ -257,11 +261,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
         BuildTargetIdentifier("module3"),
         BuildTargetIdentifier("@maven//:lib1"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
+      "kotlin",
+      Json.encodeToJsonElement(kotlinBuildTarget)
     )
-    buildTarget.baseDirectory = projectRoot.toUri().toString()
-    buildTarget.dataKind = "kotlin"
-    buildTarget.data = kotlinBuildTarget
 
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
@@ -337,7 +340,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val buildTargetId1 = BuildTargetIdentifier("module1")
     val buildTarget1 = BuildTarget(
-      buildTargetId1,
+      buildTargetId1, null, module1Root.toUri().toString(),
       listOf("library"),
       listOf("java"),
       listOf(
@@ -347,7 +350,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       BuildTargetCapabilities()
     )
-    buildTarget1.baseDirectory = module1Root.toUri().toString()
+
 
     val packageA1Path = createTempDirectory(module1Root, "packageA1")
     packageA1Path.toFile().deleteOnExit()
@@ -371,9 +374,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
         SourceItem(file1APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(file2APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(dir1BPath.toUri().toString(), SourceItemKind.Directory, false),
-      )
+      ),
+      listOf(module1Root.toUri().toString())
     )
-    sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
     val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
     resourceFilePath11.toFile().deleteOnExit()
@@ -426,6 +429,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTargetId2 = BuildTargetIdentifier("module2")
     val buildTarget2 = BuildTarget(
       buildTargetId2,
+      null,
+      module2Root.toUri().toString(),
       listOf("test"),
       listOf("java"),
       listOf(
@@ -434,7 +439,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       BuildTargetCapabilities()
     )
-    buildTarget2.baseDirectory = module2Root.toUri().toString()
 
     val packageC1Path = createTempDirectory(module2Root, "packageC1")
     packageC1Path.toFile().deleteOnExit()
@@ -447,9 +451,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
       buildTargetId2,
       listOf(
         SourceItem(dir1CPath.toUri().toString(), SourceItemKind.Directory, false),
-      )
+      ),
+      listOf(module2Root.toUri().toString())
     )
-    sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 = ResourcesItem(
@@ -631,13 +635,12 @@ class ExtractJvmBuildTargetTest {
     // given
     val javaVersion = "17"
     val javaHome = "/fake/path/to/test/local_jdk"
-    val jdkInfoJsonObject = JsonObject()
-    jdkInfoJsonObject.addProperty("javaVersion", javaVersion)
-    jdkInfoJsonObject.addProperty("javaHome", javaHome)
+    val jdkInfoJsonObject = buildJsonObject {
+      put("javaVersion", javaVersion)
+      put("javaHome", javaHome)
+    }
 
-    val buildTarget = buildDummyTarget()
-    buildTarget.dataKind = BuildTargetDataKind.JVM
-    buildTarget.data = jdkInfoJsonObject
+    val buildTarget = buildDummyTarget().copy(dataKind = BuildTargetDataKind.Jvm, data = jdkInfoJsonObject)
 
     // when
     val extractedJvmBuildTarget = extractJvmBuildTarget(buildTarget)
@@ -659,15 +662,15 @@ class ExtractJvmBuildTargetTest {
   }
 
   private fun buildDummyTarget(): BuildTarget {
-    val buildTarget = BuildTarget(
+
+    return BuildTarget(
       BuildTargetIdentifier("target"),
+      "target name",
+      "/base/dir",
       listOf("tag1", "tag2"),
       listOf("language1"),
       listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
       BuildTargetCapabilities(true, false, true, true)
     )
-    buildTarget.displayName = "target name"
-    buildTarget.baseDirectory = "/base/dir"
-    return buildTarget
   }
 }

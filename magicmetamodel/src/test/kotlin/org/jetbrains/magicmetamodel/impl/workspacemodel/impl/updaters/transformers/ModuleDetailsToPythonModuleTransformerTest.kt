@@ -13,12 +13,13 @@ import com.jetbrains.bsp.bsp4kt.ResourcesItem
 import com.jetbrains.bsp.bsp4kt.SourceItem
 import com.jetbrains.bsp.bsp4kt.SourceItemKind
 import com.jetbrains.bsp.bsp4kt.SourcesItem
-import com.google.gson.JsonObject
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
@@ -59,26 +60,27 @@ class ModuleDetailsToPythonModuleTransformerTest {
     projectRoot.toFile().deleteOnExit()
 
     val version = "3"
-    val originalName = "fake-original-name"
+    val interpreterUri = "python3"
 
-    val sdkInfoJsonObject = JsonObject()
-    sdkInfoJsonObject.addProperty("version", version)
-    sdkInfoJsonObject.addProperty("originalName", originalName)
+    val sdkInfoJsonObject = buildJsonObject {
+        put("version", version)
+        put("interpreter", interpreterUri)
+    }
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
       buildTargetId,
+      null, projectRoot.toUri().toString(),
       listOf("library"),
       listOf("python"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
+      BuildTargetDataKind.Python,
+      sdkInfoJsonObject,
     )
-    buildTarget.baseDirectory = projectRoot.toUri().toString()
-    buildTarget.dataKind = BuildTargetDataKind.PYTHON
-    buildTarget.data = sdkInfoJsonObject
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
     packageA1Path.toFile().deleteOnExit()
@@ -102,9 +104,9 @@ class ModuleDetailsToPythonModuleTransformerTest {
         SourceItem(file1APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(file2APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(dir1BPath.toUri().toString(), SourceItemKind.Directory, false),
-      )
+      ),
+      listOf(projectRoot.toUri().toString())
     )
-    sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
     val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
@@ -170,7 +172,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       sourceRoots = listOf(expectedGenericSourceRoot1, expectedGenericSourceRoot2, expectedGenericSourceRoot3),
       resourceRoots = listOf(expectedResourceRoot1),
       libraries = emptyList(),
-      sdkInfo = PythonSdkInfo(version = version, originalName = originalName),
+      sdkInfo = PythonSdkInfo(version = version, originalName = buildTargetId.uri),
     )
 
     validatePythonModule(pythonModule, expectedPythonModule)
@@ -191,12 +193,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val buildTarget1 = BuildTarget(
       buildTargetId1,
+      null,
+      module1Root.toUri().toString(),
       listOf("library"),
       listOf("python"),
       listOf(buildTargetId2, buildTargetId2),
       BuildTargetCapabilities()
     )
-    buildTarget1.baseDirectory = module1Root.toUri().toString()
 
     val packageA1Path = createTempDirectory(module1Root, "packageA1")
     packageA1Path.toFile().deleteOnExit()
@@ -220,9 +223,9 @@ class ModuleDetailsToPythonModuleTransformerTest {
         SourceItem(file1APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(file2APath.toUri().toString(), SourceItemKind.File, false),
         SourceItem(dir1BPath.toUri().toString(), SourceItemKind.Directory, false),
-      )
+      ),
+      listOf(module1Root.toUri().toString())
     )
-    sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
     val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
     resourceFilePath11.toFile().deleteOnExit()
@@ -265,12 +268,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val buildTarget2 = BuildTarget(
       buildTargetId2,
+      null,
+      module2Root.toUri().toString(),
       listOf("test"),
       listOf("python"),
       listOf(buildTargetId3),
       BuildTargetCapabilities()
     )
-    buildTarget2.baseDirectory = module2Root.toUri().toString()
 
     val packageC1Path = createTempDirectory(module2Root, "packageC1")
     packageC1Path.toFile().deleteOnExit()
@@ -283,9 +287,9 @@ class ModuleDetailsToPythonModuleTransformerTest {
       buildTargetId2,
       listOf(
         SourceItem(dir1CPath.toUri().toString(), SourceItemKind.Directory, false),
-      )
+      ),
+      listOf(module2Root.toUri().toString())
     )
-    sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 = ResourcesItem(
@@ -415,13 +419,15 @@ class ExtractPythonBuildTargetTest {
     // given
     val version = "3"
     val interpreter = "/fake/path/to/test/interpreter"
-    val sdkInfoJsonObject = JsonObject()
-    sdkInfoJsonObject.addProperty("version", version)
-    sdkInfoJsonObject.addProperty("interpreter", interpreter)
+    val sdkInfoJsonObject = buildJsonObject {
+      put("version", version)
+      put("interpreter", interpreter)
+    }
 
-    val buildTarget = buildDummyTarget()
-    buildTarget.dataKind = BuildTargetDataKind.PYTHON
-    buildTarget.data = sdkInfoJsonObject
+    val buildTarget = buildDummyTarget().copy(
+        dataKind = BuildTargetDataKind.Python,
+        data = sdkInfoJsonObject
+    )
 
     // when
     val extractedPythonBuildTarget = extractPythonBuildTarget(buildTarget)
@@ -443,15 +449,14 @@ class ExtractPythonBuildTargetTest {
   }
 
   private fun buildDummyTarget(): BuildTarget {
-    val buildTarget = BuildTarget(
+    return BuildTarget(
       BuildTargetIdentifier("target"),
+      "target name",
+      "/base/dir",
       listOf("tag1", "tag2"),
       listOf("language1"),
       listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
       BuildTargetCapabilities(true, false, true, true)
     )
-    buildTarget.displayName = "target name"
-    buildTarget.baseDirectory = "/base/dir"
-    return buildTarget
   }
 }

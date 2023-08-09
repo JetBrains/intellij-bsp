@@ -12,6 +12,8 @@ plugins {
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   alias(libs.plugins.changelog)
 
+  alias(libs.plugins.serialization)
+
   id("intellijbsp.kotlin-conventions")
 }
 
@@ -27,6 +29,7 @@ dependencies {
   implementation(libs.bsp4kt)
   implementation(libs.jsonrpc4kt)
   implementation(libs.gson)
+  implementation(libs.kotlinxJson)
   implementation(libs.coursier)
 
   testImplementation(libs.junitJupiter)

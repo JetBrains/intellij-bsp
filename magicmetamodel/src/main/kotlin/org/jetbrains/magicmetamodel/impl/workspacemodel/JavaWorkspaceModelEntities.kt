@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
+import kotlinx.serialization.Serializable
 import org.jetbrains.magicmetamodel.impl.ModuleState
 import org.jetbrains.magicmetamodel.impl.toState
 import java.nio.file.Path
@@ -44,6 +45,7 @@ public data class KotlinAddendum(
   val kotlincOptions: KotlincOpts?
 )
 
+@Serializable
 public data class KotlincOpts(
   val includeStdlibs: String = "",
   val javaParameters: Boolean = false,

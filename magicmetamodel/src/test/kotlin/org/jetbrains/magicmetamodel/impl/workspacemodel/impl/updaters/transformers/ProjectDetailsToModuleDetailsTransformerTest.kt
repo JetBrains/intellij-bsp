@@ -30,6 +30,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val targetId = BuildTargetIdentifier("target")
     val target = BuildTarget(
       targetId,
+      null,
+      null,
       emptyList(),
       emptyList(),
       emptyList(),
@@ -73,6 +75,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val targetId = BuildTargetIdentifier("target")
     val target = BuildTarget(
       targetId,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(BuildTargetIdentifier("@maven//:test")),
@@ -141,6 +145,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target2Id = BuildTargetIdentifier("target2")
     val target1 = BuildTarget(
       target1Id,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(target2Id, BuildTargetIdentifier("@maven//:test")),
@@ -167,6 +173,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
 
     val target2 = BuildTarget(
       target2Id,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(BuildTargetIdentifier("@maven//:test")),
@@ -196,6 +204,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target3Id = BuildTargetIdentifier("target3")
     val target3 = BuildTarget(
       target3Id,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(target2Id),
@@ -215,6 +225,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target4Id = BuildTargetIdentifier("target4")
     val target4 = BuildTarget(
       target4Id,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(target1Id),
@@ -308,6 +320,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val targetId1 = BuildTargetIdentifier("target1")
     val target1 = BuildTarget(
       targetId1,
+      null,
+      null,
       emptyList(),
       emptyList(),
       listOf(BuildTargetIdentifier("@maven//:test")),
@@ -336,11 +350,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val targetId2 = BuildTargetIdentifier("target2")
     val target2 = BuildTarget(
       targetId2,
+      null,
+      baseDirectory = "file:///root/dir/example",
       emptyList(),
       emptyList(),
       listOf(BuildTargetIdentifier("@maven//:test")),
       BuildTargetCapabilities(),
-    ).also { it.baseDirectory = "file:///root/dir/example" }
+    )
     val targetSources2 = SourcesItem(
       targetId2,
       listOf(SourceItem("file:///root/dir/example/package2/", SourceItemKind.Directory, false)),
@@ -364,11 +380,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val rootTargetId = BuildTargetIdentifier(".bsp-workspace-root")
     val rootTarget = BuildTarget(
       rootTargetId,
+      null,
+      projectBasePathURI,
       emptyList(),
       emptyList(),
       emptyList(),
       BuildTargetCapabilities()
-    ).also { it.baseDirectory = projectBasePathURI }
+    )
 
 
     val projectDetails = ProjectDetails(

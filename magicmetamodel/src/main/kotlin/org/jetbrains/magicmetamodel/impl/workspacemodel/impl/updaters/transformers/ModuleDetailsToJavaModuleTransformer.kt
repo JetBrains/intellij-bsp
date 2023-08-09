@@ -4,6 +4,7 @@ import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.jetbrains.bsp.bsp4kt.BuildTargetDataKind
 import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.jetbrains.bsp.bsp4kt.JvmBuildTarget
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -20,6 +21,7 @@ import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
+@Serializable
 public data class KotlinBuildTarget(
   val languageVersion: String,
   val apiVersion: String,
