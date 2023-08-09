@@ -111,7 +111,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.generateBspConnectionDetailFileForGeneratorWithName(
       "wrong name",
       OutputStream.nullOutputStream(),
-      project
+      project,
     ) shouldBe null
     generator.hasGenerated shouldBe false
   }
@@ -132,7 +132,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.generateBspConnectionDetailFileForGeneratorWithName(
       "generator 1",
       OutputStream.nullOutputStream(),
-      project
+      project,
     ) shouldBe generatedVirtualFile
     generator.hasGenerated shouldBe true
   }
@@ -160,7 +160,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.generateBspConnectionDetailFileForGeneratorWithName(
       "generator 2",
       OutputStream.nullOutputStream(),
-      project
+      project,
     ) shouldBe generatedVirtualFile
     generator1.hasGenerated shouldBe false
     generator2.hasGenerated shouldBe true
@@ -192,7 +192,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.generateBspConnectionDetailFileForGeneratorWithName(
       "generator 2",
       OutputStream.nullOutputStream(),
-      project
+      project,
     ) shouldBe generatedVirtualFile
     generator1.hasGenerated shouldBe false
     generator21.hasGenerated shouldBe true

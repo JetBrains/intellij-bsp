@@ -267,7 +267,7 @@ public class BspFileConnection(
       output = bspOut,
       localService = client,
       executorService = AppExecutorUtil.getAppExecutorService(),
-      remoteInterface = BspServer::class
+      remoteInterface = BspServer::class,
     )
       .create()
 
@@ -288,7 +288,7 @@ public class BspFileConnection(
       null,
       buildJsonObject {
         put("clientClassesRootDir", "$projectBaseDir/out")
-      }
+      },
     )
     return params
   }

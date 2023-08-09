@@ -24,6 +24,6 @@ public class TestTargetTask(project: Project) : BspServerSingleTargetTask<TestRe
       listOf(targetId),
       // TODO
       originId = "test-" + UUID.randomUUID().toString(),
-      arguments = emptyList()
+      arguments = emptyList(),
     )
 }

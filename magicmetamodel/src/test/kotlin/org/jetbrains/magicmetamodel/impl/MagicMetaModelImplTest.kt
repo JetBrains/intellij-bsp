@@ -952,7 +952,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val targetB1B2Source1 = SourceItem(
         uri = targetB1B2File1.toUri().toString(),
         kind = SourceItemKind.File,
-        generated = false
+        generated = false,
       )
 
       val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
@@ -963,7 +963,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val targetB1Source2 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.Directory,
-        generated = false
+        generated = false,
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,

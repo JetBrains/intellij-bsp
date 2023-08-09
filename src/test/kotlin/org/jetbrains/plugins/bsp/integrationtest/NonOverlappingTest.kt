@@ -117,7 +117,7 @@ class NonOverlappingTest {
       bspServerProcess.outputStream,
       DummyClient(),
       BspServer::class,
-      executorService = Executors.newCachedThreadPool()
+      executorService = Executors.newCachedThreadPool(),
     ).create()
   }
 
