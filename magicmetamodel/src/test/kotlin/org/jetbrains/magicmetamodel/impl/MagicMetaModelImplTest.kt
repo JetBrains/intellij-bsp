@@ -1,6 +1,12 @@
 package org.jetbrains.magicmetamodel.impl
 
+import com.jetbrains.bsp.bsp4kt.BuildTarget
+import com.jetbrains.bsp.bsp4kt.BuildTargetCapabilities
+import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.SourceItem
 import com.jetbrains.bsp.bsp4kt.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourcesItem
+import com.jetbrains.bsp.bsp4kt.TextDocumentIdentifier
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
@@ -9,11 +15,6 @@ import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
-import org.jetbrains.workspace.model.constructors.BuildTarget
-import org.jetbrains.workspace.model.constructors.BuildTargetId
-import org.jetbrains.workspace.model.constructors.SourceItem
-import org.jetbrains.workspace.model.constructors.SourcesItem
-import org.jetbrains.workspace.model.constructors.TextDocumentId
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -42,7 +43,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       id = id.uri,
       displayName = displayName,
       dependencies = dependencies.map { it.uri },
-      capabilities = with(capabilities) { ModuleCapabilities(canRun, canTest, canCompile, canDebug) },
+      capabilities = with(capabilities) {
+        ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
+      },
       languageIds = languageIds
     )
   }
@@ -92,37 +95,46 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = emptyList()
       )
 
       val targetC1 = BuildTarget(
-        id = BuildTargetId("targetC1"),
+        id = BuildTargetIdentifier("targetC1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("targetB1"),
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("targetB1"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetD1 = BuildTarget(
-        id = BuildTargetId("targetD1"),
+        id = BuildTargetIdentifier("targetD1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("targetA1"),
-          BuildTargetId("targetB1"),
-          BuildTargetId("targetC1"),
-          BuildTargetId("externalDep1"),
+          BuildTargetIdentifier("targetA1"),
+          BuildTargetIdentifier("targetB1"),
+          BuildTargetIdentifier("targetC1"),
+          BuildTargetIdentifier("externalDep1"),
         ),
       )
 
@@ -133,7 +145,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -149,7 +162,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1File.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -163,7 +177,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetC1Source1 = SourceItem(
         uri = targetC1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetC1Sources = SourcesItem(
         target = targetC1.id,
@@ -179,7 +194,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetD1Source1 = SourceItem(
         uri = targetD1File.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetD1Sources = SourcesItem(
         target = targetD1.id,
@@ -216,19 +232,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
         notLoadedTargetsIds = listOf(targetA1.id.uri)
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
         notLoadedTargetsIds = listOf(targetB1.id.uri)
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
         notLoadedTargetsIds = listOf(targetC1.id.uri)
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
         notLoadedTargetsIds = listOf(targetD1.id.uri)
       )
@@ -250,19 +266,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetD1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
@@ -275,60 +291,76 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = emptyList()
       )
 
       val targetB2 = BuildTarget(
-        id = BuildTargetId("targetB2"),
+        id = BuildTargetIdentifier("targetB2"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = emptyList()
       )
 
       val targetC1 = BuildTarget(
-        id = BuildTargetId("targetC1"),
+        id = BuildTargetIdentifier("targetC1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("targetB1"),
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("targetB1"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetC2 = BuildTarget(
-        id = BuildTargetId("targetC2"),
+        id = BuildTargetIdentifier("targetC2"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("targetB2"),
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("targetB2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetD1 = BuildTarget(
-        id = BuildTargetId("targetD1"),
+        id = BuildTargetIdentifier("targetD1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("targetA1"),
-          BuildTargetId("targetC1"),
-          BuildTargetId("externalDep1"),
+          BuildTargetIdentifier("targetA1"),
+          BuildTargetIdentifier("targetC1"),
+          BuildTargetIdentifier("externalDep1"),
         ),
       )
 
       val targetD2 = BuildTarget(
-        id = BuildTargetId("targetD2"),
+        id = BuildTargetIdentifier("targetD2"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("targetC2"),
-          BuildTargetId("externalDep1"),
+          BuildTargetIdentifier("targetC2"),
+          BuildTargetIdentifier("externalDep1"),
         ),
       )
 
@@ -339,7 +371,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -355,7 +388,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1B2Source1 = SourceItem(
         uri = targetB1B2File.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -373,7 +407,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetC1C2Source1 = SourceItem(
         uri = targetC1C2Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetC1Sources = SourcesItem(
         target = targetC1.id,
@@ -393,7 +428,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetD1D2Source1 = SourceItem(
         uri = targetD1D2File.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetD1Sources = SourcesItem(
         target = targetD1.id,
@@ -476,19 +512,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC1.id.uri,
         notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetD1.id.uri,
         notLoadedTargetsIds = listOf(targetD2.id.uri),
       )
@@ -516,19 +552,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC1.id.uri,
         notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetD2.id.uri,
         notLoadedTargetsIds = listOf(targetD1.id.uri),
       )
@@ -556,19 +592,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB2.id.uri,
         notLoadedTargetsIds = listOf(targetB1.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC1.id.uri,
         notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetD2.id.uri,
         notLoadedTargetsIds = listOf(targetD1.id.uri),
       )
@@ -596,19 +632,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC1.id.uri,
         notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetD1.id.uri,
         notLoadedTargetsIds = listOf(targetD2.id.uri),
       )
@@ -652,18 +688,22 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep1")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep1")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -675,7 +715,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -691,7 +732,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -727,30 +769,38 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep1")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep1")),
       )
 
       val targetC1 = BuildTarget(
-        id = BuildTargetId("targetC1"),
+        id = BuildTargetIdentifier("targetC1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("targetA1")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("targetA1")),
       )
 
       val targetD1 = BuildTarget(
-        id = BuildTargetId("targetD1"),
+        id = BuildTargetIdentifier("targetD1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("targetC1")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("targetC1")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -762,7 +812,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -776,7 +827,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -794,11 +846,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetC1Source1 = SourceItem(
         uri = targetC1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetC1Source2 = SourceItem(
         uri = targetC1File2.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetC1Sources = SourcesItem(
         target = targetC1.id,
@@ -833,7 +887,10 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        expectedTargetA1, expectedTargetB1, expectedTargetC1, expectedTargetD1
+        expectedTargetA1,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD1
       )
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
     }
@@ -845,24 +902,30 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep2")),
       )
 
       val targetB2 = BuildTarget(
-        id = BuildTargetId("targetB2"),
+        id = BuildTargetIdentifier("targetB2"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("targetA1")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("targetA1")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -874,7 +937,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -890,7 +954,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1B2Source1 = SourceItem(
         uri = targetB1B2File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
 
       val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
@@ -900,7 +965,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source2 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -934,7 +1000,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val expectedTargetB2 = createBuildTargetInfo(targetB2)
 
-
       runBlocking { diff.applyOnWorkspaceModel() }
 
       // TODO how to make it deterministic?
@@ -949,24 +1014,30 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep2")),
       )
 
       val targetB2 = BuildTarget(
-        id = BuildTargetId("targetB2"),
+        id = BuildTargetIdentifier("targetB2"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("targetA1")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("targetA1")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -978,7 +1049,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -994,7 +1066,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1B2Source1 = SourceItem(
         uri = targetB1B2File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
 
       val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
@@ -1004,7 +1077,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source2 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -1073,11 +1147,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
@@ -1090,7 +1166,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1112,7 +1189,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val notExistingTargetId = BuildTargetId("//not/existing/target")
+      val notExistingTargetId = BuildTargetIdentifier("//not/existing/target")
       val diff = magicMetaModel.loadTarget(notExistingTargetId.uri)
 
       // then
@@ -1126,18 +1203,22 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep2")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -1149,7 +1230,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1163,7 +1245,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -1203,18 +1286,22 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep2")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -1226,7 +1313,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1240,7 +1328,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -1286,18 +1375,22 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep2")),
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -1309,7 +1402,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1323,7 +1417,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -1369,23 +1464,30 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetA2 = BuildTarget(
-        id = BuildTargetId("targetA2"),
+        id = BuildTargetIdentifier("targetA2"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetId("externalDep2")),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = listOf(BuildTargetIdentifier("externalDep2")),
       )
 
       val targetA3 = BuildTarget(
-        id = BuildTargetId("targetA3"),
+        id = BuildTargetIdentifier("targetA3"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = emptyList()
       )
 
       val targetA1A2Package1 = createTempDirectory(projectRoot, "targetA1A2")
@@ -1397,7 +1499,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1A2Source1 = SourceItem(
         uri = targetA1A2File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
 
       val targetA1A3Package1 = createTempDirectory(projectRoot, "targetA1A3")
@@ -1409,7 +1512,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1A3Source1 = SourceItem(
         uri = targetA1A3File1.toUri().toString(),
-        SourceItemKind.FILE,
+        SourceItemKind.File,
         false
       )
 
@@ -1422,7 +1525,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1438,7 +1542,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA2Source1 = SourceItem(
         uri = targetA3File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA2Sources = SourcesItem(
         target = targetA2.id,
@@ -1500,17 +1605,20 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     fun `should return no loaded target and no not loaded targets for not existing document`() {
       // given
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetA1Source1 = SourceItem(
         uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1533,7 +1641,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
       val documentTargetsDetails =
-        magicMetaModel.getTargetsDetailsForDocument(TextDocumentId("file:///not/existing/document"))
+        magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier("file:///not/existing/document"))
 
       // then
       documentTargetsDetails shouldBe DocumentTargetsDetails(
@@ -1546,17 +1654,20 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     fun `should return no loaded target for model without loaded targets`() {
       // given
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetA1Source1 = SourceItem(
         uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1578,7 +1689,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val documentTargetsDetails = magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri))
+      val documentTargetsDetails = magicMetaModel.getTargetsDetailsForDocument(
+        TextDocumentIdentifier(targetA1Source1.uri)
+      )
 
       // then
       documentTargetsDetails shouldBe DocumentTargetsDetails(
@@ -1594,17 +1707,22 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetB1 = BuildTarget(
-        id = BuildTargetId("targetB1"),
+        id = BuildTargetIdentifier("targetB1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = emptyList()
       )
 
       val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
@@ -1616,7 +1734,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1Source1 = SourceItem(
         uri = targetA1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1632,7 +1751,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetB1Source1 = SourceItem(
         uri = targetB1File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
@@ -1658,11 +1778,11 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then
       runBlocking { diff.applyOnWorkspaceModel() }
 
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList()
       )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = emptyList()
       )
@@ -1675,17 +1795,22 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       projectRoot.toFile().deleteOnExit()
 
       val targetA1 = BuildTarget(
-        id = BuildTargetId("targetA1"),
+        id = BuildTargetIdentifier("targetA1"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
         dependencies = listOf(
-          BuildTargetId("externalDep1"),
-          BuildTargetId("externalDep2"),
+          BuildTargetIdentifier("externalDep1"),
+          BuildTargetIdentifier("externalDep2"),
         ),
       )
 
       val targetA2 = BuildTarget(
-        id = BuildTargetId("targetA2"),
+        id = BuildTargetIdentifier("targetA2"),
         languageIds = listOf("kotlin"),
+        tags = emptyList(),
+        capabilities = BuildTargetCapabilities(),
+        dependencies = emptyList()
       )
 
       val targetA1A2Package1 = createTempDirectory(projectRoot, "targetA1A2")
@@ -1697,7 +1822,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA1A2Source1 = SourceItem(
         uri = targetA1A2File1.toUri().toString(),
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File,
+        generated = false,
       )
       val targetA1Sources = SourcesItem(
         target = targetA1.id,
@@ -1711,7 +1837,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       val targetA2Source1 = SourceItem(
         uri = targetA2Package2.toUri().toString(),
-        kind = SourceItemKind.DIRECTORY,
+        kind = SourceItemKind.Directory,
+        generated = false
       )
       val targetA2Sources = SourcesItem(
         target = targetA2.id,
@@ -1737,12 +1864,12 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then
       runBlocking { diff.applyOnWorkspaceModel() }
 
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1A2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA1A2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = listOf(targetA2.id.uri)
       )
 
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA2Source1.uri)) shouldBe DocumentTargetsDetails(
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(targetA2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
         notLoadedTargetsIds = listOf(targetA2.id.uri)
       )

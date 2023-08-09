@@ -3,17 +3,16 @@
 package org.jetbrains.magicmetamodel.impl
 
 import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
+import com.jetbrains.bsp.bsp4kt.SourceItem
 import com.jetbrains.bsp.bsp4kt.SourceItemKind
+import com.jetbrains.bsp.bsp4kt.SourcesItem
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import org.jetbrains.workspace.model.constructors.BuildTargetId
-import org.jetbrains.workspace.model.constructors.SourceItem
-import org.jetbrains.workspace.model.constructors.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetIdentifier
 import java.util.concurrent.TimeUnit
 
 @DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
@@ -36,41 +35,41 @@ class OverlappingTargetsGraphTest {
     // given
     val targetA1Source1 = SourceItem(
       uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA1Source2 = SourceItem(
       uri = "file:///project/targetA1/src/main/kotlin/File2.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA1Sources = SourcesItem(
-      target = BuildTargetId("targetA1"),
+      target = BuildTargetIdentifier("targetA1"),
       sources = listOf(targetA1Source1, targetA1Source2),
     )
 
     val targetB1Source1 = SourceItem(
       uri = "file:///project/targetB1/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
     val targetB1Sources = SourcesItem(
-      target = BuildTargetId("targetB1"),
+      target = BuildTargetIdentifier("targetB1"),
       sources = listOf(targetB1Source1),
     )
 
     val targetC1Source1 = SourceItem(
       uri = "file:///project/targetC1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetC1Source2 = SourceItem(
       uri = "file:///project/targetC1/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
     val targetC1Sources = SourcesItem(
-      target = BuildTargetId("targetC1"),
+      target = BuildTargetIdentifier("targetC1"),
       sources = listOf(targetC1Source1, targetC1Source2),
     )
 
     val targetD1Sources = SourcesItem(
-      target = BuildTargetId("targetD1"),
+      target = BuildTargetIdentifier("targetD1"),
       sources = emptyList(),
     )
 
@@ -82,7 +81,7 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
+    val expectedGraph = mapOf<WMBuildTargetIdentifier, Set<WMBuildTargetIdentifier>>(
       "targetA1" to setOf(),
       "targetB1" to setOf(),
       "targetC1" to setOf(),
@@ -97,24 +96,24 @@ class OverlappingTargetsGraphTest {
     val targetA1A2Source1 =
       SourceItem(
         uri = "file:///project/targetA/src/main/kotlin/File1.kt",
-        kind = SourceItemKind.FILE,
+        kind = SourceItemKind.File, generated = false
       )
 
     val targetA1Source1 = SourceItem(
       uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA1Sources = SourcesItem(
-      target = BuildTargetId("targetA1"),
+      target = BuildTargetIdentifier("targetA1"),
       sources = listOf(targetA1Source1, targetA1A2Source1)
     )
 
     val targetA2Source1 = SourceItem(
       uri = "file:///project/targetA2/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
     val target2Sources = SourcesItem(
-      target = BuildTargetId("targetA2"),
+      target = BuildTargetIdentifier("targetA2"),
       sources = listOf(targetA2Source1, targetA1A2Source1),
     )
 
@@ -139,19 +138,19 @@ class OverlappingTargetsGraphTest {
     // given
     val targetA1Source1 = SourceItem(
       uri = "file:///project/targetA/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA1Sources = SourcesItem(
-      target = BuildTargetId("targetA1"),
+      target = BuildTargetIdentifier("targetA1"),
       sources = listOf(targetA1Source1)
     )
 
     val targetA2Source1 = SourceItem(
       uri = "file:///project/targetA/src/main/kotlin/File2.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val target2Sources = SourcesItem(
-      target = BuildTargetId("targetA2"),
+      target = BuildTargetIdentifier("targetA2"),
       sources = listOf(targetA2Source1),
     )
 
@@ -163,7 +162,7 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
+    val expectedGraph = mapOf<WMBuildTargetIdentifier, Set<WMBuildTargetIdentifier>>(
       "targetA1" to emptySet(),
       "targetA2" to emptySet(),
     )
@@ -176,19 +175,19 @@ class OverlappingTargetsGraphTest {
     // given
     val targetA1Source1 = SourceItem(
       uri = "file:///project/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA1Sources = SourcesItem(
-      target = BuildTargetId("targetA1"),
+      target = BuildTargetIdentifier("targetA1"),
       sources = listOf(targetA1Source1)
     )
 
     val targetB1Source1 = SourceItem(
       uri = "file:///project/src/main/kotlin/subdirectory/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetB1Sources = SourcesItem(
-      target = BuildTargetId("targetB1"),
+      target = BuildTargetIdentifier("targetB1"),
       sources = listOf(targetB1Source1),
     )
 
@@ -200,7 +199,7 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
+    val expectedGraph = mapOf<WMBuildTargetIdentifier, Set<WMBuildTargetIdentifier>>(
       "targetA1" to emptySet(),
       "targetB1" to emptySet()
     )
@@ -212,13 +211,13 @@ class OverlappingTargetsGraphTest {
     // given
     val targetA1A2A3Source1 = SourceItem(
       uri = "file:///project/targetA/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
 
     val targetA1Id = BuildTargetIdentifier("targetA1")
     val targetA1Source1 = SourceItem(
       uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA1Sources = SourcesItem(
       target = targetA1Id,
@@ -227,7 +226,7 @@ class OverlappingTargetsGraphTest {
 
     val targetB1B2B3Source1 = SourceItem(
       uri = "file:///project/targetB/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
 
     val targetB1Id = BuildTargetIdentifier("targetB1")
@@ -238,13 +237,13 @@ class OverlappingTargetsGraphTest {
 
     val targetC1C2C3Source1 = SourceItem(
       uri = "file:///project/targetC/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
 
     val targetA2B2C1Id = BuildTargetIdentifier("targetA2B2C1")
     val targetA2B2C1Source1 = SourceItem(
       uri = "file:///project/targetA2B2C1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetA2B2C1Sources = SourcesItem(
       target = targetA2B2C1Id,
@@ -259,13 +258,13 @@ class OverlappingTargetsGraphTest {
 
     val targetD1D2D3Source1 = SourceItem(
       uri = "file:///project/targetD/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
 
     val targetC3D1Id = BuildTargetIdentifier("targetC3D1")
     val targetC3D1Source1 = SourceItem(
       uri = "file:///project/targetC3D1/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
     val targetC3D1Sources = SourcesItem(
       target = targetC3D1Id,
@@ -274,13 +273,13 @@ class OverlappingTargetsGraphTest {
 
     val targetE1E2Source1 = SourceItem(
       uri = "file:///project/targetE/src/main/kotlin/",
-      kind = SourceItemKind.DIRECTORY,
+      kind = SourceItemKind.Directory, generated = false
     )
 
     val targetD2E1Id = BuildTargetIdentifier("targetD2E1")
     val targetD2E1Source1 = SourceItem(
       uri = "file:///project/targetD2E1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetD2E1Sources = SourcesItem(
       target = targetD2E1Id,
@@ -290,7 +289,7 @@ class OverlappingTargetsGraphTest {
     val targetF1Id = BuildTargetIdentifier("targetF1")
     val targetF1Source1 = SourceItem(
       uri = "file:///project/targetF1/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetF1Sources = SourcesItem(
       target = targetF1Id,
@@ -300,7 +299,7 @@ class OverlappingTargetsGraphTest {
     val targetE2Id = BuildTargetIdentifier("targetE2")
     val targetE2Source1 = SourceItem(
       uri = "file:///project/targetE2/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetE2Sources = SourcesItem(
       target = targetE2Id,
@@ -310,7 +309,7 @@ class OverlappingTargetsGraphTest {
     val targetD3Id = BuildTargetIdentifier("targetD3")
     val targetD3Source1 = SourceItem(
       uri = "file:///project/targetD3/src/main/kotlin/File1.kt",
-      kind = SourceItemKind.FILE,
+      kind = SourceItemKind.File, generated = false
     )
     val targetD3Sources = SourcesItem(
       target = targetD3Id,
@@ -366,7 +365,7 @@ class OverlappingTargetsGraphTest {
           sources = listOf(
             SourceItem(
               uri = "file:///project/target$it/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             )
           ),
         )
@@ -397,11 +396,11 @@ class OverlappingTargetsGraphTest {
           sources = listOf(
             SourceItem(
               uri = "file:///project/target$it/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             ),
             SourceItem(
               uri = "file:///project/target/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             )
           ),
         )
@@ -432,11 +431,11 @@ class OverlappingTargetsGraphTest {
           sources = listOf(
             SourceItem(
               uri = "file:///project/target${it.first}/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             ),
             SourceItem(
               uri = "file:///project/target${it.second}/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             )
           ),
         )
@@ -471,11 +470,11 @@ class OverlappingTargetsGraphTest {
           sources = (0..numberOfSourcesPerTarget).map { rand ->
             SourceItem(
               uri = "file:///project/target$it$rand/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             )
           } + SourceItem(
             uri = "file:///project/target/src/main/kotlin/File.kt",
-            kind = SourceItemKind.FILE,
+            kind = SourceItemKind.File, generated = false
           )
         )
       }
@@ -506,7 +505,7 @@ class OverlappingTargetsGraphTest {
           sources = (0..numberOfSharedSources).map { rand ->
             SourceItem(
               uri = "file:///project/target$rand/src/main/kotlin/File.kt",
-              kind = SourceItemKind.FILE,
+              kind = SourceItemKind.File, generated = false
             )
           }
         )

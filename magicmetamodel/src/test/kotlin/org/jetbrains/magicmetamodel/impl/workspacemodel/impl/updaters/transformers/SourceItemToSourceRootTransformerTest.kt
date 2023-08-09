@@ -28,7 +28,7 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return single file for single source file`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItem = SourceItem("file:///example/source/File.java", SourceItemKind.FILE, generated)
+      val sourceItem = SourceItem("file:///example/source/File.java", SourceItemKind.File, generated)
 
       // when
       val sourceDir = SourceItemToSourceRootTransformer.transform(sourceItem)
@@ -45,7 +45,7 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return single dir for single source dir`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItem = SourceItem("file:///example/source/", SourceItemKind.DIRECTORY, generated)
+      val sourceItem = SourceItem("file:///example/source/", SourceItemKind.Directory, generated)
 
       // when
       val sourceDir = SourceItemToSourceRootTransformer.transform(sourceItem)
@@ -63,10 +63,10 @@ class SourceItemToSourceRootTransformerTest {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
       val sourceItems = listOf(
-        SourceItem("file:///example/source1/File1.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source1/File2.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+        SourceItem("file:///example/source1/File1.java", SourceItemKind.File, generated),
+        SourceItem("file:///example/source1/File2.java", SourceItemKind.File, generated),
+        SourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.File, generated),
+        SourceItem("file:///example/source2/File1.java", SourceItemKind.File, generated),
       )
 
       // when
@@ -94,9 +94,9 @@ class SourceItemToSourceRootTransformerTest {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
       val sourceItems = listOf(
-        SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source1/subpackage/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
+        SourceItem("file:///example/source1/", SourceItemKind.Directory, generated),
+        SourceItem("file:///example/source1/subpackage/", SourceItemKind.Directory, generated),
+        SourceItem("file:///example/source2/", SourceItemKind.Directory, generated),
       )
 
       // when
@@ -121,10 +121,10 @@ class SourceItemToSourceRootTransformerTest {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
       val sourceItems = listOf(
-        SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+        SourceItem("file:///example/source1/", SourceItemKind.Directory, generated),
+        SourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.File, generated),
+        SourceItem("file:///example/source2/", SourceItemKind.Directory, generated),
+        SourceItem("file:///example/source2/File1.java", SourceItemKind.File, generated),
       )
 
       // when

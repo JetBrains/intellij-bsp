@@ -99,9 +99,9 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sourcesItem = SourcesItem(
       buildTargetId,
       listOf(
-        SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        SourceItem(file1APath.toUri().toString(), SourceItemKind.File, false),
+        SourceItem(file2APath.toUri().toString(), SourceItemKind.File, false),
+        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.Directory, false),
       )
     )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
@@ -217,9 +217,9 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sourcesItem1 = SourcesItem(
       buildTargetId1,
       listOf(
-        SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        SourceItem(file1APath.toUri().toString(), SourceItemKind.File, false),
+        SourceItem(file2APath.toUri().toString(), SourceItemKind.File, false),
+        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.Directory, false),
       )
     )
     sourcesItem1.roots = listOf(module1Root.toUri().toString())
@@ -282,7 +282,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sourcesItem2 = SourcesItem(
       buildTargetId2,
       listOf(
-        SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        SourceItem(dir1CPath.toUri().toString(), SourceItemKind.Directory, false),
       )
     )
     sourcesItem2.roots = listOf(module2Root.toUri().toString())

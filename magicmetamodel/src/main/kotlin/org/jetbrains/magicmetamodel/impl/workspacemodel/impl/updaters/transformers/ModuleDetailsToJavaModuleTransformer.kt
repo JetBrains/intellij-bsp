@@ -4,8 +4,6 @@ import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.jetbrains.bsp.bsp4kt.BuildTargetDataKind
 import com.jetbrains.bsp.bsp4kt.BuildTargetIdentifier
 import com.jetbrains.bsp.bsp4kt.JvmBuildTarget
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement

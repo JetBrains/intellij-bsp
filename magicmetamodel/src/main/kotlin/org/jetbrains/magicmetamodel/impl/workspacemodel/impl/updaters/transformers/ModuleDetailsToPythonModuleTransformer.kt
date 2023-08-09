@@ -3,8 +3,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 import com.jetbrains.bsp.bsp4kt.BuildTarget
 import com.jetbrains.bsp.bsp4kt.BuildTargetDataKind
 import com.jetbrains.bsp.bsp4kt.PythonBuildTarget
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.magicmetamodel.ModuleNameProvider

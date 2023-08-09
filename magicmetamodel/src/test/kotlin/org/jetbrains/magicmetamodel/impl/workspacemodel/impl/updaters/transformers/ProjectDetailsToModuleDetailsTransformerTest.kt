@@ -80,7 +80,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
     val targetSources = SourcesItem(
       targetId,
-      listOf(SourceItem("file:///root/dir/example/package/", SourceItemKind.DIRECTORY, false)),
+      listOf(SourceItem("file:///root/dir/example/package/", SourceItemKind.Directory, false)),
     )
     val targetResources = ResourcesItem(
       targetId,
@@ -148,7 +148,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
     val target1Sources = SourcesItem(
       target1Id,
-      listOf(SourceItem("file:///root/dir1/example/package/", SourceItemKind.DIRECTORY, false)),
+      listOf(SourceItem("file:///root/dir1/example/package/", SourceItemKind.Directory, false)),
     )
     val target1Resources = ResourcesItem(
       target1Id,
@@ -175,13 +175,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target2Sources1 = SourcesItem(
       target2Id,
       listOf(
-        SourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
+        SourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.File, false),
       ),
     )
     val target2Sources2 = SourcesItem(
       target2Id,
       listOf(
-        SourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
+        SourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.File, false),
       ),
     )
     val target2Resources = ResourcesItem(
@@ -223,7 +223,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target4Sources = SourcesItem(
       target4Id,
       listOf(
-        SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
+        SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.File, false),
       ),
     )
     val target4PythonOptionsItem = PythonOptionsItem(
@@ -315,7 +315,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
     val targetSources1 = SourcesItem(
       targetId1,
-      listOf(SourceItem("file:///root/dir/example/package1/", SourceItemKind.DIRECTORY, false)),
+      listOf(SourceItem("file:///root/dir/example/package1/", SourceItemKind.Directory, false)),
     )
     val targetResources1 = ResourcesItem(
       targetId1,
@@ -343,7 +343,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     ).also { it.baseDirectory = "file:///root/dir/example" }
     val targetSources2 = SourcesItem(
       targetId2,
-      listOf(SourceItem("file:///root/dir/example/package2/", SourceItemKind.DIRECTORY, false)),
+      listOf(SourceItem("file:///root/dir/example/package2/", SourceItemKind.Directory, false)),
     )
     val targetResources2 = ResourcesItem(
       targetId2,
