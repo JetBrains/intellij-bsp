@@ -18,6 +18,9 @@ repositories {
 
 kotlin {
   explicitApi()
+  jvmToolchain {
+    languageVersion = JavaLanguageVersion.of(javaVersion)
+  }
 }
 
 // Configure detekt plugin.

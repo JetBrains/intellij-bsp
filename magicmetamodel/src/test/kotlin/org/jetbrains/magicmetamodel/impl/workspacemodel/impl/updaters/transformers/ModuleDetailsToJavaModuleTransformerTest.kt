@@ -200,7 +200,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedResourceRoot1 = ResourceRoot(
-      resourcePath = resourceFilePath.parent,
+      resourcePath = resourceFilePath,
     )
 
     val expectedLibrary1 = Library(
@@ -248,7 +248,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
         BuildTargetIdentifier("//target5"),
       ),
-      jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion),
+      jvmBuildTarget = JvmBuildTarget().also {
+        it.javaHome = javaHome
+        it.javaVersion = javaVersion
+      }
     )
 
     val buildTargetId = BuildTargetIdentifier("module1")
@@ -334,7 +337,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
   }
 
   @Test
-  fun `should return multiple java module for multiple module details`() {
+  fun `should return multiple java modules for multiple module details`() {
     // given
 
     val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
@@ -536,7 +539,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedResourceRoot11 = ResourceRoot(
-      resourcePath = resourceFilePath11.parent,
+      resourcePath = resourceFilePath11,
+    )
+    val expectedResourceRoot12 = ResourceRoot(
+      resourcePath = resourceFilePath12,
     )
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
@@ -553,7 +559,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       genericModuleInfo = expectedModule1,
       baseDirContentRoot = expectedBaseDirContentRoot1,
       sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12, expectedJavaSourceRoot13),
-      resourceRoots = listOf(expectedResourceRoot11),
+      resourceRoots = listOf(expectedResourceRoot11, expectedResourceRoot12),
       compilerOutput = Path("/compiler/output1.jar"),
       jvmJdkName = null,
       kotlinAddendum = null,
@@ -650,7 +656,10 @@ class ExtractJvmBuildTargetTest {
     val extractedJvmBuildTarget = extractJvmBuildTarget(buildTarget)
 
     // then
-    extractedJvmBuildTarget shouldBe JvmBuildTarget(javaHome, javaVersion)
+    extractedJvmBuildTarget shouldBe JvmBuildTarget().also {
+      it.javaVersion = javaVersion
+      it.javaHome = javaHome
+    }
   }
 
   @Test
@@ -673,7 +682,12 @@ class ExtractJvmBuildTargetTest {
       listOf("tag1", "tag2"),
       listOf("language1"),
       listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
-      BuildTargetCapabilities(true, false, true, true),
+      BuildTargetCapabilities().also {
+        it.canCompile = true
+        it.canTest = false
+        it.canRun = true
+        it.canDebug = true
+      }
     )
   }
 }

@@ -15,30 +15,29 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal class ProjectDetailsToModuleDetailsTransformer(
-  private val projectDetails: ProjectDetails,
   private val projectBasePath: Path,
+  private val projectDetails: ProjectDetails,
 ) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val librariesIndex = projectDetails.libraries?.associateBy { it.id }
 
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = calculateTarget(projectDetails, targetId)
-    return if (target.isRoot(projectBasePath)) {
-      toRootModuleDetails(projectDetails, target)
-    } else {
-      val allDependencies = allDependencies(target, librariesIndex)
-      ModuleDetails(
-        target = target,
-        libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
-        moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
-        sources = calculateSources(projectDetails, targetId),
-        resources = calculateResources(projectDetails, targetId),
-        dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
-        javacOptions = calculateJavacOptions(projectDetails, targetId),
-        pythonOptions = calculatePythonOptions(projectDetails, targetId),
-        outputPathUris = emptyList(),
-      )
-    }
+    val allDependencies = allDependencies(target, librariesIndex)
+    val sources = calculateSources(projectDetails, targetId)
+    val resources = calculateResources(projectDetails, targetId)
+    val isRoot = target.isRoot(sources, resources)
+    return ModuleDetails(
+      target = target,
+      libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
+      moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
+      sources = if (isRoot) emptyList() else sources,
+      resources = if (isRoot) emptyList() else resources,
+      dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
+      javacOptions = calculateJavacOptions(projectDetails, targetId),
+      pythonOptions = calculatePythonOptions(projectDetails, targetId),
+      outputPathUris = if (isRoot) calculateAllOutputPaths(projectDetails) else emptyList(),
+    )
   }
 
   private fun allDependencies(
@@ -56,26 +55,25 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     return visited
   }
 
+  private fun calculateAllOutputPaths(projectDetails: ProjectDetails): List<String> =
+    projectDetails.outputPathUris
+
+  private fun BuildTarget.isRoot(
+    targetSources: List<SourcesItem>,
+    targetResources: List<ResourcesItem>,
+  ): Boolean =
+    targetSources.all { it.sources.isEmpty() } &&
+      (baseDirectory?.let { URI.create(it).toPath() } == projectBasePath ||
+        projectBasePath.existsInResources(targetResources))
+
+  private fun Path.existsInResources(resources: List<ResourcesItem>) = resources.any { resourcesItem ->
+    resourcesItem.resources.any { URI.create(it).toPath() == this }
+  }
+
   private fun findLibrary(
     currentLib: BuildTargetIdentifier,
     librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
   ) = librariesIndex?.get(currentLib)?.dependencies.orEmpty()
-
-  private fun toRootModuleDetails(
-    projectDetails: ProjectDetails,
-    target: BuildTarget,
-  ): ModuleDetails =
-    ModuleDetails(
-      target = target,
-      sources = emptyList(),
-      resources = emptyList(),
-      dependenciesSources = calculateDependenciesSources(projectDetails, target.id),
-      javacOptions = calculateJavacOptions(projectDetails, target.id),
-      pythonOptions = calculatePythonOptions(projectDetails, target.id),
-      outputPathUris = calculateAllOutputPaths(projectDetails),
-      libraryDependencies = emptyList(),
-      moduleDependencies = emptyList(),
-    )
 
   private fun calculateTarget(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): BuildTarget =
     projectDetails.targets.first { it.id == targetId }
@@ -97,12 +95,6 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     targetId: BuildTargetIdentifier,
   ): JavacOptionsItem? =
     projectDetails.javacOptions.firstOrNull { it.target == targetId }
-
-  private fun calculateAllOutputPaths(projectDetails: ProjectDetails): List<String> =
-    projectDetails.outputPathUris
-
-  private fun BuildTarget.isRoot(projectBasePath: Path): Boolean =
-    this.baseDirectory?.let { URI.create(it).toPath() } == projectBasePath
 
   private fun calculatePythonOptions(
     projectDetails: ProjectDetails,

@@ -1,8 +1,10 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.jetbrains.bsp.bsp4kt.BuildServerCapabilities
@@ -114,6 +116,7 @@ public suspend fun runBuildTargetTask(
   log: Logger,
 ): CompileResult? =
   try {
+    saveAllFiles()
     withBackgroundProgress(project, "Building target(s)...") {
       BuildTargetTask(project).connectAndExecute(targetIds)
     }
@@ -128,6 +131,13 @@ public suspend fun runBuildTargetTask(
       }
     }
   }
+
+public fun saveAllFiles() {
+  // TODO run it in a suspendable manner once all the tasks allow
+  ApplicationManager.getApplication().invokeAndWait {
+    FileDocumentManager.getInstance().saveAllDocuments()
+  }
+}
 
 private fun doesCompletableFutureGetThrowCancelledException(e: Exception): Boolean =
   (e is ExecutionException || e is InterruptedException) && e.cause is CancellationException
