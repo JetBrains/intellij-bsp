@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.server.client
 
 import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.CompileTask
 import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
@@ -9,14 +10,20 @@ import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.TaskDataKind
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
+import ch.epfl.scala.bsp4j.TaskStartDataKind
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
+import ch.epfl.scala.bsp4j.TestTask
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
+import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.TimeoutHandler
+import org.jetbrains.plugins.bsp.services.BspTaskEventsService
 import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
 import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
@@ -29,7 +36,14 @@ public class BspClient(
   private val bspRunConsole: BspTargetRunConsole,
   private val bspTestConsole: BspTargetTestConsole,
   private val timeoutHandler: TimeoutHandler,
+  private val project: Project,
 ) : BuildClient {
+  private val log = logger<BspClient>()
+  private val gson = Gson()
+
+  @Deprecated("Use actual originId once available")
+  private val hardcodedOriginId = "jp2gmd" // TODO
+
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
     addMessageToConsole(params.originId, params.message)
@@ -40,24 +54,53 @@ public class BspClient(
     addMessageToConsole(params.originId, params.message)
   }
 
-  override fun onBuildTaskStart(params: TaskStartParams?) {
+  override fun onBuildTaskStart(params: TaskStartParams) {
     onBuildEvent()
-    when (params?.dataKind) {
-      TaskDataKind.TEST_START -> {
-        val gson = Gson()
-        val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
-        val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
-        bspTestConsole.startTest(isSuite, testStart.displayName)
+
+    val taskId = params.taskId.id
+    val maybeParent = params.taskId.parents.firstOrNull()
+
+    val displayName = when (params.dataKind) {
+        TaskStartDataKind.TEST_START -> {
+          val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
+          testStart.displayName
+        }
+
+        TaskStartDataKind.TEST_TASK -> {
+          val testTask = gson.fromJson(params.data as JsonObject, TestTask::class.java)
+          testTask.target.uri
+        }
+
+        TaskStartDataKind.COMPILE_TASK -> {
+          val compileTask = gson.fromJson(params.data as JsonObject, CompileTask::class.java)
+
+          compileTask.target.uri
+        }
+
+        else -> taskId
       }
 
-      TaskDataKind.TEST_TASK -> {
-        // ignore
+    project.service<BspTaskEventsService>().withListener(hardcodedOriginId) {
+      if (maybeParent != null) {
+        onSubtaskStart(taskId, maybeParent, displayName)
+      } else {
+        onTaskStart(taskId, displayName)
+      }
+
+      if (params.message != null) {
+        onTaskProgress(taskId, params.message)
       }
     }
   }
 
-  override fun onBuildTaskProgress(params: TaskProgressParams?) {
+  override fun onBuildTaskProgress(params: TaskProgressParams) {
     onBuildEvent()
+
+    val taskId = params.taskId.id
+
+    project.service<BspTaskEventsService>().withListener(hardcodedOriginId) {
+      onTaskProgress(taskId, params.message)
+    }
   }
 
   override fun onBuildTaskFinish(params: TaskFinishParams?) {
