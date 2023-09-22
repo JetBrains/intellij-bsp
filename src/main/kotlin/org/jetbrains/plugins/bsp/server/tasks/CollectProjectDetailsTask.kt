@@ -48,6 +48,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
@@ -62,12 +63,13 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
+import kotlin.io.path.Path
 import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 
 public data class PythonSdk(
   val name: String,
-  val interpreter: String,
+  val interpreterUri: String,
   val dependencies: List<DependencySourcesItem>,
 )
 
@@ -117,7 +119,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
       indeterminateStep(text = "Calculating all unique python sdk infos") {
-        calculateAllPythonSdkInfosSubtask(projectDetails)
+        runInterruptible { calculateAllPythonSdkInfosSubtask(projectDetails) }
       }
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
@@ -156,7 +158,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Timed out",
-          result = FailureResultImpl(BspTasksBundle.message("task.timeout.message")),
+          result = FailureResultImpl(BspPluginBundle.message("task.timeout.message")),
         )
 
       else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
@@ -197,21 +199,28 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
-    extractPythonBuildTarget(target)
-      ?.takeIf { it.version != null && it.interpreter != null }
-      ?.let {
+    extractPythonBuildTarget(target)?.let {
+      if (it.interpreter != null && it.version != null)
         PythonSdk(
           name = "${target.id.uri}-${it.version}",
-          interpreter = it.interpreter,
+          interpreterUri = it.interpreter,
           dependencies = dependenciesSources,
         )
-      }
+      else
+        pythonSdkGetterExtension()
+          ?.getSystemSdk()
+          ?.let { sdk ->
+            PythonSdk(
+              name = "${target.id.uri}-detected-PY3",
+              interpreterUri = Path(sdk.homePath!!).toUri().toString(),
+              dependencies = dependenciesSources)
+          }
+    }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
-    return projectDetails.targets
-      .mapNotNull {
-        createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
-      }
+    return projectDetails.targets.mapNotNull {
+      createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
+    }
       .toSet()
   }
 
@@ -271,7 +280,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
-    val sdk = pythonSdkGetterExtension.getPythonSdk(pythonSdk, jdkTable, virtualFileUrlManager)
+    val sdk = runInterruptible { pythonSdkGetterExtension.getPythonSdk(pythonSdk, virtualFileUrlManager) }
 
     addJdkIfNeeded(sdk)
   }

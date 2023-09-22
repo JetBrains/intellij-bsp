@@ -41,32 +41,5 @@ public data class JavaModule(
 public data class KotlinAddendum(
   val languageVersion: String,
   val apiVersion: String,
-  val kotlincOptions: KotlincOpts?,
-)
-
-public data class KotlincOpts(
-  val includeStdlibs: String = "",
-  val javaParameters: Boolean = false,
-  val jvmTarget: String = "",
-  val warn: String = "",
-  val xAllowResultReturnType: Boolean = false,
-  val xBackendThreads: Int = 0,
-  val xEmitJvmTypeAnnotations: Boolean = false,
-  val xEnableIncrementalCompilation: Boolean = false,
-  val xExplicitApiMode: String = "",
-  val xInlineClasses: Boolean = false,
-  val xJvmDefault: String = "",
-  val xLambdas: String = "",
-  val xMultiPlatform: Boolean = false,
-  val xNoCallAssertions: Boolean = false,
-  val xNoOptimize: Boolean = false,
-  val xNoOptimizedCallableReferences: Boolean = false,
-  val xNoParamAssertions: Boolean = false,
-  val xNoReceiverAssertions: Boolean = false,
-  val xOptinList: List<String> = emptyList(),
-  val xReportPerf: Boolean = false,
-  val xSamConversions: String = "",
-  val xSkipPrereleaseCheck: Boolean = false,
-  val xUseFirLt: Boolean = false,
-  val xUseK2: Boolean = false,
+  val kotlincOptions: List<String>,
 )
