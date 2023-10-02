@@ -10,9 +10,10 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 
-public class BspRunConfigurationType : SimpleConfigurationType(ID, "BSP Run", icon = NotNullLazyValue.createConstantValue(
+public class BspRunConfigurationType : SimpleConfigurationType(ID, BspPluginBundle.message("run.configuration.run.name"), icon = NotNullLazyValue.createConstantValue(
   BspPluginIcons.bsp)) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration {
     TODO("Not yet implemented")
