@@ -32,7 +32,7 @@ public class BspTestConfiguration(
 ) : LocatableConfigurationBase<Nothing>(project, factory, name),
   RunConfigurationWithSuppressedDefaultDebugAction {
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
-    TODO("Not yet implemented")
+    com.intellij.openapi.util.ActionCallback
   }
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {

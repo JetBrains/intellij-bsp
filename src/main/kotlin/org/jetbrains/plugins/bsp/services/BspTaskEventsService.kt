@@ -10,20 +10,20 @@ internal typealias OriginId = String
 internal typealias TaskId = String
 
 internal interface BspTaskListener {
-  fun onDiagnostic(textDocument: String, buildTarget: String, line: Int, character: Int, severity: MessageEvent.Kind, message: String)
-  fun onOutputStream(taskId: TaskId?, text: String)
-  fun onErrorStream(taskId: TaskId?, text: String)
-  fun onExit(code: Int)
+  fun onDiagnostic(textDocument: String, buildTarget: String, line: Int, character: Int, severity: MessageEvent.Kind, message: String) {}
+  fun onOutputStream(taskId: TaskId?, text: String) {}
+  fun onErrorStream(taskId: TaskId?, text: String) {}
+  fun onExit(code: Int) {}
 
-  fun onTaskStart(taskId: TaskId, message: String)
-  fun onSubtaskStart(taskId: TaskId, parentId: TaskId, message: String)
-  fun onTaskProgress(taskId: TaskId, message: String)
-  fun onTaskFinish(taskId: TaskId, message: String)
-  fun onTaskFailed(taskId: TaskId, message: String)
-  fun onTaskIgnored(taskId: TaskId, message: String)
+  fun onTaskStart(taskId: TaskId, message: String) {}
+  fun onSubtaskStart(taskId: TaskId, parentId: TaskId, message: String) {}
+  fun onTaskProgress(taskId: TaskId, message: String) {}
+  fun onTaskFinish(taskId: TaskId, message: String) {}
+  fun onTaskFailed(taskId: TaskId, message: String) {}
+  fun onTaskIgnored(taskId: TaskId, message: String) {}
 
-  fun onLogMessage(message: String)
-  fun onShowMessage(message: String)
+  fun onLogMessage(message: String) {}
+  fun onShowMessage(message: String) {}
 }
 
 @Service

@@ -25,7 +25,7 @@ public class BspRunConfigurationType : SimpleConfigurationType(ID, BspPluginBund
 
 }
 public class BspRunConfiguration(
-  project: Project,
+  public val project: Project,
   name: String,
   factory: BspRunConfigurationType
 ) : LocatableConfigurationBase<Nothing>(project, factory, name),

@@ -4,6 +4,8 @@ import com.intellij.execution.process.ProcessHandler
 import java.io.OutputStream
 
 public class BspProcessHandler : ProcessHandler() {
+
+
   override fun destroyProcessImpl() {
     // check if the process is running
 
