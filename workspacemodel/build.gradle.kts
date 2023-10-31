@@ -1,6 +1,7 @@
 plugins {
   id("intellijbsp.kotlin-conventions")
   alias(libs.plugins.intellij)
+  alias(libs.plugins.ktfmt)
 }
 
 tasks {

@@ -1,7 +1,7 @@
 [versions]
 ideProbe = "0.52.0"
 detekt = "1.23.1"
-kotlin-gradle-version = "1.9.10"
+kotlin-gradle-version = "1.9.20"
 
 [libraries]
 ideProbeDriver = { module = "org.virtuslab.ideprobe:driver_2.13", version.ref = "ideProbe" }
@@ -16,5 +16,6 @@ detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", ve
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
 
 [plugins]
-intellij = { id = "org.jetbrains.intellij", version = "1.15.0" }
+intellij = { id = "org.jetbrains.intellij", version = "1.16.0" }
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.14.0" }

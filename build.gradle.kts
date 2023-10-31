@@ -12,6 +12,8 @@ plugins {
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   alias(libs.plugins.changelog)
 
+  alias(libs.plugins.ktfmt)
+
   id("intellijbsp.kotlin-conventions")
 }
 
