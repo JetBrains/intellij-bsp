@@ -1,0 +1,6 @@
+<idea-plugin package="org.jetbrains.magicmetamodel">
+    <dependencies>
+        <module name="intellij.bsp.extended.protocol"/>
+        <module name="intellij.bsp.workspacemodel"/>
+    </dependencies>
+</idea-plugin>
