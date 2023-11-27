@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.extended.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails

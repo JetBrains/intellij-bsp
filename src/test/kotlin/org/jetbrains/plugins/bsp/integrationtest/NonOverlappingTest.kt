@@ -15,8 +15,8 @@ import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.jetbrains.bsp.BazelBuildServerCapabilities
-import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
+import org.jetbrains.bsp.extended.BazelBuildServerCapabilities
+import org.jetbrains.bsp.extended.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
 import org.jetbrains.magicmetamodel.impl.TargetsDetailsForDocumentProvider

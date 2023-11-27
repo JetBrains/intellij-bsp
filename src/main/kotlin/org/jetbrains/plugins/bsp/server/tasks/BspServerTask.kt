@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
-import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.extended.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService

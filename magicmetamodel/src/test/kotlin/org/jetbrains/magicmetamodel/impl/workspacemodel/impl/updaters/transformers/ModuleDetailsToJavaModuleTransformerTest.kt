@@ -16,8 +16,8 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.KotlinBuildTarget
-import org.jetbrains.bsp.utils.extractJvmBuildTarget
+import org.jetbrains.bsp.extended.KotlinBuildTarget
+import org.jetbrains.bsp.extended.utils.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo

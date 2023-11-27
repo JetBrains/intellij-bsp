@@ -10,7 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.KotlinBuildTarget
+import org.jetbrains.bsp.extended.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo

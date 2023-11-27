@@ -16,8 +16,8 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.jetbrains.bsp.BazelBuildServerCapabilities
-import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
+import org.jetbrains.bsp.extended.BazelBuildServerCapabilities
+import org.jetbrains.bsp.extended.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir

@@ -13,9 +13,9 @@ import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.bsp.LibraryItem
-import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.extended.LibraryItem
+import org.jetbrains.bsp.extended.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.extended.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId

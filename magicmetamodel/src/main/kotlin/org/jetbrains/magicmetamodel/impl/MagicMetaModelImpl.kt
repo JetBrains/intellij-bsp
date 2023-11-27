@@ -8,10 +8,10 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bsp.DirectoryItem
-import org.jetbrains.bsp.LibraryItem
-import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.extended.DirectoryItem
+import org.jetbrains.bsp.extended.LibraryItem
+import org.jetbrains.bsp.extended.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.extended.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff

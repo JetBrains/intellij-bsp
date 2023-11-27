@@ -1,4 +1,4 @@
-package org.jetbrains.bsp
+package org.jetbrains.bsp.extended
 
 public data class DirectoryItem(
   val uri: String,

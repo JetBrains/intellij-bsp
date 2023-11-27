@@ -2,9 +2,9 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
-import org.jetbrains.bsp.utils.extractJvmBuildTarget
-import org.jetbrains.bsp.utils.extractKotlinBuildTarget
-import org.jetbrains.bsp.utils.extractScalaBuildTarget
+import org.jetbrains.bsp.extended.utils.extractJvmBuildTarget
+import org.jetbrains.bsp.extended.utils.extractKotlinBuildTarget
+import org.jetbrains.bsp.extended.utils.extractScalaBuildTarget
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo

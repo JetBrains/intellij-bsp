@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.utils
+package org.jetbrains.bsp.extended.utils
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
@@ -7,7 +7,7 @@ import ch.epfl.scala.bsp4j.PythonBuildTarget
 import ch.epfl.scala.bsp4j.ScalaBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.jetbrains.bsp.KotlinBuildTarget
+import org.jetbrains.bsp.extended.KotlinBuildTarget
 
 private inline fun <reified Data> extractData(target: BuildTarget, kind: String): Data? =
   if (target.dataKind == kind) {

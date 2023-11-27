@@ -11,7 +11,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.extended.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName

@@ -8,7 +8,7 @@ import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenedCallback
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.extended.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
