@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -69,6 +70,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -201,6 +204,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -435,6 +440,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -470,12 +477,12 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         expectedTargetA1,
-        expectedTargetB2,
+        expectedTargetB1,
         expectedTargetC2,
         expectedTargetD1,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        expectedTargetB1,
+        expectedTargetB2,
         expectedTargetC1,
         expectedTargetD2,
       )
@@ -486,8 +493,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB2.id.uri,
-        notLoadedTargetsIds = listOf(targetB1.id.uri),
+        loadedTargetId = targetB1.id.uri,
+        notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC2.id.uri,
@@ -507,46 +514,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then 3
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
       runBlocking { diff3.applyOnWorkspaceModel() }
-
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        expectedTargetA1,
-        expectedTargetB2,
-        expectedTargetC2,
-        expectedTargetD2,
-      )
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        expectedTargetB1,
-        expectedTargetC1,
-        expectedTargetD1,
-      )
-
-      // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id.uri,
-        notLoadedTargetsIds = emptyList(),
-      )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB2.id.uri,
-        notLoadedTargetsIds = listOf(targetB1.id.uri),
-      )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetC2.id.uri,
-        notLoadedTargetsIds = listOf(targetC1.id.uri),
-      )
-      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetD2.id.uri,
-        notLoadedTargetsIds = listOf(targetD1.id.uri),
-      )
-
-      // when 4
-      // ------
-      // well, now user decides to load not loaded `targetB1` by default
-      // ------
-      val diff4 = magicMetaModel.loadTarget(targetB1.id.uri)!!
-
-      // then 4
-      // showing loaded and not loaded targets to user (e.g. at the sidebar)
-      runBlocking { diff4.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         expectedTargetA1,
@@ -578,6 +545,46 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         notLoadedTargetsIds = listOf(targetD1.id.uri),
       )
 
+      // when 4
+      // ------
+      // well, now user decides to load not loaded `targetB2` by default
+      // ------
+      val diff4 = magicMetaModel.loadTarget(targetB2.id.uri)!!
+
+      // then 4
+      // showing loaded and not loaded targets to user (e.g. at the sidebar)
+      runBlocking { diff4.applyOnWorkspaceModel() }
+
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
+        expectedTargetA1,
+        expectedTargetB2,
+        expectedTargetC2,
+        expectedTargetD2,
+      )
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD1,
+      )
+
+      // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
+        loadedTargetId = targetA1.id.uri,
+        notLoadedTargetsIds = emptyList(),
+      )
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
+        loadedTargetId = targetB2.id.uri,
+        notLoadedTargetsIds = listOf(targetB1.id.uri),
+      )
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
+        loadedTargetId = targetC2.id.uri,
+        notLoadedTargetsIds = listOf(targetC1.id.uri),
+      )
+      magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
+        loadedTargetId = targetD2.id.uri,
+        notLoadedTargetsIds = listOf(targetD1.id.uri),
+      )
+
       // when 5
       // ------
       // and, finally user decides to load the default configuration
@@ -590,12 +597,12 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
         expectedTargetA1,
-        expectedTargetB2,
+        expectedTargetB1,
         expectedTargetC2,
         expectedTargetD1,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        expectedTargetB1,
+        expectedTargetB2,
         expectedTargetC1,
         expectedTargetD2,
       )
@@ -606,8 +613,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB2.id.uri,
-        notLoadedTargetsIds = listOf(targetB1.id.uri),
+        loadedTargetId = targetB1.id.uri,
+        notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = targetC2.id.uri,
@@ -636,6 +643,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -712,6 +721,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -823,6 +834,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -925,6 +938,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1028,6 +1043,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1109,6 +1126,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1182,6 +1201,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1259,6 +1280,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1342,6 +1365,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1462,6 +1487,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1528,6 +1555,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1574,6 +1603,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1650,6 +1681,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1729,6 +1762,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when

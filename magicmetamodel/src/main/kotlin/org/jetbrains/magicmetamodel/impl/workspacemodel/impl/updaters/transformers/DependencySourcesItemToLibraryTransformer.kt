@@ -54,8 +54,8 @@ internal object DependencySourcesItemToLibraryTransformer :
       )
     }
 
-  private fun toLibraryFromSourceJars(classJars: List<String>) =
-    classJars.map {
+  private fun toLibraryFromSourceJars(sourceJars: List<String>) =
+    sourceJars.map {
       Library(
         displayName = calculateDisplayName(it),
         sourceJars = listOf(toJarString(it)),
@@ -71,7 +71,7 @@ internal object DependencySourcesItemToLibraryTransformer :
     path.replace("-sources", "")
 
   private fun toJarString(dependencyUri: String): String =
-    "jar://${removeUriFilePrefix(dependencyUri)}!/"
+    Library.formatJarString(removeUriFilePrefix(dependencyUri))
 
   private fun removeUriFilePrefix(uri: String): String =
     URI.create(uri).toPath().toString()

@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.integrationtest
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.LogMessageParams
@@ -14,6 +15,8 @@ import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
 import org.eclipse.lsp4j.jsonrpc.Launcher
+import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
 import org.jetbrains.magicmetamodel.impl.TargetsDetailsForDocumentProvider
@@ -21,6 +24,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.calculateProjectDetailsWithCapabilities
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
+import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -28,16 +32,14 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 // TODO https://youtrack.jetbrains.com/issue/BAZEL-629
 private const val BAZEL_REPOSITORY_TAG = "6.0.0"
 private const val BAZEL_EXECUTABLE_VERSION = "5.4.0"
-private const val BAZEL_BSP_VERSION = "2.7.1"
+private const val BAZEL_BSP_VERSION = "3.1.0-20231115-3400084-NIGHTLY"
 
-@OptIn(ExperimentalTime::class)
-class NonOverlappingTest {
+class NonOverlappingTest : MockProjectBaseTest() {
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
     val bazelDir = createTempDirectory("bazel-bsp-")
@@ -53,12 +55,16 @@ class NonOverlappingTest {
       val server = launcher.remoteProxy
       val initializationResult = server.buildInitialize(params).get()
       server.onBuildInitialized()
-      val projectDetails = calculateProjectDetailsWithCapabilities(server, initializationResult.capabilities, { println(it) })!!
+      val projectDetails = calculateProjectDetailsWithCapabilities(
+        server = server,
+        buildServerCapabilities = initializationResult.capabilities as BazelBuildServerCapabilities,
+        projectRootDir = bazelDir.toUri().toString(),
+        errorCallback = { println(it) },)!!
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
       val targets = projectDetails.targets.map { it.toBuildTargetInfo() }.toSet()
       val nonOverlapping = measureTimedValue { NonOverlappingTargets(targets, overlappingTargetsGraph) }
-      nonOverlapping.value.size shouldBe 1958
+      nonOverlapping.value.size shouldBe 1684
       println("Computing non-overlapping targets took ${nonOverlapping.duration}")
     } finally {
       bspServerProcess.destroyForcibly()
@@ -116,6 +122,12 @@ class NonOverlappingTest {
       .setInput(bspServerProcess.inputStream)
       .setOutput(bspServerProcess.outputStream)
       .setLocalService(DummyClient())
+      .configureGson { builder ->
+        builder.registerTypeAdapter(
+          BuildServerCapabilities::class.java,
+          BazelBuildServerCapabilitiesTypeAdapter(),
+        )
+      }
       .create()
   }
 

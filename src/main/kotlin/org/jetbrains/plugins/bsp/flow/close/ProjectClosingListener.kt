@@ -1,9 +1,10 @@
 package org.jetbrains.plugins.bsp.flow.close
 
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.runWithModalProgressBlocking
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 
@@ -15,7 +16,7 @@ public class ProjectClosingListener : ProjectManagerListener {
   }
 
   private fun doProjectClosing(project: Project) {
-    runWithModalProgressBlocking(project, "Disconnecting...") {
+    runWithModalProgressBlocking(project, BspPluginBundle.message("progress.bar.project.close.disconnect")) {
       try {
         BspConnectionService.getInstance(project).value?.disconnect()
       } catch (e: Exception) {

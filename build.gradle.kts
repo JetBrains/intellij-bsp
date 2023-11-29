@@ -23,11 +23,11 @@ version = Plugin.version
 
 dependencies {
   implementation(project(":magicmetamodel"))
+  implementation(project(":protocol"))
+  implementation(project(":workspacemodel"))
   testImplementation(project(":test-utils"))
   implementation(libs.bsp4j)
   implementation(libs.gson)
-  implementation(libs.coursier)
-
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
 }
@@ -54,6 +54,17 @@ intellij {
 changelog {
   version.set(Plugin.version)
   groups.set(emptyList())
+}
+
+allprojects {
+  tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    // disable the malfunctioned platform listener com.intellij.tests.JUnit5TestSessionListener
+    // this listener caused the CI tests to fail with
+    // AlreadyDisposedException: Already disposed: Application (containerState DISPOSE_COMPLETED)
+    // TODO: follow up https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
+    systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
+  }
 }
 
 subprojects {
@@ -126,7 +137,6 @@ tasks {
     channels.set(provider { listOf(releaseChannel) })
   }
 }
-
 
 tasks {
   test {

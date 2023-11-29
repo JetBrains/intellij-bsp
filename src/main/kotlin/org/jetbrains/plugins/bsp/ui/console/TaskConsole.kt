@@ -19,7 +19,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction
+import org.jetbrains.plugins.bsp.ui.actions.registered.ReloadAction
 import java.io.File
 import java.net.URI
 
@@ -31,6 +31,7 @@ private data class SubtaskParents(
 public abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
+  private val buildToolName: String,
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
@@ -55,7 +56,8 @@ public abstract class TaskConsole(
   ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
-      doStartTask(taskId, "BSP: $title", message, cancelAction, redoAction)
+      doStartTask(taskId, BspPluginBundle.message("console.tasks.title", buildToolName, title),
+        message, cancelAction, redoAction)
     }
 
   private fun doStartTask(
@@ -321,7 +323,8 @@ public abstract class TaskConsole(
 public class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-) : TaskConsole(taskView, basePath) {
+  buildToolName: String,
+) : TaskConsole(taskView, basePath, buildToolName) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : AnAction({ BspPluginBundle.message("reload.action.text") }, BspPluginIcons.reload) {
       override fun actionPerformed(e: AnActionEvent) {
@@ -340,7 +343,8 @@ public class SyncTaskConsole(
 public class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-) : TaskConsole(taskView, basePath) {
+  buildToolName: String,
+) : TaskConsole(taskView, basePath, buildToolName) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : AnAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       override fun actionPerformed(e: AnActionEvent) {

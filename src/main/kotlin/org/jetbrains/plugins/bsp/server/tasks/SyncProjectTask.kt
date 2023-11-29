@@ -5,6 +5,8 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspReloadStatusService
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -16,25 +18,37 @@ private const val RESYNC_TASK_ID = "bsp-resync-project"
 private val log = logger<SyncProjectTask>()
 
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
-  private val connectionService = BspConnectionService.getInstance(project)
-  private val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+  public suspend fun execute(
+    shouldRunInitialSync: Boolean,
+    shouldBuildProject: Boolean,
+    shouldRunResync: Boolean,
+    shouldReloadConnection: Boolean,
+  ) {
+    try {
+      BspReloadStatusService.getInstance(project).startReload()
+      saveAllFiles()
+      if (shouldReloadConnection) {
+        reloadConnection()
+      }
 
-  public suspend fun execute(shouldBuildProject: Boolean, shouldReloadConnection: Boolean) {
-    saveAllFiles()
-    if (shouldReloadConnection) {
-      reloadConnection()
-    }
+      if (shouldRunInitialSync) {
+        collectProject(SYNC_TASK_ID)
+      }
 
-    collectProject(SYNC_TASK_ID)
+      if (shouldBuildProject) {
+        buildProject()
+      }
 
-    if (shouldBuildProject) {
-      buildProject()
-      collectProject(RESYNC_TASK_ID)
+      if (shouldRunResync) {
+        collectProject(RESYNC_TASK_ID)
+      }
+    } finally {
+      BspReloadStatusService.getInstance(project).finishReload()
     }
   }
 
   private fun reloadConnection() {
-    val connection = connectionService.value
+    val connection = BspConnectionService.getInstance(project).value
     connection?.disconnect()
     connection?.reload()
   }
@@ -42,24 +56,30 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
   private suspend fun collectProject(taskId: String) {
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
 
+    val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     syncConsole.startTask(
       taskId = taskId,
-      title = "Sync",
-      message = "Syncing...",
-      cancelAction = { collectProjectDetailsTask.cancelExecution() },
+      title = BspPluginBundle.message("console.task.sync.title"),
+      message = BspPluginBundle.message("console.task.sync.in.progress"),
+      cancelAction = { collectProjectDetailsTask.onCancel() },
     )
-    connectionService.value!!.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
+    BspConnectionService.getInstance(project).value!!.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
     try {
       collectProjectDetailsTask.execute(
         name = "Syncing...",
         cancelable = true,
       )
-      syncConsole.finishTask(taskId, "Sync")
+      syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
     } catch (e: Exception) {
-      syncConsole.finishTask(taskId, "Sync failed!", FailureResultImpl(e))
+      syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
     }
 
     BspToolWindowService.getInstance(project).doDeepPanelReload()
+  }
+
+  private fun CollectProjectDetailsTask.onCancel() {
+    BspReloadStatusService.getInstance(project).cancel()
+    this.cancelExecution()
   }
 
   private suspend fun buildProject() {

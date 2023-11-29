@@ -5,7 +5,7 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.openapi.util.io.toNioPath
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
@@ -13,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspWorkspace
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -43,6 +45,7 @@ public class BspStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (project.isBspProject) {
       doRunActivity(project)
+      postActivity(project)
     }
   }
 
@@ -58,10 +61,11 @@ public class BspStartupActivity : ProjectActivity {
     } catch (e: Exception) {
       bspSyncConsole.startTask(
         taskId = "bsp-pre-import",
-        title = "Pre-import",
-        message = "Pre-importing...",
+        title = BspPluginBundle.message("console.task.pre.import.title"),
+        message = BspPluginBundle.message("console.task.pre.import.in.progress"),
       )
-      bspSyncConsole.finishTask("bsp-pre-import", "Pre-import failed!", FailureResultImpl(e))
+      bspSyncConsole.finishTask("bsp-pre-import",
+        BspPluginBundle.message("console.task.pre.import.failed"), FailureResultImpl(e))
     }
   }
 
@@ -83,7 +87,9 @@ public class BspStartupActivity : ProjectActivity {
 
       if (connectionFileOrNewConnection != null) {
         SyncProjectTask(project).execute(
+          shouldRunInitialSync = true,
           shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+          shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
           shouldReloadConnection = false,
         )
       }
@@ -92,7 +98,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private fun benchmarkConnection(project: Project): ConnectionFile {
     try {
-      val connectionFilePath = project.basePath?.toNioPath()?.resolve(".bsp/bazelbsp.json")
+      val connectionFilePath = project.basePath?.toNioPathOrNull()?.resolve(".bsp/bazelbsp.json")
       val connectionFile = VfsUtil.findFileByIoFile(connectionFilePath?.toFile()!!, false)!!
       val parsed = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
       return ConnectionFile(parsed.bspConnectionDetails!!, parsed.connectionFileLocation)
@@ -161,5 +167,9 @@ public class BspStartupActivity : ProjectActivity {
 
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.value = bspFileConnection
+  }
+
+  private fun postActivity(project: Project) {
+    BspWorkspace.getInstance(project).initialize()
   }
 }

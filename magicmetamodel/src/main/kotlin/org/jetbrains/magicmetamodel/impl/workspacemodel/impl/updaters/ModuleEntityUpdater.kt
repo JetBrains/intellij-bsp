@@ -9,10 +9,13 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.modifyEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.WorkspaceEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
+import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -32,7 +35,7 @@ internal class ModuleEntityUpdater(
     val moduleEntity = builder.addEntity(
       ModuleEntity(
         name = entityToAdd.name,
-        dependencies = modulesDependencies + associatesDependencies + librariesDependencies + defaultDependencies,
+        dependencies = defaultDependencies + modulesDependencies + associatesDependencies + librariesDependencies,
         entitySource = BspEntitySource,
       ) {
         this.type = entityToAdd.type
@@ -62,22 +65,22 @@ internal class ModuleEntityUpdater(
       scope = ModuleDependencyItem.DependencyScope.COMPILE,
       productionOnTest = true,
     )
+}
 
-  private fun toModuleDependencyItemLibraryDependency(
-    libraryDependency: LibraryDependency,
-    moduleName: String,
-  ): ModuleDependencyItem.Exportable.LibraryDependency {
-    val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
-      LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
-    return ModuleDependencyItem.Exportable.LibraryDependency(
-      library = LibraryId(
-        name = libraryDependency.libraryName,
-        tableId = libraryTableId,
-      ),
-      exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-      scope = ModuleDependencyItem.DependencyScope.COMPILE,
-    )
-  }
+internal fun toModuleDependencyItemLibraryDependency(
+  libraryDependency: LibraryDependency,
+  moduleName: String,
+): ModuleDependencyItem.Exportable.LibraryDependency {
+  val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
+    LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
+  return ModuleDependencyItem.Exportable.LibraryDependency(
+    library = LibraryId(
+      name = libraryDependency.libraryName,
+      tableId = libraryTableId,
+    ),
+    exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
+    scope = ModuleDependencyItem.DependencyScope.COMPILE,
+  )
 }
 
 internal class WorkspaceModuleRemover(
@@ -92,13 +95,13 @@ internal class WorkspaceModuleRemover(
   }
 
   override fun clear() {
-    val allModules =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(ModuleEntity::class.java)
+    removeEntities(ModuleEntity::class.java)
+    removeEntities(LibraryEntity::class.java)
+    removeEntities(BspProjectDirectoriesEntity::class.java)
+  }
 
-    allModules.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
-
-    val allLibraries =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(LibraryEntity::class.java)
-    allLibraries.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
+  private fun <E : WorkspaceEntity> removeEntities(entityClass: Class<E>) {
+    val allEntities = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(entityClass)
+    allEntities.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
   }
 }

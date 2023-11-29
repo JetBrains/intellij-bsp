@@ -7,8 +7,12 @@ import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bsp.DirectoryItem
+import org.jetbrains.bsp.LibraryItem
+import org.jetbrains.bsp.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
-import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
@@ -58,6 +62,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
   private val targets: Set<BuildTargetInfo>
   private val libraries: List<Library>?
+  private val directories: WorkspaceDirectoriesResult?
+  private val invalidTargets: WorkspaceInvalidTargetsResult
 
   private val targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider
   private val overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>>
@@ -78,6 +84,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     log.debug { "Initializing MagicMetaModelImpl with: $magicMetaModelProjectConfig and $projectDetails..." }
 
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
+
     targets = projectDetails.targets.map(BuildTarget::toBuildTargetInfo).toHashSet()
 
     this.targetsDetailsForDocumentProvider = logPerformance("create-target-details-for-document-provider") {
@@ -100,9 +107,13 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       createLibraries(projectDetails.libraries)
     }
 
+    this.directories = projectDetails.directories
+    this.invalidTargets = projectDetails.invalidTargets
+
     this.loadedTargetsStorage = logPerformance("create-loaded-targets-storage") {
       LoadedTargetsStorage(targetIdToModule.keys)
     }
+
     this.excludedPaths = projectDetails.outputPathUris
 
     log.debug { "Initializing MagicMetaModelImpl done!" }
@@ -112,6 +123,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     Library(
       displayName = it.id.uri,
       classJars = it.jars,
+      sourceJars = it.sourceJars,
     )
   }
 
@@ -127,6 +139,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.targets = state.targets.map { it.fromState() }.toSet()
 
     this.libraries = state.libraries?.map { it.fromState() }
+    this.directories = null // workspace model keeps info about them
+    this.invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
 
     val unloadedTargets = state.unloadedTargets.mapValues { it.value.fromState() }
     this.targetIdToModule = WorkspaceModelToModulesMapTransformer(
@@ -165,6 +179,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     logPerformance("load-modules") {
       workspaceModelUpdater.loadModules(modulesToLoad)
       workspaceModelUpdater.loadLibraries(libraries.orEmpty())
+      workspaceModelUpdater.loadDirectories()
 
       if (rootModule != null) {
         workspaceModelUpdater.loadModule(rootModule)
@@ -222,6 +237,18 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       jvmJdkName = null,
     )
   }
+
+  private fun WorkspaceModelUpdater.loadDirectories() {
+    if (directories != null) {
+      val includedDirectories = directories.includedDirectories.map { it.toVirtualFileUrl() }
+      val excludedDirectories = directories.excludedDirectories.map { it.toVirtualFileUrl() }
+
+      loadDirectories(includedDirectories, excludedDirectories)
+    }
+  }
+
+  private fun DirectoryItem.toVirtualFileUrl(): VirtualFileUrl =
+    magicMetaModelProjectConfig.virtualFileUrlManager.fromUrl(uri)
 
   override fun registerTargetLoadListener(function: () -> Unit) {
     targetLoadListeners.add(function)
@@ -290,6 +317,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   override fun getAllNotLoadedTargets(): List<BuildTargetInfo> =
     targets.filter { loadedTargetsStorage.isTargetNotLoaded(it.id) }
 
+  override fun getAllInvalidTargets(): List<BuildTargetId> =
+    invalidTargets.targets.map { it.uri }
+
   override fun clear() {
     val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
@@ -302,6 +332,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     workspaceModelUpdater.clear()
     loadedTargetsStorage.clear()
   }
+
+  override fun getLibraries(): List<Library> = libraries.orEmpty()
 
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =

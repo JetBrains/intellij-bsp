@@ -11,6 +11,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName
@@ -44,6 +45,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = null,
+      scalacOptions = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
     )
 
     // when
@@ -61,6 +64,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = emptyList(),
+      scalacOptions = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -111,6 +115,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = listOf(pythonOptions),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      scalacOptions = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
     )
 
     // when
@@ -128,6 +134,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
+      scalacOptions = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -240,6 +247,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = listOf(target4PythonOptionsItem),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      scalacOptions = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
     )
 
     // when
@@ -260,6 +269,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
+      scalacOptions = null,
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -271,6 +281,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
+      scalacOptions = null,
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -282,6 +293,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
+      scalacOptions = null,
     )
     val expectedModuleDetails4 = ModuleDetails(
       target = target4,
@@ -293,6 +305,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target1Id.uri),
+      scalacOptions = null,
     )
 
     actualModuleDetails1 shouldBe expectedModuleDetails1

@@ -9,6 +9,7 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -47,6 +48,8 @@ public class MagicMetaModelService(private val project: Project) :
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      scalacOptions = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)

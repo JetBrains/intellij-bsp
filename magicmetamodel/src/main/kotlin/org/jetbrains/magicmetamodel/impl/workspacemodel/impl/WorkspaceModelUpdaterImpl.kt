@@ -6,6 +6,8 @@ import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
@@ -13,13 +15,13 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.BspEntitySource
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
-import java.net.URI
+import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
@@ -57,18 +59,31 @@ internal class WorkspaceModelUpdaterImpl(
         LibraryEntity(
           name = entityToAdd.displayName,
           tableId = LibraryTableId.ProjectLibraryTableId,
-          roots = entityToAdd.classJars.map {
-            LibraryRoot(
-              url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
-              type = LibraryRootTypeId.COMPILED,
-            )
-          },
+          roots = entityToAdd.classJars.toLibraryRootsOfType(LibraryRootTypeId.COMPILED),
           entitySource = BspEntitySource,
         ) {
           this.excludedRoots = arrayListOf()
         },
       )
     }
+  }
+
+  private fun List<String>.toLibraryRootsOfType(type: LibraryRootTypeId) = map {
+    LibraryRoot(
+      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(Library.formatJarString(it)),
+      type = type,
+    )
+  }
+
+  override fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>) {
+    val entity = BspProjectDirectoriesEntity(
+      projectRoot = workspaceModelEntityUpdaterConfig.projectBasePath
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+      includedRoots = includedDirectories,
+      excludedRoots = excludedDirectories,
+      entitySource = BspEntitySource,
+    )
+    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(entity)
   }
 
   private fun Module.isAlreadyAdded() =

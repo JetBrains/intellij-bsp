@@ -6,16 +6,21 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.bsp.LibraryItem
+import org.jetbrains.bsp.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
@@ -56,21 +61,38 @@ public data class ProjectDetails(
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,
+  val scalacOptions: List<ScalacOptionsItem>,
   val pythonOptions: List<PythonOptionsItem>,
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
+  val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
+  val invalidTargets: WorkspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
-    targetsId + old.targetsId,
-    targets + old.targets,
-    sources + old.sources,
-    resources + old.resources,
-    dependenciesSources + old.dependenciesSources,
-    javacOptions + old.javacOptions,
-    pythonOptions + old.pythonOptions,
-    outputPathUris + old.outputPathUris,
-    if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
+    targetsId = targetsId + old.targetsId,
+    targets = targets + old.targets,
+    sources = sources + old.sources,
+    resources = resources + old.resources,
+    dependenciesSources = dependenciesSources + old.dependenciesSources,
+    javacOptions = javacOptions + old.javacOptions,
+    scalacOptions = scalacOptions + old.scalacOptions,
+    pythonOptions = pythonOptions + old.pythonOptions,
+    outputPathUris = outputPathUris + old.outputPathUris,
+    libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
+    directories = directories + old.directories,
+    invalidTargets = invalidTargets + old.invalidTargets
   )
+
+  private operator fun WorkspaceDirectoriesResult.plus(old: WorkspaceDirectoriesResult): WorkspaceDirectoriesResult =
+    WorkspaceDirectoriesResult(
+      includedDirectories = includedDirectories + old.includedDirectories,
+      excludedDirectories = excludedDirectories + old.excludedDirectories,
+    )
+
+  private operator fun WorkspaceInvalidTargetsResult.plus(
+    old: WorkspaceInvalidTargetsResult,
+  ): WorkspaceInvalidTargetsResult =
+    WorkspaceInvalidTargetsResult(targets = targets + old.targets)
 }
 
 /**
@@ -149,7 +171,14 @@ public interface MagicMetaModel {
    */
   public fun getAllNotLoadedTargets(): List<BuildTargetInfo>
 
+  /**
+   * Get ids of all currently invalid targets.
+   */
+  public fun getAllInvalidTargets(): List<BuildTargetId>
+
   public fun clear()
+
+  public fun getLibraries(): List<Library>
 
   public companion object {
     private val log = logger<MagicMetaModel>()

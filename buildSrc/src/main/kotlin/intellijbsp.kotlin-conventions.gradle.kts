@@ -28,7 +28,7 @@ detekt {
   autoCorrect = true
   ignoreFailures = false
   buildUponDefaultConfig = false
-  config = files("$rootDir/detekt.yml")
+  config.from(files("$rootDir/detekt.yml"))
   parallel = true
 }
 
@@ -60,7 +60,6 @@ tasks {
   }
 
   test {
-    useJUnitPlatform()
     testLogging {
       events("PASSED", "SKIPPED", "FAILED")
     }
