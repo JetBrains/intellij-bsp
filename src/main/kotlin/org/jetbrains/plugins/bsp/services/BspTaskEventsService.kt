@@ -2,7 +2,9 @@ package org.jetbrains.plugins.bsp.services
 
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.util.alsoIfNull
 
 internal typealias OriginId = String
@@ -26,7 +28,7 @@ internal interface BspTaskListener {
   fun onShowMessage(message: String) {}
 }
 
-@Service
+@Service(Service.Level.PROJECT)
 internal class BspTaskEventsService {
   private val log = logger<BspTaskEventsService>()
 
@@ -46,6 +48,11 @@ internal class BspTaskEventsService {
 
   fun removeListener(id: OriginId) {
     taskListeners.remove(id)
+  }
+
+  companion object {
+    @JvmStatic
+    fun getInstance(project: Project) = project.service<BspTaskEventsService>()
   }
 
 }

@@ -22,6 +22,7 @@ import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jdom.Element
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspCommandLineState
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
@@ -35,7 +36,7 @@ public class BspDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
     // cast should always succeed, because canRun(...) makes sure only BspRunConfiguration is run with this runner
-    val debugState = state as BspRunConfiguration.BspCommandLineState
+    val debugState = state as BspCommandLineState
 
     val connection = debugState.remoteConnection
       ?: error("Run configuration has no remote connection data, but it was run with debug runner")

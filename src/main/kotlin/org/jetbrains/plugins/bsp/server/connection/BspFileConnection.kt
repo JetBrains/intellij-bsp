@@ -218,6 +218,7 @@ public class BspFileConnection(
       bspConsoleService.bspRunConsole,
       bspConsoleService.bspTestConsole,
       timeoutHandler,
+      project
     )
   }
 
