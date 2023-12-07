@@ -7,6 +7,7 @@ import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefau
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 
 public class BspRunConfiguration(
@@ -16,7 +17,8 @@ public class BspRunConfiguration(
   public val debugType: BspDebugType? = null,
   public val targetUri: String? = null,
 ) : LocatableConfigurationBase<Nothing>(project, configurationFactory, name),
-  RunConfigurationWithSuppressedDefaultDebugAction {
+  RunConfigurationWithSuppressedDefaultDebugAction,
+  DumbAware {
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     // By default, a new unique execution ID is assigned to each new ExecutionEnvironment

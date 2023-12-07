@@ -7,6 +7,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
@@ -21,6 +22,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestRunConfiguration
 import javax.swing.Icon
 
@@ -41,7 +43,7 @@ internal abstract class SideMenuRunnerAction(
   }
 
   fun doPerformAction(project: Project, targetId: BuildTargetId) {
-    val factory = getConfigurationType(project).configurationFactories.first()
+    val factory = runConfigurationType<BspRunConfigurationType>().configurationFactories.first()
     val settings = RunManager.getInstance(project).createConfiguration(getName(targetId), factory)
     prepareRunConfiguration(settings.configuration)
     RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
