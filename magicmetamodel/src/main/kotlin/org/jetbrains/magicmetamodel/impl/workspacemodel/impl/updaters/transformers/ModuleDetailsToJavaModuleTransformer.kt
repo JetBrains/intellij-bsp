@@ -15,7 +15,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import java.net.URI
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
@@ -109,11 +108,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toScalaAddendum(inputEntity: ModuleDetails): ScalaAddendum? {
     val scalaBuildTarget = extractScalaBuildTarget(inputEntity.target)
-    val version = ScalaUtil.scalaVersionToScalaSdkName(scalaBuildTarget?.scalaVersion) ?: return null
-    val jars = scalaBuildTarget?.jars ?: return null
+    val version = scalaBuildTarget?.scalaVersion?.scalaVersionToScalaSdkName() ?: return null
     return ScalaAddendum(
-      scalaSdkName = version,
-      scalaSdkLibraries = jars.map { Paths.get(URI(it)).toFile().name },
+      scalaSdkName = version
     )
   }
 
@@ -125,6 +122,4 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
 public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"
 
-public object ScalaUtil {
-  public fun scalaVersionToScalaSdkName(version: String?): String? = version?.let { "scala-sdk-$version" }
-}
+public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"

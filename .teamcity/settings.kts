@@ -5,7 +5,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 
 
-version = "2023.05"
+version = "2023.11"
 
 project(IntellijBsp)
 
@@ -24,8 +24,6 @@ object IntellijBsp : Project({
             buildType(IntellijDetekt.IntellijDetekt)
             buildType(IntellijBuild.BuildTheProject)
             buildType(IntellijTests.UnitTests)
-            buildType(IntellijTests.IntegrationTest)
-            buildType(IntellijTests.IdeProbeTests)
             buildType(IntellijPluginVerifier.VerifyPlugin)
         }
 
@@ -53,8 +51,6 @@ object IntellijBsp : Project({
             RelativeId("BuildBuildIntellijBsp"),
             RelativeId("FormatDetekt"),
             RelativeId("TestsUnitTests"),
-            RelativeId("TestsIntegrationTest"),
-            RelativeId("TestsIdeProbeTests"),
             RelativeId("VerifyPluginVerifier"),
             RelativeId("IntellijBspResults")
     )
