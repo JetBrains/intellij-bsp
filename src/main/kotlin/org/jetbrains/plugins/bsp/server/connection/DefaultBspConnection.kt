@@ -176,6 +176,7 @@ internal class DefaultBspConnection(
       bspConsoleService.bspRunConsole,
       bspConsoleService.bspTestConsole,
       timeoutHandler,
+      project
     )
   }
 

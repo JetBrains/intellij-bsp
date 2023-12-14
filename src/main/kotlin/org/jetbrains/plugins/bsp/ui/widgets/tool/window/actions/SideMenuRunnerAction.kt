@@ -43,7 +43,7 @@ internal abstract class SideMenuRunnerAction(
   }
 
   fun doPerformAction(project: Project, targetId: BuildTargetId) {
-    val factory = runConfigurationType<BspRunConfigurationType>().configurationFactories.first()
+    val factory = getConfigurationType(project).configurationFactories.first()
     val settings = RunManager.getInstance(project).createConfiguration(getName(targetId), factory)
     prepareRunConfiguration(settings.configuration)
     RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
