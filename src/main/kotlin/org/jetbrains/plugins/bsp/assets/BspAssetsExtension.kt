@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.assets
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.util.IconLoader
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
@@ -14,8 +13,8 @@ public class BspAssetsExtension : BuildToolAssetsExtension {
 
   override val icon: Icon = BspPluginIcons.bsp
 
-  override val loadedTargetIcon: Icon = BspPluginIcons.bsp
-  override val unloadedTargetIcon: Icon = IconLoader.getIcon("/icons/notLoaded.svg", javaClass)
+  override val loadedTargetIcon: AssetIcon = AssetIcon("icons/bsp.svg", BspPluginIcons::class.java)
+  override val unloadedTargetIcon: AssetIcon = AssetIcon("icons/notLoaded.svg", BspPluginIcons::class.java)
 
-  override val invalidTargetIcon: Icon = AllIcons.General.Warning
+  override val invalidTargetIcon: AssetIcon = AssetIcon("general/warning.svg", AllIcons::class.java)
 }

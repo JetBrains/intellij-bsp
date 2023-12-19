@@ -21,6 +21,7 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.jewel.ui.registerBspJewelToolWindow
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import org.jetbrains.plugins.bsp.server.connection.DefaultBspConnection
 import org.jetbrains.plugins.bsp.server.connection.connection
@@ -69,6 +70,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private suspend fun Project.executeEveryTime() {
     registerBspToolWindow(this)
+    registerBspJewelToolWindow(this)
     RunConfigurationProducersDisabler(this)
   }
 
