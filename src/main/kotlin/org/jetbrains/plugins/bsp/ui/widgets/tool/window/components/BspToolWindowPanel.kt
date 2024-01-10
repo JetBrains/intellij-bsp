@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.util.IconLoader
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
@@ -40,10 +41,17 @@ private class ListsUpdater(
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
+    // This is just temporary for the purpose of Jewel UI proof of concept, icons shouldn't be loaded here
+    // as it slows down the UI. One extra warning emitted.
+    val invalidIcon =
+      IconLoader.getIcon(assetsExtension.invalidTargetIcon.path, assetsExtension.invalidTargetIcon.clazz)
+    val notLoadedTargetIcon =
+      IconLoader.getIcon(assetsExtension.unloadedTargetIcon.path, assetsExtension.unloadedTargetIcon.clazz)
+
     loadedTargetsPanel =
       BspPanelComponent(
-        targetIcon = assetsExtension.loadedTargetIcon,
-        invalidTargetIcon = assetsExtension.invalidTargetIcon,
+        targetIcon = BspPluginIcons.bsp,
+        invalidTargetIcon = invalidIcon,
         buildToolId = project.buildToolId,
         toolName = assetsExtension.presentableName,
         targets = magicMetaModel.getAllLoadedTargets(),
@@ -54,8 +62,8 @@ private class ListsUpdater(
 
     notLoadedTargetsPanel =
       BspPanelComponent(
-        targetIcon = assetsExtension.unloadedTargetIcon,
-        invalidTargetIcon = assetsExtension.invalidTargetIcon,
+        targetIcon = notLoadedTargetIcon,
+        invalidTargetIcon = invalidIcon,
         buildToolId = project.buildToolId,
         toolName = assetsExtension.presentableName,
         targets = magicMetaModel.getAllNotLoadedTargets(),

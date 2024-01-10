@@ -1,6 +1,9 @@
 [versions]
 detekt = "1.23.4"
 kotlin-gradle-version = "1.9.20"
+composeDesktop = "1.5.11"
+jewel = "0.11.0-ij-233"
+
 
 [libraries]
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.1" }
@@ -11,7 +14,11 @@ gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
+coursier = { module = "io.get-coursier:coursier_2.13", version = "2.1.5" }
+jewelIdeLafBridge = {module = "org.jetbrains.jewel:jewel-ide-laf-bridge", version.ref = "jewel" }
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij", version = "1.16.0" }
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
+composeDesktop = { id = "org.jetbrains.compose", version.ref = "composeDesktop" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }

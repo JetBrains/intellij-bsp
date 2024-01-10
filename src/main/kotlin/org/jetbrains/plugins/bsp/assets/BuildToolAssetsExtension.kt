@@ -9,13 +9,19 @@ public interface BuildToolAssetsExtension : WithBuildToolId {
 
   public val icon: Icon
 
-  public val loadedTargetIcon: Icon
-  public val unloadedTargetIcon: Icon
+  // In Swing toolwindow implementation instead of `AssetIcon`, `javax.swing.Icon` is used
+  public val loadedTargetIcon: AssetIcon
+  public val unloadedTargetIcon: AssetIcon
 
-  public val invalidTargetIcon: Icon
+  public val invalidTargetIcon: AssetIcon
 
   public companion object {
     internal val ep =
       ExtensionPointName.create<BuildToolAssetsExtension>("org.jetbrains.bsp.buildToolAssetsExtension")
   }
 }
+
+public data class AssetIcon(
+  public val path: String,
+  public val clazz: Class<out Any>,
+)

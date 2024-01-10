@@ -80,6 +80,8 @@
 
     <toolWindowAllowlist id="BSP"/>
 
+    <toolWindowAllowlist id="BSP-Jewel"/>
+
     <iconMapper mappingFile="BSPIconMappings.json"/>
 
     <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
