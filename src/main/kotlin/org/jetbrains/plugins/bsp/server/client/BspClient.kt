@@ -199,6 +199,14 @@ public class BspClient(
     }
   }
 
+  override fun onRunPrintStdout(printParams: PrintParams?) {
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-801
+  }
+
+  override fun onRunPrintStderr(printParams: PrintParams?) {
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-801
+  }
+
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
     onBuildEvent()
 //    addDiagnosticToConsole(params)
