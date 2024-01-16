@@ -10,9 +10,9 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
 public class BspTestConsolePrinter(
-  private val processHandler: BspProcessHandler,
+  private val processHandler: BspProcessHandler<Void>,
   properties: SMTRunnerConsoleProperties,
-) : BspConsolePrinter by processHandler {
+) {
   public var console: BaseTestsOutputConsoleView =
     SMTestRunnerConnectionUtil.createAndAttachConsole(BspPluginBundle.message("console.tasks.test.framework.name"), processHandler, properties)
 
@@ -24,7 +24,7 @@ public class BspTestConsolePrinter(
    * Ends the testing process. Tests executed after this method's invocation will not have their results shown
    */
   public fun endTesting() {
-    processHandler.shutdown()
+//    processHandler.shutdown()
   }
 
   /**
@@ -81,6 +81,6 @@ public class BspTestConsolePrinter(
   private fun executeCommand(command: String, vararg pairs: Pair<String, String>) {
     val testSuiteStarted = ServiceMessageBuilder(command)
     pairs.iterator().forEach { testSuiteStarted.addAttribute(it.first, it.second) }
-    printOutput(testSuiteStarted.toString())
+//    printOutput(testSuiteStarted.toString())
   }
 }

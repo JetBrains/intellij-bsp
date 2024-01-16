@@ -19,6 +19,7 @@ import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.TestTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import java.util.concurrent.CompletableFuture
 import javax.swing.Icon
 
 public class BspTestRunConfigurationType(project: Project) : ConfigurationType {
@@ -59,23 +60,25 @@ public class BspTestRunConfiguration(project: Project, configurationFactory: Con
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 
-      val bspTestConsole = BspConsoleService.getInstance(project).bspTestConsole
-
-      val processHandler = BspProcessHandler()
-      val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
-      targetUri?.let { uri ->
-        bspTestConsole.registerPrinter(testConsole)
-        processHandler.execute {
-          try {
-            // TODO error handling?
-            TestTargetTask(project).connectAndExecute(BuildTargetIdentifier(uri))
-          } finally {
-            testConsole.endTesting()
-            bspTestConsole.deregisterPrinter(testConsole)
-          }
-        }
-      } ?: processHandler.shutdown()
-      DefaultExecutionResult(testConsole.console, processHandler)
+//      val bspTestConsole = BspConsoleService.getInstance(project).bspTestConsole
+//
+//      val processHandler = BspProcessHandler()
+//      val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
+//      targetUri?.let { uri ->
+//        bspTestConsole.registerPrinter(testConsole)
+//        processHandler.execute {
+//          try {
+//            // TODO error handling?
+//            TestTargetTask(project).connectAndExecute(BuildTargetIdentifier(uri))
+//          } finally {
+//            testConsole.endTesting()
+//            bspTestConsole.deregisterPrinter(testConsole)
+//          }
+//        }
+//      } ?: processHandler.shutdown()
+//      DefaultExecutionResult(testConsole.console, processHandler)
+//    }
+      DefaultExecutionResult(null, BspProcessHandler(CompletableFuture<Void>()))
     }
   }
 

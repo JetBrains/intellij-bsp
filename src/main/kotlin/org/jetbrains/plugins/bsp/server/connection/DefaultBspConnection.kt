@@ -317,7 +317,7 @@ internal class DefaultBspConnection(
     return params
   }
 
-  override fun <T> runWithServer(task: (server: BspServer, capabilities: BazelBuildServerCapabilities) -> T?): T? {
+  override fun <T> runWithServer(task: (server: BspServer, capabilities: BazelBuildServerCapabilities) -> T): T {
     val currentConnectionDetails =
       connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
 

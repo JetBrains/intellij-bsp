@@ -21,7 +21,7 @@ public open class BspTargetConsole<T : BspConsolePrinter> {
 
 public class BspTargetRunConsole : BspTargetConsole<BspConsolePrinter>()
 
-public class BspTargetTestConsole : BspTargetConsole<BspTestConsolePrinter>() {
+public class BspTargetTestConsole : BspTargetConsole<BspConsolePrinter>() {
   public fun startTest(suite: Boolean, displayName: String) {
     consoleListeners.forEach { it.startTest(suite, displayName) }
   }

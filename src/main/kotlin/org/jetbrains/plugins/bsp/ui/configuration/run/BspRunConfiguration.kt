@@ -30,9 +30,11 @@ public class BspRunConfiguration(
   }
 
 
-  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     // By default, a new unique execution ID is assigned to each new ExecutionEnvironment
-    BspCommandLineState(project, environment, this, environment.executionId.toString())
+    val originId = environment.executionId.toString()
+    return BspCommandLineState(project, environment, this, originId)
+  }
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
     return BspRunConfigurationEditor(this)

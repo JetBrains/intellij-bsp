@@ -58,6 +58,9 @@ public class BspClient(
   override fun onBuildLogMessage(params: LogMessageParams) {
     onBuildEvent()
 
+    val log = logger<BspClient>()
+    log.warn("Got log message: $params")
+
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
 
@@ -197,14 +200,6 @@ public class BspClient(
     project.service<BspTaskEventsService>().withListener(originId) {
       onErrorStream(taskId, message)
     }
-  }
-
-  override fun onRunPrintStdout(printParams: PrintParams?) {
-    // TODO https://youtrack.jetbrains.com/issue/BAZEL-801
-  }
-
-  override fun onRunPrintStderr(printParams: PrintParams?) {
-    // TODO https://youtrack.jetbrains.com/issue/BAZEL-801
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
