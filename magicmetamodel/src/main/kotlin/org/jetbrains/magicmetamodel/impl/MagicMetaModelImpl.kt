@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.impl.internal
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bsp.DirectoryItem
 import org.jetbrains.bsp.LibraryItem
@@ -45,7 +46,7 @@ internal class DefaultMagicMetaModelDiff(
   override suspend fun applyOnWorkspaceModel() {
     val storageReplacement = builderSnapshot.getStorageReplacement()
     writeAction {
-      if (workspaceModel.replaceProjectModel(storageReplacement)) {
+      if (workspaceModel.internal.replaceProjectModel(storageReplacement)) {
         mmmInstance.loadStorage(mmmStorageReplacement)
         targetLoadListeners.forEach { it() }
       }
@@ -161,7 +162,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     log.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
 
-    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.internal.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
@@ -347,7 +348,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private fun modifyModel(
     action: (targetStorage: LoadedTargetsStorage, updater: WorkspaceModelUpdater) -> Unit,
   ): DefaultMagicMetaModelDiff {
-    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.internal.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
@@ -388,7 +389,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     invalidTargets.targets.map { it.uri }
 
   override fun clear() {
-    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.internal.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,

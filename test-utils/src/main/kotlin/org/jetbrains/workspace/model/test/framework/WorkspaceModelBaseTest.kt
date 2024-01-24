@@ -14,6 +14,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
+import com.intellij.platform.workspace.storage.toBuilder
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.rules.ProjectModelExtension
@@ -37,7 +38,7 @@ public open class WorkspaceModelBaseTest {
 
   @BeforeEach
   protected open fun beforeEach() {
-    workspaceEntityStorageBuilder = workspaceModel.getBuilderSnapshot().builder
+    workspaceEntityStorageBuilder = workspaceModel.currentSnapshot.toBuilder()
   }
 
   protected val project: Project

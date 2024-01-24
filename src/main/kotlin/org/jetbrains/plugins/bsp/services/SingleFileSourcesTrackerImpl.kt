@@ -39,9 +39,7 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
   }
 
   private fun populateSingleFileSourceData() {
-    workspaceModel
-      .entityStorage
-      .current
+    workspaceModel.currentSnapshot
       .entities(SourceRootEntity::class.java)
       .forEach { handleSingleFileSourceEntity(it, true) }
   }
@@ -107,8 +105,7 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
   private fun findSourceRootEntity(file: VirtualFile): SourceRootEntity? {
     if (!file.isFileSupported()) return null
     val entityCandidates = workspaceModel
-      .entityStorage
-      .current
+      .currentSnapshot
       .getVirtualFileUrlIndex()
       .findEntitiesByUrl(file.toVirtualFileUrl(virtualFileUrlManager))
 
