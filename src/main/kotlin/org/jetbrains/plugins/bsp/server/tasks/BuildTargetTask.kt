@@ -5,17 +5,25 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CompileParams
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
+import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.build.events.impl.SkippedResultImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import org.jetbrains.kotlin.fir.scopes.impl.overrides
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.services.BspTaskEventsService
+import org.jetbrains.plugins.bsp.services.BspTaskListener
+import org.jetbrains.plugins.bsp.services.TaskId
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.*
@@ -37,6 +45,53 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     val originId = "build-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()
 
+    val taskListener = object : BspTaskListener {
+      override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
+        if (parentId == null) bspBuildConsole.startSubtask(originId, taskId, message)
+        else bspBuildConsole.startSubtask(taskId, parentId, message)
+      }
+
+      override fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {
+        bspBuildConsole.addMessage(taskId, message)
+      }
+
+      override fun onTaskFinish(taskId: TaskId, message: String, data: Any?) {
+        bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+      }
+
+      override fun onTaskFailed(taskId: TaskId, message: String) {
+        bspBuildConsole.finishSubtask(taskId, message, FailureResultImpl())
+      }
+
+      override fun onTaskIgnored(taskId: TaskId, message: String) {
+        bspBuildConsole.finishSubtask(taskId, message, SkippedResultImpl())
+      }
+
+      override fun onDiagnostic(
+        textDocument: String,
+        buildTarget: String,
+        line: Int,
+        character: Int,
+        severity: MessageEvent.Kind,
+        message: String
+      ) {
+        bspBuildConsole.addDiagnosticMessage(
+          originId,
+          textDocument,
+          line,
+          character,
+          message,
+          severity,
+        )
+      }
+
+      override fun onLogMessage(message: String) {
+        bspBuildConsole.addMessage(originId, message)
+      }
+    }
+
+    BspTaskEventsService.getInstance(project).addListener(originId, taskListener)
+
     startBuildConsoleTask(targetsIds, bspBuildConsole, originId, cancelOn)
     val compileParams = createCompileParams(targetsIds, originId)
 
@@ -45,7 +100,10 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       .reactToExceptionIn(cancelOn)
       .catchBuildErrors(bspBuildConsole, originId)
       .get()
-      .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId) }
+      .also {
+        finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId)
+        BspTaskEventsService.getInstance(project).removeListener(originId)
+      }
   }
 
   private fun startBuildConsoleTask(

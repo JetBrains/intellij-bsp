@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.configuration.run
+package org.jetbrains.plugins.bsp.ui.configuration.test
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configuration.EnvironmentVariablesData
@@ -7,21 +7,23 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
+import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType
+import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType
 
-public class BspRunConfiguration(
+public class BspTestConfiguration(
   project: Project,
-  configurationFactory: BspRunConfigurationType,
+  configurationFactory: BspTestConfigurationType,
   name: String,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationFactory, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
+  SMRunnerConsolePropertiesProvider,
   DumbAware {
   public var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
-  public var targetUri: String? = null
-  public var debugType: BspDebugType? = null
+  public var targetUris: List<String> = emptyList()
 
   override fun checkConfiguration() {
     // TODO: check if targetUri is valid
@@ -30,13 +32,17 @@ public class BspRunConfiguration(
   }
 
 
-  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): BspTestCommandLineState {
     // By default, a new unique execution ID is assigned to each new ExecutionEnvironment
     val originId = environment.executionId.toString()
-    return BspRunCommandLineState(project, environment, this, originId)
+    return BspTestCommandLineState(project, environment, this, originId)
   }
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
     return BspRunConfigurationEditor(this)
+  }
+
+  override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties {
+    TODO("Not yet implemented")
   }
 }

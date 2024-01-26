@@ -6,9 +6,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationType
 import javax.swing.Icon
 
 internal class RunTargetAction(

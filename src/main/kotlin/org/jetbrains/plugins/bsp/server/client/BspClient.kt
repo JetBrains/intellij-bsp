@@ -73,39 +73,29 @@ public class BspClient(
     onBuildEvent()
 
     val taskId = params.taskId.id
+
+    log.warn("Got task start: $params")
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents.firstOrNull()
 
-    val displayName = when (params.dataKind) {
+    val data = when (params.dataKind) {
       TaskStartDataKind.TEST_START -> {
-        val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
-        testStart.displayName
+        gson.fromJson(params.data as JsonObject, TestStart::class.java)
       }
 
       TaskStartDataKind.TEST_TASK -> {
-        val testTask = gson.fromJson(params.data as JsonObject, TestTask::class.java)
-        testTask.target.uri
+        gson.fromJson(params.data as JsonObject, TestTask::class.java)
       }
 
       TaskStartDataKind.COMPILE_TASK -> {
-        val compileTask = gson.fromJson(params.data as JsonObject, CompileTask::class.java)
-
-        compileTask.target.uri
+        gson.fromJson(params.data as JsonObject, CompileTask::class.java)
       }
 
-      else -> taskId
+      else -> null
     }
 
     project.service<BspTaskEventsService>().withListener(originId) {
-      if (maybeParent != null) {
-        onSubtaskStart(taskId, maybeParent, displayName)
-      } else {
-        onTaskStart(taskId, displayName)
-      }
-
-      if (params.message != null) {
-        onTaskProgress(taskId, params.message)
-      }
+      onTaskStart(taskId, maybeParent, params.message, data)
     }
   }
 
@@ -116,7 +106,7 @@ public class BspClient(
     val originId = params.originId ?: return // TODO
 
     project.service<BspTaskEventsService>().withListener(originId) {
-      onTaskProgress(taskId, params.message)
+      onTaskProgress(taskId, params.message, null)
     }
   }
 
@@ -124,59 +114,25 @@ public class BspClient(
     onBuildEvent()
     val taskId = params.taskId.id
     val originId = params.originId ?: return // TODO
-    var failed = false
-    var ignored = false
 
-    val displayName = when (params.dataKind) {
+    val data = when (params.dataKind) {
       TaskFinishDataKind.TEST_FINISH -> {
-        val testFinish = gson.fromJson(params.data as JsonObject, TestFinish::class.java)
-
-        if (testFinish.status == TestStatus.FAILED || testFinish.status == TestStatus.CANCELLED) {
-          failed = true
-        }
-
-        if (testFinish.status == TestStatus.IGNORED) {
-          ignored = true
-        }
-
-        testFinish.displayName
+        gson.fromJson(params.data as JsonObject, TestFinish::class.java)
       }
 
       TaskFinishDataKind.TEST_REPORT -> {
-        val testTask = gson.fromJson(params.data as JsonObject, TestReport::class.java)
-
-        if (testTask.failed != 0) {
-          failed = true
-        }
-
-        testTask.target.uri
+        gson.fromJson(params.data as JsonObject, TestReport::class.java)
       }
 
       TaskFinishDataKind.COMPILE_REPORT -> {
-        val compileTask = gson.fromJson(params.data as JsonObject, CompileReport::class.java)
-
-        if (compileTask.errors != 0) {
-          failed = true
-        }
-
-        compileTask.target.uri
+        gson.fromJson(params.data as JsonObject, CompileReport::class.java)
       }
 
-      else -> taskId
+      else -> null
     }
 
     project.service<BspTaskEventsService>().withListener(originId) {
-      if (params.message != null) {
-        onTaskProgress(taskId, params.message)
-      }
-
-      if (failed) {
-        onTaskFailed(taskId, displayName)
-      } else if (ignored) {
-        onTaskIgnored(taskId, displayName)
-      } else {
-        onTaskFinish(taskId, displayName)
-      }
+      onTaskFinish(taskId, params.message, data)
     }
   }
 
@@ -204,7 +160,6 @@ public class BspClient(
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
     onBuildEvent()
-//    addDiagnosticToConsole(params)
 
     val originId = params.originId ?: return // TODO
     val textDocument = params.textDocument.uri ?: return // TODO

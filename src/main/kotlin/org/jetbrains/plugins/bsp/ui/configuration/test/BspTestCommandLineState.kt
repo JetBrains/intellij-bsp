@@ -1,69 +1,47 @@
-package org.jetbrains.plugins.bsp.ui.configuration.run
+package org.jetbrains.plugins.bsp.ui.configuration.test
 
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
 import ch.epfl.scala.bsp4j.RunResult
-import ch.epfl.scala.bsp4j.StatusCode
-import com.intellij.execution.DefaultExecutionResult
+import ch.epfl.scala.bsp4j.TestParams
+import ch.epfl.scala.bsp4j.TestResult
 import com.intellij.execution.ExecutionException
-import com.intellij.execution.ExecutionResult
-import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
-import com.intellij.execution.configurations.RemoteConnection
-import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.connection
-import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.services.TaskId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
-import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
-internal class BspCommandLineState(
-  val project: Project,
+public class BspTestCommandLineState(
+  private val project: Project,
   environment: ExecutionEnvironment,
-  private val configuration: BspRunConfiguration,
+  private val configuration: BspTestConfiguration,
   private val originId: OriginId
 ) : CommandLineState(environment) {
-  val remoteConnection: RemoteConnection? = createRemoteConnection()
-  val log = logger<BspCommandLineState>()
+  private val log = logger<BspTestCommandLineState>()
 
+  private fun canRun(capabilities: BuildServerCapabilities): Boolean =
+    configuration.targetUris.isNotEmpty() && capabilities.testProvider != null
 
-  private fun createRemoteConnection(): RemoteConnection? =
-    when (configuration.debugType) {
-      BspDebugType.JDWP -> RemoteConnection(true, "localhost", "0", true)
-      else -> null
-    }
-
-  fun canRun(capabilities: BuildServerCapabilities): Boolean =
-    configuration.targetUri != null && capabilities.runProvider != null
-
-  override fun startProcess(): BspProcessHandler<RunResult> {
-    log.warn("Starting process")
+  override fun startProcess(): BspProcessHandler<TestResult> {
     val cf = project.connection.runWithServer { server, capabilities ->
-      // log to idea.log
-      log.warn("Running with server")
       if (canRun(capabilities)) {
-        val targetId = BuildTargetIdentifier(configuration.targetUri!!)
-        val runParams = RunParams(targetId)
-        server.buildTargetRun(runParams).thenApply { runResult ->
-          log.warn("Got run result")
-          runResult
-        }
+        val targets = configuration.targetUris.map { BuildTargetIdentifier(it) }
+        val runParams = TestParams(targets)
+        runParams.originId = originId
+        server.buildTargetTest(runParams)
       } else throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
-    log.warn("Got future")
+
     val handler = BspProcessHandler(cf)
     val ansiEscapeDecoder = AnsiEscapeDecoder()
     val runListener = object : BspTaskListener {
@@ -82,7 +60,7 @@ internal class BspCommandLineState(
       // For compatibility with older BSP servers
       // TODO: Log messages in the correct place
       override fun onLogMessage(message: String) {
-        ansiEscapeDecoder.escapeText(message, ProcessOutputType.SYSTEM) { s: String, key: Key<Any> ->
+        ansiEscapeDecoder.escapeText(message, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
           log.warn("Log message: $s")
           handler.notifyTextAvailable(s, key)
         }

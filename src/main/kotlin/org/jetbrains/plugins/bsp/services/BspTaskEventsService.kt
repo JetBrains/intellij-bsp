@@ -17,10 +17,9 @@ internal interface BspTaskListener {
   fun onErrorStream(taskId: TaskId?, text: String) {}
   fun onExit(code: Int) {}
 
-  fun onTaskStart(taskId: TaskId, message: String) {}
-  fun onSubtaskStart(taskId: TaskId, parentId: TaskId, message: String) {}
-  fun onTaskProgress(taskId: TaskId, message: String) {}
-  fun onTaskFinish(taskId: TaskId, message: String) {}
+  fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {}
+  fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {}
+  fun onTaskFinish(taskId: TaskId, message: String, data: Any?) {}
   fun onTaskFailed(taskId: TaskId, message: String) {}
   fun onTaskIgnored(taskId: TaskId, message: String) {}
 
