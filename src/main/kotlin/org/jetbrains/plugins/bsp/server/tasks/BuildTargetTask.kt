@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.server.tasks
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CompileParams
+import ch.epfl.scala.bsp4j.CompileReport
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.MessageEvent
@@ -55,16 +56,19 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
         bspBuildConsole.addMessage(taskId, message)
       }
 
-      override fun onTaskFinish(taskId: TaskId, message: String, data: Any?) {
-        bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
-      }
-
-      override fun onTaskFailed(taskId: TaskId, message: String) {
-        bspBuildConsole.finishSubtask(taskId, message, FailureResultImpl())
-      }
-
-      override fun onTaskIgnored(taskId: TaskId, message: String) {
-        bspBuildConsole.finishSubtask(taskId, message, SkippedResultImpl())
+      override fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {
+        when (data) {
+          is CompileReport -> {
+            if (data.errors > 0 || status == StatusCode.ERROR) {
+              bspBuildConsole.finishSubtask(taskId, message, FailureResultImpl())
+            } else if (status == StatusCode.CANCELLED) {
+              bspBuildConsole.finishSubtask(taskId, message, SkippedResultImpl())
+            } else {
+              bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+            }
+          }
+          else -> bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+        }
       }
 
       override fun onDiagnostic(

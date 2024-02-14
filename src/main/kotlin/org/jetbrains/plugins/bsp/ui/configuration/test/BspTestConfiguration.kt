@@ -13,6 +13,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType
+import java.util.UUID
 
 public class BspTestConfiguration(
   project: Project,
@@ -34,15 +35,15 @@ public class BspTestConfiguration(
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): BspTestCommandLineState {
     // By default, a new unique execution ID is assigned to each new ExecutionEnvironment
-    val originId = environment.executionId.toString()
+    val originId = UUID.randomUUID().toString()
     return BspTestCommandLineState(project, environment, this, originId)
   }
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-    return BspRunConfigurationEditor(this)
+    TODO()
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties {
-    TODO("Not yet implemented")
+    return SMTRunnerConsoleProperties(this, "BSP", executor)
   }
 }

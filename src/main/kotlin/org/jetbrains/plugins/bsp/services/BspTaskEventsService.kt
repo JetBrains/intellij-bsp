@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.services
 
+import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -19,9 +20,7 @@ internal interface BspTaskListener {
 
   fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {}
   fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {}
-  fun onTaskFinish(taskId: TaskId, message: String, data: Any?) {}
-  fun onTaskFailed(taskId: TaskId, message: String) {}
-  fun onTaskIgnored(taskId: TaskId, message: String) {}
+  fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {}
 
   fun onLogMessage(message: String) {}
   fun onShowMessage(message: String) {}
@@ -33,8 +32,12 @@ internal class BspTaskEventsService {
 
   private val taskListeners: MutableMap<OriginId, BspTaskListener> = mutableMapOf()
 
-  private fun get(id: OriginId): BspTaskListener? = taskListeners[id].alsoIfNull {
-    log.warn("No task listener found for task $id")
+  private fun get(id: OriginId): BspTaskListener? {
+    val listener = taskListeners[id]
+    if (listener == null) {
+      log.warn("No task listener found for task $id")
+    }
+    return listener
   }
 
   fun addListener(id: OriginId, listener: BspTaskListener) {

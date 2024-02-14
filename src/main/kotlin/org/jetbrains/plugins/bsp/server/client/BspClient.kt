@@ -47,10 +47,12 @@ public class BspClient(
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
 
+    log.info("Got show message: $params")
+
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
 
-    project.service<BspTaskEventsService>().withListener(originId) {
+    BspTaskEventsService.getInstance(project).withListener(originId) {
       onShowMessage(message)
     }
   }
@@ -58,13 +60,12 @@ public class BspClient(
   override fun onBuildLogMessage(params: LogMessageParams) {
     onBuildEvent()
 
-    val log = logger<BspClient>()
-    log.warn("Got log message: $params")
+    log.info("Got log message: $params")
 
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
 
-    project.service<BspTaskEventsService>().withListener(originId) {
+    BspTaskEventsService.getInstance(project).withListener(originId) {
       onLogMessage(message)
     }
   }
@@ -74,9 +75,9 @@ public class BspClient(
 
     val taskId = params.taskId.id
 
-    log.warn("Got task start: $params")
+    log.info("Got task start: $params")
     val originId = params.originId ?: return // TODO
-    val maybeParent = params.taskId.parents.firstOrNull()
+    val maybeParent = params.taskId.parents?.firstOrNull()
 
     val data = when (params.dataKind) {
       TaskStartDataKind.TEST_START -> {
@@ -94,13 +95,15 @@ public class BspClient(
       else -> null
     }
 
-    project.service<BspTaskEventsService>().withListener(originId) {
-      onTaskStart(taskId, maybeParent, params.message, data)
+    BspTaskEventsService.getInstance(project).withListener(originId) {
+      onTaskStart(taskId, maybeParent, params.message ?: taskId, data)
     }
   }
 
   override fun onBuildTaskProgress(params: TaskProgressParams) {
     onBuildEvent()
+
+    log.info("Got task progress: $params")
 
     val taskId = params.taskId.id
     val originId = params.originId ?: return // TODO
@@ -113,6 +116,7 @@ public class BspClient(
   override fun onBuildTaskFinish(params: TaskFinishParams) {
     onBuildEvent()
     val taskId = params.taskId.id
+    log.info("Got task finish: $params")
     val originId = params.originId ?: return // TODO
 
     val data = when (params.dataKind) {
@@ -131,24 +135,28 @@ public class BspClient(
       else -> null
     }
 
-    project.service<BspTaskEventsService>().withListener(originId) {
-      onTaskFinish(taskId, params.message, data)
+    val status = params.status
+
+    BspTaskEventsService.getInstance(project).withListener(originId) {
+      onTaskFinish(taskId, params.message, status, data)
     }
   }
 
   override fun onRunPrintStdout(params: PrintParams) {
     onBuildEvent()
+    log.warn("Got print stdout: $params")
     val originId = params.originId ?: return // TODO
     val taskId = params.task.id
     val message = params.message ?: return // TODO
 
-    project.service<BspTaskEventsService>().withListener(originId) {
+    BspTaskEventsService.getInstance(project).withListener(originId) {
       onOutputStream(taskId, message)
     }
   }
 
   override fun onRunPrintStderr(params: PrintParams) {
     onBuildEvent()
+    log.warn("Got print stderr: $params")
     val originId = params.originId ?: return // TODO
     val taskId = params.task.id
     val message = params.message ?: return // TODO
@@ -165,7 +173,7 @@ public class BspClient(
     val textDocument = params.textDocument.uri ?: return // TODO
     val buildTarget = params.buildTarget.uri ?: return // TODO
 
-    project.service<BspTaskEventsService>().withListener(originId) {
+    BspTaskEventsService.getInstance(project).withListener(originId) {
       params.diagnostics.forEach {
         onDiagnostic(
           textDocument,

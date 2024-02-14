@@ -9,6 +9,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConfiguration
 import javax.swing.Icon
 
 public sealed class BspBaseRunConfigurationType(id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon) {
@@ -33,7 +34,8 @@ public class BspTestConfigurationType(project: Project) : BspBaseRunConfiguratio
   description = BspPluginBundle.message("runconfig.test.description", assetsExtension(project).presentableName),
   icon = NotNullLazyValue.createValue { assetsExtension(project).icon },
 ) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration = TODO()
+  override fun createTemplateConfiguration(project: Project): RunConfiguration =
+    BspTestConfiguration(project, this, name)
 }
 
 public class BspBuildConfigurationType(project: Project) : BspBaseRunConfigurationType(

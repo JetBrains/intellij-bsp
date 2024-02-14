@@ -3,16 +3,28 @@ package org.jetbrains.plugins.bsp.ui.configuration.test
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunResult
+import ch.epfl.scala.bsp4j.StatusCode
+import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
+import ch.epfl.scala.bsp4j.TestStart
+import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
+import com.intellij.execution.ExecutionResult
+import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
+import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
+import com.intellij.execution.testframework.sm.ServiceMessageBuilder
+import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
+import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import jetbrains.buildServer.messages.serviceMessages.ServiceMessageTypes
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
@@ -23,7 +35,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
 public class BspTestCommandLineState(
   private val project: Project,
-  environment: ExecutionEnvironment,
+  private val environment: ExecutionEnvironment,
   private val configuration: BspTestConfiguration,
   private val originId: OriginId
 ) : CommandLineState(environment) {
@@ -31,6 +43,18 @@ public class BspTestCommandLineState(
 
   private fun canRun(capabilities: BuildServerCapabilities): Boolean =
     configuration.targetUris.isNotEmpty() && capabilities.testProvider != null
+
+  override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
+    val properties = configuration.createTestConsoleProperties(executor)
+    val handler = startProcess()
+
+    val console: BaseTestsOutputConsoleView =
+      SMTestRunnerConnectionUtil.createAndAttachConsole(BspPluginBundle.message("console.tasks.test.framework.name"), handler, properties)
+
+    val actions = createActions(console, handler, executor)
+
+    return DefaultExecutionResult(console, handler, *actions)
+  }
 
   override fun startProcess(): BspProcessHandler<TestResult> {
     val cf = project.connection.runWithServer { server, capabilities ->
@@ -44,7 +68,26 @@ public class BspTestCommandLineState(
 
     val handler = BspProcessHandler(cf)
     val ansiEscapeDecoder = AnsiEscapeDecoder()
+
     val runListener = object : BspTaskListener {
+      override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
+        when (data) {
+          is TestStart -> {
+            val testSuiteStarted = "\n" + ServiceMessageBuilder.testStarted(data.displayName).toString() + "\n"
+            handler.notifyTextAvailable(testSuiteStarted, ProcessOutputType.STDOUT)
+          }
+        }
+      }
+
+      override fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {
+        when (data) {
+          is TestFinish -> {
+            val testSuiteFinished = "\n" + ServiceMessageBuilder.testFinished(data.displayName).toString() + "\n"
+            handler.notifyTextAvailable(testSuiteFinished, ProcessOutputType.STDOUT)
+          }
+        }
+      }
+
       override fun onOutputStream(taskId: TaskId?, text: String) {
         ansiEscapeDecoder.escapeText(text, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
           handler.notifyTextAvailable(s, key)
