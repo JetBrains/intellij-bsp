@@ -10,20 +10,19 @@ import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import org.jetbrains.bsp.utils.parseBspConnectionDetails
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspWorkspace
-import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import org.jetbrains.plugins.bsp.server.connection.DefaultBspConnection
 import org.jetbrains.plugins.bsp.server.connection.connection
+import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
 import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
@@ -60,7 +59,7 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun Project.executeForBspProject() {
     executeEveryTime()
 
-    if (isNewProject()) {
+    if (!isBspProjectInitialized) {
       executeForNewProject()
     }
 
@@ -75,6 +74,7 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun Project.executeForNewProject() {
     try {
       runSync(this)
+      isBspProjectInitialized = true
     } catch (e: Exception) {
       val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
       bspSyncConsole.startTask(
@@ -93,7 +93,7 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun runSync(project: Project) {
     val connectionDetailsProviderExtension =
       if (isBenchmark()) benchmarkConnectionFileProvider(project)
-      else ConnectionDetailsProviderExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
+      else project.connectionDetailsProvider
 
     project.connection = DefaultBspConnection(project, connectionDetailsProviderExtension)
 

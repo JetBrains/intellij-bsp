@@ -85,12 +85,13 @@ public class LoadedTargetsMouseListener(
         ))
       }
       if (target.capabilities.canRun && target.isJvmTarget()) {
-        addAction(RunWithLocalJvmRunnerAction(target.id))
-        addAction(DebugWithLocalJvmRunnerAction(target.id))
+        addAction(RunWithLocalJvmRunnerAction(target))
+        addAction(DebugWithLocalJvmRunnerAction(target))
       }
       if (target.capabilities.canTest) {
         addAction(TestTargetAction(targetId = target.id))
       }
+      container.getTargetActions(project, target).map { addAction(it); addSeparator() }
     }
 
   private fun BuildTargetInfo.inferDebugType(): BspDebugType? =

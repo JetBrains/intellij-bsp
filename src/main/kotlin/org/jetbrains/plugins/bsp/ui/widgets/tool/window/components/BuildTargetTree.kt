@@ -1,13 +1,18 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.Component
@@ -54,20 +59,23 @@ public class BuildTargetTree(
         BuildTargetTreeIdentifier(
           it.id,
           it,
-          bspBuildTargetClassifier.calculateBuildTargetPath(it.id),
-          bspBuildTargetClassifier.calculateBuildTargetName(it.id),
+          bspBuildTargetClassifier.calculateBuildTargetPath(it),
+          bspBuildTargetClassifier.calculateBuildTargetName(it),
         )
       } + invalidTargets.map {
         BuildTargetTreeIdentifier(
           it,
           null,
-          bspBuildTargetClassifier.calculateBuildTargetPath(it),
-          bspBuildTargetClassifier.calculateBuildTargetName(it),
+          bspBuildTargetClassifier.calculateBuildTargetPath(it.toFakeBuildTargetInfo()),
+          bspBuildTargetClassifier.calculateBuildTargetName(it.toFakeBuildTargetInfo()),
         )
       },
       bspBuildTargetClassifier.separator,
     )
   }
+
+  // only used with Bazel projects
+  private fun BuildTargetId.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }
@@ -189,6 +197,10 @@ public class BuildTargetTree(
     }
     return new
   }
+
+  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
+    BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
+      ?.getTargetActions(treeComponent, project, buildTargetInfo) ?: emptyList()
 }
 
 private interface NodeData
@@ -245,6 +257,7 @@ private class TargetTreeCellRenderer(
             invalidTargetIcon,
             SwingConstants.LEFT
           )
+
       else -> JBLabel(
         BspPluginBundle.message("widget.no.renderable.component"),
         PlatformIcons.ERROR_INTRODUCTION_ICON,
