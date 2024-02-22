@@ -1,14 +1,18 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
-import org.jetbrains.intellij.tasks.PublishPluginTask
-import org.jetbrains.intellij.tasks.RunIdeTask
-import org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel
-import org.jetbrains.intellij.tasks.VerifyPluginTask
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+//import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+
+//import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
+//import org.jetbrains.intellij.tasks.PublishPluginTask
+//import org.jetbrains.intellij.tasks.RunIdeTask
+//import org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel
+//import org.jetbrains.intellij.tasks.VerifyPluginTask
 
 plugins {
   // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
   alias(libs.plugins.intellij)
+  alias(libs.plugins.intellijMigration)
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   alias(libs.plugins.changelog)
 
@@ -31,6 +35,12 @@ dependencies {
   implementation(libs.gson)
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
+
+  intellijPlatform {
+    create(IntelliJPlatformType.IntellijIdeaCommunity, Platform.version)
+    plugins(Platform.plugins)
+    bundledPlugins(Platform.bundledPlugins)
+  }
 }
 
 tasks.runIde{
@@ -41,13 +51,20 @@ tasks.runIde{
 
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
-intellij {
-  pluginName.set(Plugin.name)
-  version.set(Platform.version)
-  type.set(Platform.type)
-  downloadSources.set(Platform.downloadSources)
-  updateSinceUntilBuild.set(true)
-  plugins.set(Platform.plugins)
+intellijPlatform {
+  pluginConfiguration {
+    name = Plugin.name
+  }
+  verifyPlugin {
+//    ides {
+//      recommended()
+//    }
+    //    failureLevel.set(setOf(
+//      RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+//      RunPluginVerifierTask.FailureLevel.NOT_DYNAMIC
+//    ))
+//    failureLevel.set(setOf(FailureLevel.COMPATIBILITY_PROBLEMS, FailureLevel.NOT_DYNAMIC))
+  }
 }
 
 // Configure gradle-changelog-plugin plugin.
@@ -69,35 +86,38 @@ allprojects {
 }
 
 subprojects {
-  apply(plugin = "org.jetbrains.intellij")
+//  apply(plugin = "org.jetbrains.intellij.platform")
 
-  intellij {
-    version.set(Platform.version)
-  }
-
-  tasks.withType(PublishPluginTask::class.java) {
-    enabled = false
-  }
-
-  tasks.withType(VerifyPluginTask::class.java) {
-    enabled = false
-  }
-
-  tasks.withType(BuildSearchableOptionsTask::class.java) {
-    enabled = false
-  }
-
-  tasks.withType(RunIdeTask::class.java) {
-    enabled = false
-  }
+//  intellij {
+//    version.set(Platform.version)
+//  }
+//
+//  tasks.withType(PublishPluginTask::class.java) {
+//    enabled = false
+//  }
+//
+//  tasks.withType(VerifyPluginTask::class.java) {
+//    enabled = false
+//  }
+//
+//  tasks.withType(BuildSearchableOptionsTask::class.java) {
+//    enabled = false
+//  }
+//
+//  tasks.withType(RunIdeTask::class.java) {
+//    enabled = false
+//  }
 }
 repositories {
   mavenCentral()
+  intellijPlatform {
+    defaultRepositories()
+  }
 }
 
 tasks {
   patchPluginXml {
-    version.set(Plugin.version)
+//    version.set(Plugin.version)
     sinceBuild.set(Plugin.sinceBuild)
     untilBuild.set(Plugin.untilBuild)
 
@@ -118,13 +138,13 @@ tasks {
     changeNotes.set(provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) })
   }
 
-  runPluginVerifier {
-    ideVersions.set(pluginVerifierIdeVersions.split(',').map(String::trim).filter(String::isNotEmpty))
-    failureLevel.set(setOf(
-      FailureLevel.COMPATIBILITY_PROBLEMS,
-      FailureLevel.NOT_DYNAMIC
-    ))
-  }
+//  runPluginVerifier {
+//    ideVersions.set(pluginVerifierIdeVersions.split(',').map(String::trim).filter(String::isNotEmpty))
+//    failureLevel.set(setOf(
+//      RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+//      RunPluginVerifierTask.FailureLevel.NOT_DYNAMIC
+//    ))
+//  }
 
   publishPlugin {
     dependsOn("patchChangelog")
