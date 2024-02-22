@@ -18,7 +18,7 @@ internal class RunTargetAction(
   private val debugType: BspDebugType? = null,
   private val useDebugMode: Boolean = false,
 ) : SideMenuRunnerAction(targetId, text, icon, useDebugExecutor = useDebugMode) {
-  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
+  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType()
 
   override fun prepareRunConfiguration(configuration: RunConfiguration) {
     (configuration as? BspRunConfiguration)?.let {

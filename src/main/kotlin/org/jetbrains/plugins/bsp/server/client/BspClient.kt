@@ -17,18 +17,14 @@ import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
-import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
-import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 
 public const val importSubtaskId: String = "import-subtask-id"
@@ -36,8 +32,6 @@ public const val importSubtaskId: String = "import-subtask-id"
 public class BspClient(
   private val bspSyncConsole: TaskConsole,
   private val bspBuildConsole: TaskConsole,
-  private val bspRunConsole: BspTargetRunConsole,
-  private val bspTestConsole: BspTargetTestConsole,
   private val timeoutHandler: TimeoutHandler,
   private val project: Project,
 ) : BuildClient {
@@ -47,7 +41,7 @@ public class BspClient(
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
 
-    log.info("Got show message: $params")
+    log.warn("Got show message: $params")
 
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
@@ -60,7 +54,7 @@ public class BspClient(
   override fun onBuildLogMessage(params: LogMessageParams) {
     onBuildEvent()
 
-    log.info("Got log message: $params")
+    log.warn("Got log message: $params")
 
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
@@ -75,7 +69,7 @@ public class BspClient(
 
     val taskId = params.taskId.id
 
-    log.info("Got task start: $params")
+    log.warn("Got task start: $params")
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
@@ -103,12 +97,12 @@ public class BspClient(
   override fun onBuildTaskProgress(params: TaskProgressParams) {
     onBuildEvent()
 
-    log.info("Got task progress: $params")
+    log.warn("Got task progress: $params")
 
     val taskId = params.taskId.id
     val originId = params.originId ?: return // TODO
 
-    project.service<BspTaskEventsService>().withListener(originId) {
+    BspTaskEventsService.getInstance(project).withListener(originId) {
       onTaskProgress(taskId, params.message, null)
     }
   }
@@ -116,7 +110,7 @@ public class BspClient(
   override fun onBuildTaskFinish(params: TaskFinishParams) {
     onBuildEvent()
     val taskId = params.taskId.id
-    log.info("Got task finish: $params")
+    log.warn("Got task finish: $params")
     val originId = params.originId ?: return // TODO
 
     val data = when (params.dataKind) {
@@ -138,7 +132,7 @@ public class BspClient(
     val status = params.status
 
     BspTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskFinish(taskId, params.message, status, data)
+      onTaskFinish(taskId, params.message.orEmpty(), status, data)
     }
   }
 
@@ -161,7 +155,7 @@ public class BspClient(
     val taskId = params.task.id
     val message = params.message ?: return // TODO
 
-    project.service<BspTaskEventsService>().withListener(originId) {
+    BspTaskEventsService.getInstance(project).withListener(originId) {
       onErrorStream(taskId, message)
     }
   }
@@ -198,10 +192,6 @@ public class BspClient(
   private fun addMessageToConsole(originId: String?, message: String) {
     if (originId?.startsWith("build") == true) {
       bspBuildConsole.addMessage(originId, message)
-    } else if (originId?.startsWith("test") == true) {
-      bspTestConsole.print(message)
-    } else if (originId?.startsWith("run") == true) {
-      bspRunConsole.print(message)
     } else {
       bspSyncConsole.addMessage(originId ?: importSubtaskId, message)
     }

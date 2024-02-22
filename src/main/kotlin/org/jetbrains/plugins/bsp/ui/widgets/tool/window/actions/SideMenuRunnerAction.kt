@@ -22,8 +22,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspTestConfiguration
 import javax.swing.Icon
 
 internal abstract class SideMenuRunnerAction(

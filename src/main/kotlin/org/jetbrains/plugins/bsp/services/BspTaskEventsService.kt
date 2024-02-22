@@ -12,18 +12,17 @@ internal typealias OriginId = String
 
 internal typealias TaskId = String
 
-internal interface BspTaskListener {
-  fun onDiagnostic(textDocument: String, buildTarget: String, line: Int, character: Int, severity: MessageEvent.Kind, message: String) {}
-  fun onOutputStream(taskId: TaskId?, text: String) {}
-  fun onErrorStream(taskId: TaskId?, text: String) {}
-  fun onExit(code: Int) {}
+public interface BspTaskListener {
+  public fun onDiagnostic(textDocument: String, buildTarget: String, line: Int, character: Int, severity: MessageEvent.Kind, message: String) {}
+  public fun onOutputStream(taskId: TaskId?, text: String) {}
+  public fun onErrorStream(taskId: TaskId?, text: String) {}
 
-  fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {}
-  fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {}
-  fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {}
+  public fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {}
+  public fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {}
+  public fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {}
 
-  fun onLogMessage(message: String) {}
-  fun onShowMessage(message: String) {}
+  public fun onLogMessage(message: String) {}
+  public fun onShowMessage(message: String) {}
 }
 
 @Service(Service.Level.PROJECT)

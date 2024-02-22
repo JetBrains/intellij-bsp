@@ -6,43 +6,40 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspTestConfiguration
 import javax.swing.Icon
 
-public sealed class BspBaseRunConfigurationType(id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon) {
-  internal companion object {
-    internal fun assetsExtension(project: Project): BuildToolAssetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-  }
-}
+public sealed class BspRunConfigurationTypeBase(id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon)
 
-public class BspRunConfigurationType(project: Project) : BspBaseRunConfigurationType(
+public class BspRunConfigurationType : BspRunConfigurationTypeBase(
   id = "BspRunConfiguration",
-  name = BspPluginBundle.message("runconfig.run.name", assetsExtension(project).presentableName),
-  description = BspPluginBundle.message("runconfig.run.description", assetsExtension(project).presentableName),
-  icon = NotNullLazyValue.createValue { assetsExtension(project).icon },
+  name = BspPluginBundle.message("runconfig.run.name"),
+  description = BspPluginBundle.message("runconfig.run.description"),
+  icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
 ) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration =
     BspRunConfiguration(project, this, name)
 }
 
-public class BspTestConfigurationType(project: Project) : BspBaseRunConfigurationType(
+public class BspTestConfigurationType : BspRunConfigurationTypeBase(
   id = "BspTestConfiguration",
-  name = BspPluginBundle.message("runconfig.test.name", assetsExtension(project).presentableName),
-  description = BspPluginBundle.message("runconfig.test.description", assetsExtension(project).presentableName),
-  icon = NotNullLazyValue.createValue { assetsExtension(project).icon },
+  name = BspPluginBundle.message("runconfig.test.name"),
+  description = BspPluginBundle.message("runconfig.test.description"),
+  icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
 ) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration =
     BspTestConfiguration(project, this, name)
 }
 
-public class BspBuildConfigurationType(project: Project) : BspBaseRunConfigurationType(
+public class BspBuildConfigurationType : BspRunConfigurationTypeBase(
   id = "BspBuildConfiguration",
-  name = BspPluginBundle.message("runconfig.build.name", assetsExtension(project).presentableName),
-  description = BspPluginBundle.message("runconfig.build.description", assetsExtension(project).presentableName),
-  icon = NotNullLazyValue.createValue { assetsExtension(project).icon },
+  name = BspPluginBundle.message("runconfig.build.name"),
+  description = BspPluginBundle.message("runconfig.build.description"),
+  icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
 ) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration {
     TODO()

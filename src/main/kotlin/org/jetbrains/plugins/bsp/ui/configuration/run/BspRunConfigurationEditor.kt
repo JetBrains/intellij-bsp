@@ -13,43 +13,46 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.DropDownLink
 
 
-public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfiguration) : RunConfigurationFragmentedEditor<BspRunConfiguration>(
+public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) : RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
   runConfiguration,
   BspRunConfigurationExtensionManager.getInstance()
 ) {
-  override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfiguration, *>> =
+  override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonParameterFragments.createRunHeader())
       addBeforeRunFragment(CompileStepBeforeRun.ID)
       addAll(BeforeRunFragment.createGroup())
       add(CommonTags.parallelRun())
-      addBspTargetFragment()
+      if (runConfiguration is BspRunConfiguration) {
+        (this as SettingsEditorFragmentContainer<BspRunConfiguration>).addBspTargetFragment()
+      }
+
       addBspEnvironmentFragment()
-      addBspDebuggerTypeFragment()
+//      addBspDebuggerTypeFragment()
     }
 
-  private fun SettingsEditorFragmentContainer<BspRunConfiguration>.addBspDebuggerTypeFragment() {
-    this.addLabeledSettingsEditorFragment(
-      object : LabeledSettingsFragmentInfo { // TODO: Use bundle
-        override val editorLabel: String = "Debugger type"
-        override val settingsId: String = "bsp.debugger.type.fragment"
-        override val settingsName: String = "Debugger type"
-        override val settingsGroup: String = "BSP"
-        override val settingsHint: String = "Debugger type"
-        override val settingsActionHint: String = "Debugger type"
-     },
-      { DropDownLink<BspDebugType?>(null, BspDebugType.entries.toList() + null) },
-      { it, c ->
-        c.selectedItem = it.debugType
-      },
-      { it, c ->
-        it.debugType = c.selectedItem
-      },
-      { true }
-    )
-  }
+//  private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspDebuggerTypeFragment() {
+//    this.addLabeledSettingsEditorFragment(
+//      object : LabeledSettingsFragmentInfo { // TODO: Use bundle
+//        override val editorLabel: String = "Debugger type"
+//        override val settingsId: String = "bsp.debugger.type.fragment"
+//        override val settingsName: String = "Debugger type"
+//        override val settingsGroup: String = "BSP"
+//        override val settingsHint: String = "Debugger type"
+//        override val settingsActionHint: String = "Debugger type"
+//     },
+//      { DropDownLink<BspDebugType?>(null, BspDebugType.entries.toList() + null) },
+//      { it, c ->
+//        c.selectedItem = it.debugType
+//      },
+//      { it, c ->
+//        it.debugType = c.selectedItem
+//      },
+//      { true }
+//    )
+//  }
 
-  private fun SettingsEditorFragmentContainer<BspRunConfiguration>.addBspEnvironmentFragment() {
+  private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspEnvironmentFragment() {
     this.addEnvironmentFragment(
       object : LabeledSettingsFragmentInfo {
         override val editorLabel: String = ExecutionBundle.message("environment.variables.component.title")

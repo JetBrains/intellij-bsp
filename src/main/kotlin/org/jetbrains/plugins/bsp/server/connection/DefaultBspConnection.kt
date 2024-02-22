@@ -174,8 +174,6 @@ internal class DefaultBspConnection(
     return BspClient(
       bspConsoleService.bspSyncConsole,
       bspConsoleService.bspBuildConsole,
-      bspConsoleService.bspRunConsole,
-      bspConsoleService.bspTestConsole,
       timeoutHandler,
       project
     )

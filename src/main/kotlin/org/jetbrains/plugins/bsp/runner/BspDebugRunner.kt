@@ -38,8 +38,8 @@ public class BspDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     // cast should always succeed, because canRun(...) makes sure only BspRunConfiguration is run with this runner
     val debugState = state as BspRunCommandLineState
 
-    val connection = debugState.remoteConnection
-      ?: error("Run configuration has no remote connection data, but it was run with debug runner")
+    val connection = //debugState.remoteConnection ?:
+      error("Run configuration has no remote connection data, but it was run with debug runner")
     return attachVM(state, environment, connection)
   }
 
