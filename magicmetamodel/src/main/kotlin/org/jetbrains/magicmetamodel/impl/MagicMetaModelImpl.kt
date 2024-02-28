@@ -8,13 +8,14 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.internal
 import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
 import com.intellij.platform.workspace.jps.JpsFileEntitySource
+import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bsp.DirectoryItem
-import org.jetbrains.bsp.LibraryItem
-import org.jetbrains.bsp.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
@@ -55,6 +56,9 @@ internal class DefaultMagicMetaModelDiff(
 
   private fun EntitySource.isBspRelevant() =
     when (this) {
+      // avoid touching global sources
+      is JpsGlobalFileEntitySource -> false
+
       is JpsFileEntitySource,
       is JpsFileDependentEntitySource,
       is BspEntitySource,
