@@ -2,7 +2,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 plugins {
     id("intellijbsp.kotlin-conventions")
-    alias(libs.plugins.intellij)
+    id("org.jetbrains.intellij.platform.base")
 }
 
 dependencies {
@@ -11,6 +11,7 @@ dependencies {
 
         plugins(Platform.plugins)
         bundledPlugins(Platform.bundledPlugins)
+        instrumentationTools()
     }
 }
 
