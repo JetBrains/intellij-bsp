@@ -35,6 +35,7 @@ dependencies {
     bundledPlugins(Platform.bundledPlugins)
 
     instrumentationTools()
+    testFramework()
   }
 }
 
