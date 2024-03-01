@@ -1,4 +1,4 @@
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.extensions.TestFrameworkType
 
 plugins {
   id("intellijbsp.kotlin-conventions")
@@ -16,11 +16,12 @@ dependencies {
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
   intellijPlatform {
-    create(IntelliJPlatformType.IntellijIdeaCommunity, Platform.version)
+    intellijIdeaCommunity(Platform.version)
 
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
+    testFramework(TestFrameworkType.Common)
   }
 }
 

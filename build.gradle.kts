@@ -1,6 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.extensions.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
@@ -30,12 +30,13 @@ dependencies {
   testImplementation(libs.kotest)
 
   intellijPlatform {
-    create(IntelliJPlatformType.IntellijIdeaCommunity, Platform.version)
+    intellijIdeaCommunity(Platform.version)
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
 
     instrumentationTools()
     testFramework()
+    testFramework(TestFrameworkType.JUnit5)
   }
 }
 

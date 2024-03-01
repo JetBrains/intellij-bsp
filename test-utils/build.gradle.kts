@@ -1,4 +1,5 @@
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.Constants
+import org.jetbrains.intellij.platform.gradle.extensions.TestFrameworkType
 
 
 plugins {
@@ -12,12 +13,19 @@ dependencies {
   implementation(libs.kotest)
 
   intellijPlatform {
-    create(IntelliJPlatformType.IntellijIdeaCommunity, Platform.version)
+    intellijIdeaCommunity(Platform.version)
 
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
     testFramework()
+    testFramework(TestFrameworkType.JUnit5)
+  }
+}
+
+configurations {
+  getByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME) {
+    extendsFrom(getByName(Constants.Configurations.INTELLIJ_PLATFORM_TEST_DEPENDENCIES))
   }
 }
 
@@ -26,4 +34,3 @@ repositories {
     defaultRepositories()
   }
 }
-
