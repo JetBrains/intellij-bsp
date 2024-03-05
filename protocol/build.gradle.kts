@@ -4,7 +4,10 @@ plugins {
 }
 
 dependencies {
-  implementation(libs.bsp4j)
+  implementation(libs.bsp4j) {
+    exclude(group = "com.google.guava", "guava")
+  }
+
   intellijPlatform {
     intellijIdeaCommunity(Platform.version)
 
