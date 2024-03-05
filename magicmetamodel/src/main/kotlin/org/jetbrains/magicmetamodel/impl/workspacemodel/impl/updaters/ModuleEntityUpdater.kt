@@ -1,5 +1,8 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.goide.vgo.project.VgoStandaloneModule
+import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
+import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.openapi.module.impl.ModuleManagerEx
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
@@ -52,6 +55,49 @@ internal class ModuleEntityUpdater(
         this.type = entityToAdd.type
       },
     )
+
+    if (moduleEntity.name.contains("lib:lib")) {
+      println("XDDD ${moduleEntity.name}")
+      val rr = VgoStandaloneModuleEntity(
+        moduleId = moduleEntity.symbolicId,
+        importPath = "github.com/maclick/basic-go-project/server/core/lib",
+        root = workspaceModelEntityUpdaterConfig.projectBasePath.resolve("server").resolve("core").resolve("lib").toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        BspEntitySource,
+      )
+      builder.addEntity(rr)
+    }
+
+    if (moduleEntity.name.contains("core:core")) {
+      println("XDDD ${moduleEntity.name}")
+      val rr = VgoStandaloneModuleEntity(
+        moduleId = moduleEntity.symbolicId,
+        importPath = "github.com/maclick/basic-go-project/server/core",
+        root = workspaceModelEntityUpdaterConfig.projectBasePath.resolve("server").resolve("core").toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        BspEntitySource,
+      )
+      builder.addEntity(rr)
+
+      val ee = VgoDependencyEntity(
+        isMainModule = false,
+        internal = true,
+        importPath = "github.com/maclick/basic-go-project/server/parser",
+        entitySource = BspEntitySource,
+      ) {
+        this.module = rr
+      }
+      builder.addEntity(ee)
+    }
+
+    if (moduleEntity.name.contains("parser:parser")) {
+      println("XDDD ${moduleEntity.name}")
+      val rr = VgoStandaloneModuleEntity(
+        moduleId = moduleEntity.symbolicId,
+        importPath = "github.com/maclick/basic-go-project/server/parser",
+        root = workspaceModelEntityUpdaterConfig.projectBasePath.resolve("server").resolve("parser").toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        BspEntitySource,
+      )
+      builder.addEntity(rr)
+    }
     val imlData = builder.addEntity(
       ModuleCustomImlDataEntity(
         customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
