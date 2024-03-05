@@ -23,7 +23,7 @@ dependencies {
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
-    testFramework(TestFrameworkType.Common)
+    testFramework(TestFrameworkType.JUnit5)
   }
 }
 

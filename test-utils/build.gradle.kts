@@ -20,14 +20,7 @@ dependencies {
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
-    testFramework()
     testFramework(TestFrameworkType.JUnit5)
-  }
-}
-
-configurations {
-  getByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME) {
-    extendsFrom(getByName(Constants.Configurations.INTELLIJ_PLATFORM_TEST_DEPENDENCIES))
   }
 }
 

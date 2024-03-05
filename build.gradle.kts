@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.extensions.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
@@ -37,7 +38,6 @@ dependencies {
     bundledPlugins(Platform.bundledPlugins)
 
     instrumentationTools()
-    testFramework()
     testFramework(TestFrameworkType.JUnit5)
   }
 }
@@ -92,6 +92,12 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
       VerifyPluginTask.FailureLevel.NOT_DYNAMIC
     )
+  }
+}
+
+configurations {
+  getByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME) {
+    extendsFrom(getByName(Constants.Configurations.INTELLIJ_PLATFORM_TEST_DEPENDENCIES))
   }
 }
 
