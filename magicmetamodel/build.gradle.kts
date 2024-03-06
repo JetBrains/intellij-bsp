@@ -14,7 +14,7 @@ dependencies {
   implementation(project(":workspacemodel"))
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
-  testImplementation(project(":test-utils"))
+  testImplementation(testFixtures(rootProject))
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
   intellijPlatform {
@@ -23,7 +23,7 @@ dependencies {
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
-    testFramework(TestFrameworkType.JUnit5)
+    testFramework(TestFrameworkType.Platform.JUnit5)
   }
 }
 
