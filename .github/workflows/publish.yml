@@ -5,7 +5,7 @@ on:
 
 jobs:
   build_docker:
-    name: Build Docker image with publisher
+    name: Build Publisher image
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.image-tag.outputs.IMAGE_TAG }}
@@ -55,7 +55,14 @@ jobs:
         with:
           name: publisher_image
           path: /tmp
+
       - name: Load image
         run: |
-          docker load --input /tmp/myimage.tar
+          docker load --input /tmp/publisher_image.tar
           docker image ls -a
+
+      - name: Run publisher
+        env:
+          IMAGE_NAME: ${{ needs.build_docker.outputs.image_tag }}
+        run: |
+          docker run $IMAGE_NAME
