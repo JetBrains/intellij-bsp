@@ -11,4 +11,4 @@ class StorageUploader:
         with open(file_path) as f:
             bucket: Bucket = self._storage_client.bucket(bucket_name)
             blob: Blob = bucket.blob(blob_name)
-            blob.upload_from_file(f)
+            blob.upload_from_file(f, content_type='application/zip')
