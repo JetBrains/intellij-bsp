@@ -2,7 +2,7 @@ FROM gradle:8.4-jdk17 AS plugin-build-image
 
 WORKDIR /
 COPY . .
-RUN gradle build
+RUN gradle build --no-daemon
 
 
 FROM python:3.12 AS python-build-image
@@ -34,6 +34,7 @@ ENV GOOGLE_APPLICATION_CREDENTIALS="/app/google_credentials.json" \
     PLUGIN_BLOB_NAME="intellij-bsp-mapz.zip"
 
 COPY --from=python-build-image /app/.venv /app/.venv
+COPY --from=plugin-build-image /build/distributions/intellij-bsp-2024.1.0-EAP.zip /intellij-bsp.zip
 COPY .github/cloud_storage_uploader/src src
 COPY google_credentials.json .
 
