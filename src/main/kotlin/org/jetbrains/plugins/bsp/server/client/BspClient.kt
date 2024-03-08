@@ -38,6 +38,8 @@ public class BspClient(
   private val log = logger<BspClient>()
   private val gson = Gson()
 
+  private val bspLogger = bspLogger<BspClient>()
+
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
 
@@ -190,11 +192,12 @@ public class BspClient(
   }
 
   private fun addMessageToConsole(originId: String?, message: String) {
-    if (originId?.startsWith("build") == true) {
+    if (originId?.startsWith("build") == true || originId?.startsWith("mobile-install") == true) {
       bspBuildConsole.addMessage(originId, message)
     } else {
       bspSyncConsole.addMessage(originId ?: importSubtaskId, message)
     }
+    bspLogger.info(message)
   }
 
   private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
@@ -209,6 +212,7 @@ public class BspClient(
           it.message,
           getMessageEventKind(it.severity),
         )
+        logDiagnosticBySeverity(it.severity, it.message)
       }
     }
   }
@@ -221,4 +225,13 @@ public class BspClient(
       DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
       null -> MessageEvent.Kind.SIMPLE
     }
+
+  private fun logDiagnosticBySeverity(severity: DiagnosticSeverity?, message: String) {
+    when (severity) {
+      DiagnosticSeverity.ERROR -> bspLogger.error(message)
+      DiagnosticSeverity.WARNING -> bspLogger.warn(message)
+      DiagnosticSeverity.INFORMATION -> bspLogger.info(message)
+      else -> bspLogger.trace(message)
+    }
+  }
 }
