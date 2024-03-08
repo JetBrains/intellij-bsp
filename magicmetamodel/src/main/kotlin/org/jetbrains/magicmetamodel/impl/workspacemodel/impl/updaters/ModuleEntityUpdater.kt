@@ -75,7 +75,7 @@ internal class ModuleEntityUpdater(
         root = workspaceModelEntityUpdaterConfig.projectBasePath.resolve("server").resolve("core").toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         BspEntitySource,
       )
-      builder.addEntity(rr)
+      val rrr = builder.addEntity(rr)
 
       val ee = VgoDependencyEntity(
         isMainModule = false,
@@ -83,7 +83,8 @@ internal class ModuleEntityUpdater(
         importPath = "github.com/maclick/basic-go-project/server/parser",
         entitySource = BspEntitySource,
       ) {
-        this.module = rr
+        this.module = rrr
+        this.root = workspaceModelEntityUpdaterConfig.projectBasePath.resolve("server").resolve("parser").toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
       }
       builder.addEntity(ee)
     }
