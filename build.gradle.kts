@@ -9,7 +9,7 @@ plugins {
   alias(libs.plugins.intellij)
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   alias(libs.plugins.changelog)
-
+  id("java-test-fixtures")
   id("intellijbsp.kotlin-conventions")
 }
 
@@ -30,6 +30,8 @@ dependencies {
   implementation(libs.gson)
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
+  testFixturesImplementation(libs.junitJupiter)
+  testFixturesImplementation(libs.kotest)
 
   intellijPlatform {
     intellijIdeaCommunity(Platform.version)
@@ -37,6 +39,7 @@ dependencies {
     bundledPlugins(Platform.bundledPlugins)
 
     instrumentationTools()
+    testFramework(TestFrameworkType.Plugin.Java)
     testFramework(TestFrameworkType.Platform.JUnit5)
   }
 }
