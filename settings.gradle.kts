@@ -1,5 +1,5 @@
 rootProject.name = "intellij-bsp"
-include("magicmetamodel", "protocol", "workspacemodel", "jps-compilation")
+include("protocol", "workspacemodel", "jps-compilation")
 
 pluginManagement {
   repositories {

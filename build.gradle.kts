@@ -21,7 +21,6 @@ version = Plugin.version
 
 dependencies {
   implementation(project(":jps-compilation"))
-  implementation(project(":magicmetamodel"))
   implementation(project(":protocol"))
   implementation(project(":workspacemodel"))
   implementation(libs.bsp4j) {
