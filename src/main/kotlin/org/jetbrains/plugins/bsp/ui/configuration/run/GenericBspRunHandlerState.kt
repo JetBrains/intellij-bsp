@@ -11,7 +11,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
