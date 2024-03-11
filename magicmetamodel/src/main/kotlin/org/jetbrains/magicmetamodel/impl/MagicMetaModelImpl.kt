@@ -1,6 +1,7 @@
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import com.goide.vgo.project.workspaceModel.VgoWorkspaceModelUpdater
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger

@@ -46,7 +46,7 @@ internal class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
-    val moduleEntity = builder.addEntity(
+    var moduleEntity = builder.addEntity(
       ModuleEntity(
         name = entityToAdd.name,
         dependencies = defaultDependencies + modulesDependencies + associatesDependencies + librariesDependencies,
@@ -55,6 +55,8 @@ internal class ModuleEntityUpdater(
         this.type = entityToAdd.type
       },
     )
+
+    moduleEntity = builder.addEntity(moduleEntity)
 
     if (moduleEntity.name.contains("lib:lib")) {
       println("XDDD ${moduleEntity.name}")

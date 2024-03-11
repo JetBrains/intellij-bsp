@@ -25,7 +25,7 @@ public class BspProjectSystemSyncManager(private val project: Project) : Project
 
   public companion object {
     public fun onSyncEnded(project: Project) {
-      project.messageBus.syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC).syncEnded(ProjectSystemSyncManager.SyncResult.SUCCESS)
+//      project.messageBus.syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC).syncEnded(ProjectSystemSyncManager.SyncResult.SUCCESS)
     }
   }
 }

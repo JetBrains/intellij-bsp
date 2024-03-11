@@ -51,8 +51,8 @@ internal class WorkspaceModelUpdaterImpl(
   override fun loadModule(module: Module) {
     when (module) {
       is JavaModule -> {
-        val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
-        javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
+//        val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
+//        javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
         javaModuleUpdater.addEntity(module)
       }
       is PythonModule -> pythonModuleUpdater.addEntity(module)
