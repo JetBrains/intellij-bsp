@@ -1,24 +1,16 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.OutputPathsParams
-import ch.epfl.scala.bsp4j.OutputPathsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ScalacOptionsParams
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import ch.epfl.scala.bsp4j.*
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.reportSequentialProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,10 +22,7 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
+import org.jetbrains.bsp.protocol.utils.*
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
@@ -52,11 +41,13 @@ import org.jetbrains.plugins.bsp.android.androidSdkGetterExtension
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspProjectAwareExtension
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
+import org.jetbrains.plugins.bsp.sbt.sbtBuildModuleBspExtension
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -94,6 +85,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private var pythonSdks: Set<PythonSdk>? = null
 
   private var scalaSdks: Set<ScalaSdk>? = null
+
+  private var sbtBuildModules: Set<Pair<BuildTargetIdentifier, SbtBuildTarget>>? = null
 
   private var androidSdks: Set<AndroidSdk>? = null
 
@@ -146,6 +139,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
         reporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
           calculateAllScalaSdkInfosSubtask(projectDetails)
+        }
+      }
+
+      println("Hello from doExecute")
+//    if (BspFeatureFlags.isSbtSupportEnabled && sbtBuildModuleBspExtensionExists()) {
+      if (true) {
+        println("Hello from doExecute if")
+        reporter.indeterminateStep(text = "Calculating all unique sbt sdk infos") {
+          calculateAllSbtBuildModuleInfosSubtask(projectDetails)
         }
       }
 
@@ -270,6 +272,29 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         )
       }
 
+  private suspend fun calculateAllSbtBuildModuleInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-sbt-build-module-infos",
+    BspPluginBundle.message("console.task.model.calculate.sbt.build.module.infos")
+  ) {
+    println("Hello from calculateAllSbtBuildModuleInfosSubtask")
+    sbtBuildModules = logPerformance(it) {
+      calculateAllSbtBuildModuleInfos(projectDetails)
+    }
+  }
+
+  private fun calculateAllSbtBuildModuleInfos(projectDetails: ProjectDetails): Set<Pair<BuildTargetIdentifier, SbtBuildTarget>> =
+    projectDetails.targets.filter { it.dataKind == "sbt" }
+      .mapNotNull { target ->
+        println("Hello from calculateAllSbtBuildModuleInfos from mapNotNull")
+        provideAdditionalInfoForSbtBuildModule(target)?.let { target.id to it }
+      }
+      .toSet()
+
+  private fun provideAdditionalInfoForSbtBuildModule(target: BuildTarget): SbtBuildTarget? {
+    println("Hello from provideAdditionalInfoForSbtBuildModule")
+    return extractSbtBuildTarget(target)
+  }
+
   private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-python-sdk-infos",
     BspPluginBundle.message("console.task.model.calculate.python.sdks.done")
@@ -361,6 +386,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       addBspFetchedScalaSdks()
     }
 
+    if (BspFeatureFlags.isSbtSupportEnabled) {
+      println("Hello from postprocessingSubtask if")
+      addBspFetchedSbtBuildModules()
+    }
+
     if (BspFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
     }
@@ -388,6 +418,35 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         writeAction {
           scalaSdks?.forEach { extension.addScalaSdk(it, modifiableProvider) }
           modifiableProvider.commit()
+        }
+      }
+    }
+  }
+
+  private suspend fun addBspFetchedSbtBuildModules() {
+    sbtBuildModuleBspExtension()?.let { extension ->
+      println("Let 1")
+      withSubtask("add-bsp-fetched-sbt-build-modules", BspPluginBundle.message("console.task.model.add.sbt.fetched.build.modules")) {
+        val modifiableProvider = IdeModifiableModelsProviderImpl(project)
+        println("modifiableProvider: $modifiableProvider")
+        BspProjectAwareExtension.ep.extensionList.firstOrNull()?.let { awareExtension ->
+          println("Let 2")
+          writeAction {
+            sbtBuildModules?.forEach {
+                idToSbtBuildTarget ->
+              println("Let 3")
+              project.basePath?.let { basePath ->
+                println("Let 4")
+                val connectionFile =
+                  LocalFileSystem.getInstance().findFileByPath(FileUtil.toSystemIndependentName("/home/agrodowski/Desktop/ZPP/IJ-HELLO/please-work-helloworld"))!!;
+                println("Let 4.2")
+                awareExtension.getProjectId(connectionFile).systemId  // virtualfile argument probably does not matter since we only need system id
+                  .let { projectSystemId ->
+                    println("Let 6")
+                    extension.enrichBspSbtModule(idToSbtBuildTarget.second, basePath, projectSystemId, idToSbtBuildTarget.first , modifiableProvider) }
+              } }
+            modifiableProvider.commit()
+          }
         }
       }
     }

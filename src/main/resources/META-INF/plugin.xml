@@ -19,6 +19,9 @@
     <extensionPoint name="scalaSdkExtension"
                     interface="org.jetbrains.plugins.bsp.scala.sdk.ScalaSdkExtension"
                     dynamic="true"/>
+    <extensionPoint name="sbtBuildModuleBspExtension"
+                    interface="org.jetbrains.plugins.bsp.sbt.SbtBuildModuleBspExtension"
+                    dynamic="true"/>
     <extensionPoint name="androidSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
                     dynamic="true"/>
@@ -102,6 +105,7 @@
     <registryKey defaultValue="false" description="Build project on initial project sync" key="bsp.build.project.on.sync"/>
     <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
     <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
+    <registryKey defaultValue="true" description="Sbt build modules support" key="bsp.sbt.support"/>
     <registryKey defaultValue="false" description="Default to use JPS to build project instead of BSP" key="bsp.jps.project.compilation"/>
     <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
 

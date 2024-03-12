@@ -1,10 +1,6 @@
 package org.jetbrains.bsp.protocol.utils
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.ScalaBuildTarget
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
@@ -24,6 +20,9 @@ public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =
 
 public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? =
   extractData(target, BuildTargetDataKind.SCALA)
+
+public fun extractSbtBuildTarget(target: BuildTarget): SbtBuildTarget? =
+  extractData(target, BuildTargetDataKind.SBT)
 
 public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? =
   extractData(target, "android")
