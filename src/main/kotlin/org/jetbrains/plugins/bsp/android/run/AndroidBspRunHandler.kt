@@ -17,6 +17,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
 /**
@@ -30,7 +31,7 @@ public class AndroidBspRunHandler : BspRunHandler {
 
   override fun canDebug(target: BuildTargetInfo): Boolean = canRun(target)
 
-  override fun prepareRunConfiguration(configuration: BspRunConfiguration) {
+  override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)
   }
 
@@ -58,7 +59,7 @@ public class AndroidBspRunHandler : BspRunHandler {
     return AndroidConfigurationExecutorRunProfileState(androidConfigurationExecutor)
   }
 
-  override fun getBeforeRunTasks(configuration: BspRunConfiguration): List<BeforeRunTask<*>> {
+  override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> {
     val provider = MobileInstallBeforeRunTaskProvider()
     val mobileInstallTask = provider.createTask(configuration) ?: return emptyList()
     return listOf(mobileInstallTask)

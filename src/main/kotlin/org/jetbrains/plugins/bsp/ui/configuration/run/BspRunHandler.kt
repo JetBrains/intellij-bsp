@@ -13,7 +13,7 @@ public interface BspRunHandler {
 
   public fun canDebug(target: BuildTargetInfo): Boolean
 
-  public fun prepareRunConfiguration(configuration: BspRunConfiguration) {}
+  public fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {}
 
   public fun getRunProfileState(
     project: Project,
@@ -22,7 +22,7 @@ public interface BspRunHandler {
     target: BuildTargetInfo,
   ): RunProfileState
 
-  public fun getBeforeRunTasks(configuration: BspRunConfiguration): List<BeforeRunTask<*>> = emptyList()
+  public fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> = emptyList()
 
   public companion object {
     public val ep: ExtensionPointName<BspRunHandler> =

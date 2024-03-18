@@ -21,6 +21,7 @@ public sealed class BspRunConfigurationBase(
   project: Project,
   configurationFactory: BspRunConfigurationTypeBase,
   name: String,
+  internal val runHandler: BspRunHandler
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationFactory, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   DumbAware {

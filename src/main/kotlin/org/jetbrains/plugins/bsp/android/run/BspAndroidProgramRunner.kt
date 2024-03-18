@@ -9,8 +9,8 @@ import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.progress.ProgressIndicator
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationType
 
 public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -20,7 +20,7 @@ public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
   }
 
   override val supportedConfigurationTypeIds: List<String>
-    get() = listOf(BspRunConfigurationType.ID)
+    get() = listOf(BspRunConfigurationType.id)
 
   override fun canRunWithMultipleDevices(executorId: String): Boolean = false
 

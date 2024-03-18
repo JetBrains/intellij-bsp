@@ -13,9 +13,9 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspTestConfiguration
 import javax.swing.Icon
 
-public sealed class BspRunConfigurationTypeBase(id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon)
+public sealed class BspRunConfigurationTypeBase(public val id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon)
 
-public class BspRunConfigurationType : BspRunConfigurationTypeBase(
+public object BspRunConfigurationType : BspRunConfigurationTypeBase(
   id = "BspRunConfiguration",
   name = BspPluginBundle.message("runconfig.run.name"),
   description = BspPluginBundle.message("runconfig.run.description"),
@@ -25,7 +25,7 @@ public class BspRunConfigurationType : BspRunConfigurationTypeBase(
     BspRunConfiguration(project, this, name)
 }
 
-public class BspTestConfigurationType : BspRunConfigurationTypeBase(
+public object BspTestConfigurationType : BspRunConfigurationTypeBase(
   id = "BspTestConfiguration",
   name = BspPluginBundle.message("runconfig.test.name"),
   description = BspPluginBundle.message("runconfig.test.description"),
@@ -35,7 +35,7 @@ public class BspTestConfigurationType : BspRunConfigurationTypeBase(
     BspTestConfiguration(project, this, name)
 }
 
-public class BspBuildConfigurationType : BspRunConfigurationTypeBase(
+public object BspBuildConfigurationType : BspRunConfigurationTypeBase(
   id = "BspBuildConfiguration",
   name = BspPluginBundle.message("runconfig.build.name"),
   description = BspPluginBundle.message("runconfig.build.description"),
