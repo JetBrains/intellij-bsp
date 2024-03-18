@@ -68,7 +68,7 @@ internal class BspRunCommandLineState(
   private val originId: OriginId
 ) : BspCommandLineStateBase(project, environment, configuration, originId) {
   override fun checkRun(capabilities: BuildServerCapabilities) {
-    if (configuration.targetUri == null || capabilities.runProvider == null) {
+    if (configuration.target?.id == null || capabilities.runProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
   }
@@ -101,7 +101,8 @@ internal class BspRunCommandLineState(
   }
 
   override fun startBsp(server: BspServer): CompletableFuture<Any> {
-    val targetId = BuildTargetIdentifier(configuration.targetUri!!)
+    // SAFETY: safe to unwrap because we checked in checkRun
+    val targetId = BuildTargetIdentifier(configuration.target?.id!!)
     val runParams = RunParams(targetId)
     runParams.originId = originId
     return server.buildTargetRun(runParams) as CompletableFuture<Any>

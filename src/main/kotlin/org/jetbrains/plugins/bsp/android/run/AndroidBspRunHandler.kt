@@ -26,10 +26,10 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 public val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTURE_KEY")
 
 public class AndroidBspRunHandler : BspRunHandler {
-  override fun canRun(target: BuildTargetInfo): Boolean =
-    BspFeatureFlags.isAndroidSupportEnabled && target.languageIds.includesAndroid()
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
+    BspFeatureFlags.isAndroidSupportEnabled && targets.all {it.languageIds.includesAndroid() }
 
-  override fun canDebug(target: BuildTargetInfo): Boolean = canRun(target)
+  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
 
   override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)
@@ -39,7 +39,7 @@ public class AndroidBspRunHandler : BspRunHandler {
     project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
-    target: BuildTargetInfo,
+    configuration: BspRunConfigurationBase,
   ): RunProfileState {
     val deployTargetContext = DeployTargetContext()
     val deployTarget = deployTargetContext.currentDeployTargetProvider.getDeployTarget(project)

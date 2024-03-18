@@ -83,10 +83,10 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
      },
       { BspTargetBrowserComponent() },
       { it, c ->
-        c.text = it.targetUri ?: ""
+        c.text = it.target?.id ?: ""
       },
       { it, c ->
-        it.targetUri = c.text
+        // TODO: set target
       },
       { true }
     )

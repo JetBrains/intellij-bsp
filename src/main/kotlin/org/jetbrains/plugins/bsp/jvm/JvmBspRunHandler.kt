@@ -8,20 +8,22 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.GenericBspRunHandlerState
 
 public class JvmBspRunHandler : BspRunHandler {
-  override fun canRun(target: BuildTargetInfo): Boolean = target.languageIds.isJvmTarget()
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.languageIds.isJvmTarget() }
 
-  override fun canDebug(target: BuildTargetInfo): Boolean = canRun(target)
+  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
 
   override fun getRunProfileState(
     project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
-    target: BuildTargetInfo,
-  ): RunProfileState = JvmBspRunHandlerState(project, environment, target.id)
+    configuration: BspRunConfigurationBase,
+  ): RunProfileState = JvmBspRunHandlerState(project, environment, configuration.targetId)
 
   public class JvmBspRunHandlerState(
     project: Project,

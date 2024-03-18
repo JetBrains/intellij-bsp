@@ -9,9 +9,9 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public interface BspRunHandler {
-  public fun canRun(target: BuildTargetInfo): Boolean
+  public fun canRun(targets: List<BuildTargetInfo>): Boolean
 
-  public fun canDebug(target: BuildTargetInfo): Boolean
+  public fun canDebug(targets: List<BuildTargetInfo>): Boolean
 
   public fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {}
 
@@ -19,7 +19,7 @@ public interface BspRunHandler {
     project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
-    target: BuildTargetInfo,
+    configuration: BspRunConfigurationBase,
   ): RunProfileState
 
   public fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> = emptyList()
@@ -28,7 +28,7 @@ public interface BspRunHandler {
     public val ep: ExtensionPointName<BspRunHandler> =
       ExtensionPointName.create("org.jetbrains.bsp.bspRunHandler")
 
-    public fun getRunHandler(target: BuildTargetInfo): BspRunHandler =
-      ep.extensionList.firstOrNull { it.canRun(target) } ?: GenericBspRunHandler()
+    public fun getRunHandler(targets: List<BuildTargetInfo>): BspRunHandler =
+      ep.extensionList.firstOrNull { it.canRun(targets) } ?: GenericBspRunHandler()
   }
 }

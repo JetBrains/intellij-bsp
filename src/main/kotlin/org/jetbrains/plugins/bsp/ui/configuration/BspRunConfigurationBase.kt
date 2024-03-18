@@ -11,6 +11,7 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.BspBuildConfigurationType
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationTypeBase
@@ -21,21 +22,12 @@ public sealed class BspRunConfigurationBase(
   project: Project,
   configurationFactory: BspRunConfigurationTypeBase,
   name: String,
-  internal val runHandler: BspRunHandler
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationFactory, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   DumbAware {
+
   public var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
-
-
-  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-    val originId = UUID.randomUUID().toString()
-    return when (this) {
-      is BspRunConfiguration -> BspRunCommandLineState(project, environment, this, originId)
-      is BspTestConfiguration -> BspTestCommandLineState(project, environment, this, originId)
-      else -> throw IllegalStateException("Unknown configuration type: $this")
-    }
-  }
+  public lateinit var runHandler: BspRunHandler
 
   override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> {
     return BspRunConfigurationEditor(this)
@@ -47,8 +39,16 @@ public class BspRunConfiguration(
   configurationFactory: BspRunConfigurationType,
   name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name) {
-  public var targetUri: String? = null
+  public var target: BuildTargetInfo? = null
+    set(value) {
+      this.runHandler = BspRunHandler.getRunHandler(listOfNotNull(value))
+      field = value
+    }
+
   public var debugType: BspDebugType? = null
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
+    return runHandler.getRunProfileState(project, executor, environment, this)
+  }
 
   override fun checkConfiguration() {
     // TODO: check if targetUri is valid
@@ -63,7 +63,15 @@ public class BspTestConfiguration(
   name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name),
   SMRunnerConsolePropertiesProvider {
-  public var targetUris: List<String> = emptyList()
+  public var targets: List<BuildTargetInfo> = emptyList()
+    set(value) {
+      this.runHandler = BspRunHandler.getRunHandler(value)
+      field = value
+    }
+
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
+    return runHandler.getRunProfileState(project, executor, environment, this)
+  }
 
   override fun checkConfiguration() {
     // TODO: check if targetUri is valid
@@ -81,6 +89,16 @@ public class BspBuildConfiguration(
   configurationFactory: BspBuildConfigurationType,
   name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name) {
+  public var targets: List<BuildTargetInfo> = emptyList()
+    set(value) {
+      this.runHandler = BspRunHandler.getRunHandler(value)
+      field = value
+    }
+
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
+    return runHandler.getRunProfileState(project, executor, environment, this)
+  }
+
   override fun checkConfiguration() {
 
   }

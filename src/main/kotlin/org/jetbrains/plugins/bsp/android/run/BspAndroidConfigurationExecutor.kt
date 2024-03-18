@@ -80,7 +80,7 @@ public class BspAndroidConfigurationExecutor(
 
   private fun getPackageName(): String? {
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
-    val target = bspRunConfiguration.targetUri ?: return null
+    val target = bspRunConfiguration.target?.id ?: return null
     val module = ModuleManager.getInstance(environment.project).findModuleByName(target) ?: return null
     return module.getModuleSystem().getPackageName()
   }

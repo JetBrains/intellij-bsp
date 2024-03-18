@@ -51,7 +51,7 @@ public class BspTestCommandLineState(
   }
 
   override fun checkRun(capabilities: BuildServerCapabilities) {
-    if (configuration.targetUris.isEmpty() || capabilities.testProvider == null) {
+    if (configuration.targets.isEmpty() || capabilities.testProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
   }
@@ -113,7 +113,7 @@ public class BspTestCommandLineState(
   }
 
   override fun startBsp(server: BspServer): CompletableFuture<Any> {
-    val targets = configuration.targetUris.map { BuildTargetIdentifier(it) }
+    val targets = configuration.targets.map { BuildTargetIdentifier(it.id) }
     val runParams = TestParams(targets)
     runParams.originId = originId
     return server.buildTargetTest(runParams) as CompletableFuture<Any>
