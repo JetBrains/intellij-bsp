@@ -27,5 +27,5 @@ internal class TestTargetAction(
     )
   },
   isDebugAction = isDebugAction) {
-  override fun getConfigurationType(project: Project) = BspTestConfigurationType
+  override fun getConfigurationType(project: Project) = BspTestConfigurationType()
 }

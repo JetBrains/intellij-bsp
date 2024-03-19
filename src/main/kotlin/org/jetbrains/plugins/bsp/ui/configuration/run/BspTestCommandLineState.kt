@@ -22,6 +22,7 @@ import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspTaskListener
@@ -50,7 +51,7 @@ public class BspTestCommandLineState(
     return DefaultExecutionResult(console, handler, *actions)
   }
 
-  override fun checkRun(capabilities: BuildServerCapabilities) {
+  override fun checkRun(capabilities: BazelBuildServerCapabilities) {
     if (configuration.targets.isEmpty() || capabilities.testProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }

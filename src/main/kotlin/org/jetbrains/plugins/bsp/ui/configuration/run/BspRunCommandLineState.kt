@@ -15,6 +15,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import org.jetbrains.bsp.protocol.BazelBuildServer
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.connection
@@ -25,13 +27,13 @@ import org.jetbrains.plugins.bsp.services.TaskId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import java.util.concurrent.CompletableFuture
 
-public sealed class BspCommandLineStateBase(
+public abstract class BspCommandLineStateBase(
   private val project: Project,
   private val environment: ExecutionEnvironment,
   private val configuration: BspRunConfigurationBase,
   private val originId: OriginId
 ) : CommandLineState(environment) {
-  protected abstract fun checkRun(capabilities: BuildServerCapabilities)
+  protected abstract fun checkRun(capabilities: BazelBuildServerCapabilities)
 
   protected abstract fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener
 
@@ -67,37 +69,14 @@ internal class BspRunCommandLineState(
   private val configuration: BspRunConfiguration,
   private val originId: OriginId
 ) : BspCommandLineStateBase(project, environment, configuration, originId) {
-  override fun checkRun(capabilities: BuildServerCapabilities) {
+  override fun checkRun(capabilities: BazelBuildServerCapabilities) {
     if (configuration.target?.id == null || capabilities.runProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
   }
 
   override fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener {
-    return object : BspTaskListener {
-      val ansiEscapeDecoder = AnsiEscapeDecoder()
-
-      override fun onOutputStream(taskId: TaskId?, text: String) {
-        ansiEscapeDecoder.escapeText(text, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
-          handler.notifyTextAvailable(s, key)
-        }
-      }
-
-      override fun onErrorStream(taskId: TaskId?, text: String) {
-        ansiEscapeDecoder.escapeText(text, ProcessOutputType.STDERR) { s: String, key: Key<Any> ->
-          handler.notifyTextAvailable(s, key)
-        }
-      }
-
-      // For compatibility with older BSP servers
-      // TODO: Log messages in the correct place
-      override fun onLogMessage(message: String) {
-        val messageWithNewline = if (message.endsWith("\n")) message else "$message\n"
-        ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
-          handler.notifyTextAvailable(s, key)
-        }
-      }
-    }
+    return BspRunTaskListener(handler)
   }
 
   override fun startBsp(server: BspServer): CompletableFuture<Any> {

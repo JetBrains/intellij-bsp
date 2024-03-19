@@ -20,7 +20,7 @@ public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
   }
 
   override val supportedConfigurationTypeIds: List<String>
-    get() = listOf(BspRunConfigurationType.id)
+    get() = listOf(BspRunConfigurationType.ID)
 
   override fun canRunWithMultipleDevices(executorId: String): Boolean = false
 
