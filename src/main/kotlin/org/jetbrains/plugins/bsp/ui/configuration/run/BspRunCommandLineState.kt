@@ -33,32 +33,18 @@ public abstract class BspCommandLineStateBase(
   protected abstract fun startBsp(server: BspServer): CompletableFuture<Any>
 
   final override fun startProcess(): BspProcessHandler<out Any> {
-    val logger = logger<BspCommandLineStateBase>()
-    logger.warn("kurwa process started")
+    // We have to start runFuture later, because we need to register the listener first
+    // Otherwise, we might miss some events
     val computationStarter = CompletableFuture<Unit>()
     val runFuture = computationStarter.thenCompose {
-      logger.warn("kurwa future started")
       project.connection.runWithServer { server, capabilities ->
-          logger.warn("kurwa inside runWithServer")
           checkRun(capabilities)
-          logger.warn("kurwa after checkRun")
           startBsp(server)
         }
-      }.handle {
-        result, error ->
-      if (error != null) {
-        logger.warn( "kurwa error: $error", error)
-        throw ExecutionException(error)
-      } else {
-        logger.warn("kurwa result: $result")
       }
-      result
-    }
 
     val handler = BspProcessHandler(runFuture)
     val runListener = makeTaskListener(handler)
-
-    logger.warn("kurwa before addListener")
 
     with(BspTaskEventsService.getInstance(project)) {
       addListener(originId, runListener)
@@ -69,7 +55,6 @@ public abstract class BspCommandLineStateBase(
     computationStarter.complete(Unit)
     handler.startNotify()
 
-    logger.warn("kurwa after startNotify")
     return handler
   }
 }
@@ -92,12 +77,9 @@ internal class BspRunCommandLineState(
 
   override fun startBsp(server: BspServer): CompletableFuture<Any> {
     // SAFETY: safe to unwrap because we checked in checkRun
-    val logger = logger<BspRunCommandLineState>()
-    logger.warn("kurwa startBsp")
     val targetId = BuildTargetIdentifier(configuration.targets.single().id)
     val runParams = RunParams(targetId)
     runParams.originId = originId
-    logger.warn("kurwa runParams: $runParams")
     return server.buildTargetRun(runParams) as CompletableFuture<Any>
   }
 }

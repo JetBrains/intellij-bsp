@@ -25,7 +25,6 @@ public class BspProcessHandler<T>(private val requestFuture: CompletableFuture<T
   }
 
   override fun destroyProcessImpl() {
-    this.thisLogger().warn("Destroying process")
     requestFuture.cancel(true)
     super.notifyProcessTerminated(1)
   }
