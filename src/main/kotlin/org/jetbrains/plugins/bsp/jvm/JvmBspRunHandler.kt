@@ -6,6 +6,7 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -18,7 +19,9 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
+import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.run.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -34,11 +37,23 @@ public class JvmBspRunHandler : BspRunHandler {
     environment: ExecutionEnvironment,
     configuration: BspRunConfigurationBase,
   ): RunProfileState {
-    this.thisLogger().warn("Using generic JVM handler for ${configuration.name}")
-    return JvmBspRunHandlerState(project, environment, configuration, UUID.randomUUID().toString())
+    return when {
+      executor is DefaultDebugExecutor -> {
+        JvmDebugHandlerState(project, environment, configuration, UUID.randomUUID().toString())
+      }
+      configuration is BspTestConfiguration -> {
+        BspTestCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+      }
+      configuration is BspRunConfiguration -> {
+        BspRunCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+      }
+      else -> {
+        throw ExecutionException("JvmBspRunHanlder can run only JVM or generic BSP targets")
+      }
+    }
   }
 
-  public class JvmBspRunHandlerState(
+  public class JvmDebugHandlerState(
     project: Project,
     environment: ExecutionEnvironment,
     private val configuration: BspRunConfigurationBase,

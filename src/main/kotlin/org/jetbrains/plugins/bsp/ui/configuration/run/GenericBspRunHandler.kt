@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
+import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import java.util.*
 
 public open class GenericBspRunHandler : BspRunHandler {
@@ -20,10 +21,20 @@ public open class GenericBspRunHandler : BspRunHandler {
     executor: Executor,
     environment: ExecutionEnvironment,
     configuration: BspRunConfigurationBase,
-  ): RunProfileState = if (configuration !is BspRunConfiguration) {
-    throw IllegalArgumentException("GenericBspRunHandler can only handle BspRunConfiguration")
-  } else {
-    this.thisLogger().warn("Using generic run handler for ${configuration.name}")
-    BspRunCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+  ): RunProfileState =
+    when (configuration) {
+      is BspTestConfiguration -> {
+        thisLogger().warn("Using generic test handler for ${configuration.name}")
+        BspTestCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+      }
+
+      is BspRunConfiguration -> {
+        thisLogger().warn("Using generic run handler for ${configuration.name}")
+        BspRunCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+      }
+
+      else -> {
+        throw IllegalArgumentException("GenericBspRunHandler can only handle BspRunConfiguration")
+      }
+    }
   }
-}

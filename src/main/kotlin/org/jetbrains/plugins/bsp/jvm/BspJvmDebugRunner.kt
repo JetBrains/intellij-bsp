@@ -37,7 +37,7 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
     // cast should always succeed, because canRun(...) checks for it
-    val debugState = state as JvmBspRunHandler.JvmBspRunHandlerState
+    val debugState = state as JvmBspRunHandler.JvmDebugHandlerState
     val connection = debugState.remoteConnection
     return attachVM(state, environment, connection)
   }
