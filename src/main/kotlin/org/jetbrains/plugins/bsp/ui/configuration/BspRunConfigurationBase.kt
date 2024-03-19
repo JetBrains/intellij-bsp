@@ -18,7 +18,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationTypeBase
 import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType
 import java.util.*
 
-public sealed class BspRunConfigurationBase(
+public abstract class BspRunConfigurationBase(
   project: Project,
   configurationFactory: BspRunConfigurationTypeBase,
   name: String,
@@ -26,8 +26,14 @@ public sealed class BspRunConfigurationBase(
   RunConfigurationWithSuppressedDefaultDebugAction,
   DumbAware {
 
+  public var targets: List<BuildTargetInfo> = emptyList()
+    set(value) {
+      this.runHandler = BspRunHandler.getRunHandler(value)
+      field = value
+    }
+
   public var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
-  public lateinit var runHandler: BspRunHandler
+  public var runHandler: BspRunHandler = BspRunHandler.getRunHandler(targets)
 
   override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> {
     return BspRunConfigurationEditor(this)
@@ -63,11 +69,6 @@ public class BspTestConfiguration(
   name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name),
   SMRunnerConsolePropertiesProvider {
-  public var targets: List<BuildTargetInfo> = emptyList()
-    set(value) {
-      this.runHandler = BspRunHandler.getRunHandler(value)
-      field = value
-    }
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return runHandler.getRunProfileState(project, executor, environment, this)
@@ -89,11 +90,6 @@ public class BspBuildConfiguration(
   configurationFactory: BspBuildConfigurationType,
   name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name) {
-  public var targets: List<BuildTargetInfo> = emptyList()
-    set(value) {
-      this.runHandler = BspRunHandler.getRunHandler(value)
-      field = value
-    }
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return runHandler.getRunProfileState(project, executor, environment, this)
