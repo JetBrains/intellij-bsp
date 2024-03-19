@@ -16,8 +16,7 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationBase
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
 /**

@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.ui.configuration.run
 
 import com.intellij.compiler.options.CompileStepBeforeRun
 import com.intellij.execution.ExecutionBundle
-import com.intellij.execution.configuration.EnvironmentVariablesTextFieldWithBrowseButton
 import com.intellij.execution.ui.*
 import com.intellij.openapi.externalSystem.service.execution.configuration.addBeforeRunFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
@@ -10,7 +9,8 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.addEn
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.ui.components.DropDownLink
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 
 
 public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) : RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
@@ -83,7 +83,7 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
      },
       { BspTargetBrowserComponent() },
       { it, c ->
-        c.text = it.target?.id ?: ""
+        c.text = it.targets.singleOrNull()?.id ?: ""
       },
       { it, c ->
         // TODO: set target

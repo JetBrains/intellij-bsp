@@ -22,8 +22,7 @@ import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jdom.Element
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunCommandLineState
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
 public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {

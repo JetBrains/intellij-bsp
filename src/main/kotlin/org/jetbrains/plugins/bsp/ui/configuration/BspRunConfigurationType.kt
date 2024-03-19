@@ -6,8 +6,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspTestConfiguration
 import javax.swing.Icon
 
 public abstract class BspRunConfigurationTypeBase(id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon)

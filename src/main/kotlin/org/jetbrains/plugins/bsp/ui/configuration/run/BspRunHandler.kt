@@ -7,6 +7,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 
 public interface BspRunHandler {
   public fun canRun(targets: List<BuildTargetInfo>): Boolean

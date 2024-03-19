@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TestFinish
@@ -29,6 +28,7 @@ import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.services.TaskId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import java.util.concurrent.CompletableFuture
 
 public class BspTestCommandLineState(

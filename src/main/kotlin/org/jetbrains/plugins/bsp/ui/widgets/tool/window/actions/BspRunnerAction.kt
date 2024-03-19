@@ -3,11 +3,11 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.configuration.BspBaseRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationBase
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 import javax.swing.Icon
 
@@ -26,7 +26,10 @@ internal abstract class BspRunnerAction(
     val factory = getConfigurationType(project).configurationFactories.first()
     val settings =
       RunManager.getInstance(project).createConfiguration(calculateConfigurationName(buildTargetInfo), factory)
-    (settings.configuration as? BspRunConfigurationBase)?.apply { targets = listOf(buildTargetInfo) }
+    (settings.configuration as? BspRunConfigurationBase)?.apply {
+      logger<BspRunnerAction>().warn("kurwa ustawiam targety")
+      targets = listOf(buildTargetInfo)
+    }
     return settings
   }
 

@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.jvm
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
@@ -8,8 +7,8 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -19,6 +18,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -33,7 +33,10 @@ public class JvmBspRunHandler : BspRunHandler {
     executor: Executor,
     environment: ExecutionEnvironment,
     configuration: BspRunConfigurationBase,
-  ): RunProfileState = JvmBspRunHandlerState(project, environment, configuration, UUID.randomUUID().toString())
+  ): RunProfileState {
+    this.thisLogger().warn("Using generic JVM handler for ${configuration.name}")
+    return JvmBspRunHandlerState(project, environment, configuration, UUID.randomUUID().toString())
+  }
 
   public class JvmBspRunHandlerState(
     project: Project,
@@ -60,7 +63,7 @@ public class JvmBspRunHandler : BspRunHandler {
 
     override fun startBsp(server: BspServer): CompletableFuture<Any> {
       // SAFETY: safe to unwrap because we checked in checkRun
-      val targetId = BuildTargetIdentifier(configuration.id!!)
+      val targetId = BuildTargetIdentifier(configuration.targets.single().id)
       val runParams = RunParams(targetId)
       runParams.originId = originId
       val remoteDebugData = RemoteDebugData(debugType.s, portForDebug!!)
