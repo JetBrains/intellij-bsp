@@ -12,7 +12,6 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationEditor
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
@@ -43,7 +42,6 @@ public class BspRunConfiguration(
   configurationFactory: BspRunConfigurationType,
   name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name) {
-  public var debugType: BspDebugType? = null
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return runHandler.getRunProfileState(project, executor, environment, this)
   }

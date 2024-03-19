@@ -64,8 +64,6 @@ public class JvmBspRunHandler : BspRunHandler {
     public val remoteConnection: RemoteConnection =
       RemoteConnection(true, "localhost", "0", true)
 
-    public val debugType: BspDebugType = BspDebugType.JDWP
-
     public val portForDebug: Int?
       get() = remoteConnection.debuggerAddress?.toInt()
 
@@ -83,7 +81,7 @@ public class JvmBspRunHandler : BspRunHandler {
       val targetId = BuildTargetIdentifier(configuration.targets.single().id)
       val runParams = RunParams(targetId)
       runParams.originId = originId
-      val remoteDebugData = RemoteDebugData(debugType.s, portForDebug!!)
+      val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
       val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
       return server.buildTargetRunWithDebug(runWithDebugParams) as CompletableFuture<Any>
