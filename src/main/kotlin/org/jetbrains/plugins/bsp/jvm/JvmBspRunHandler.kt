@@ -14,6 +14,7 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspTaskListener
@@ -27,7 +28,8 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 
 public class JvmBspRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.languageIds.isJvmTarget() }
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.languageIds.isJvmTarget() ||
+      it.languageIds.includesAndroid() && it.capabilities.canTest }
 
   override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
 
