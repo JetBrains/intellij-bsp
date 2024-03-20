@@ -26,7 +26,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
 public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
-  override fun getRunnerId(): String = "BspDebugRunner"
+  override fun getRunnerId(): String = "BspJvmDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     // if target cannot be debugged, do not offer debugging it

@@ -9,6 +9,7 @@ import ch.epfl.scala.bsp4j.TestTask
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
@@ -18,6 +19,14 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
 public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
+
+  init {
+    handler.addProcessListener(object : ProcessListener {
+      override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+        handler.notifyTextAvailable("\n##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
+      }
+    })
+  }
 
   override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
     when (data) {
@@ -38,9 +47,6 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
       is TestReport -> {
         val testSuiteFinished = "\n" + ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString() + "\n"
         handler.notifyTextAvailable(testSuiteFinished, ProcessOutputType.STDOUT)
-
-        handler.notifyTextAvailable("\n##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
-
       }
 
       is TestFinish -> {
