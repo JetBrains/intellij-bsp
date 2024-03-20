@@ -17,13 +17,13 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
   override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
     when (data) {
-      is TestStart -> {
-        val testSuiteStarted = "\n" + ServiceMessageBuilder.testSuiteStarted(data.displayName).toString() + "\n"
+      is TestTask -> {
+        val testSuiteStarted = "\n" + ServiceMessageBuilder.testSuiteStarted(data.target.uri).toString() + "\n"
         handler.notifyTextAvailable(testSuiteStarted, ProcessOutputType.STDOUT)
       }
 
-      is TestTask -> {
-        val testStarted = "\n" + ServiceMessageBuilder.testStarted(data.target.uri).toString() + "\n"
+      is TestStart -> {
+        val testStarted = "\n" + ServiceMessageBuilder.testStarted(data.displayName).toString() + "\n"
         handler.notifyTextAvailable(testStarted, ProcessOutputType.STDOUT)
       }
     }
@@ -31,13 +31,13 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
 
   override fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {
     when (data) {
-      is TestFinish -> {
-        val testSuiteFinished = "\n" + ServiceMessageBuilder.testSuiteFinished(data.displayName).toString() + "\n"
+      is TestReport -> {
+        val testSuiteFinished = "\n" + ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString() + "\n"
         handler.notifyTextAvailable(testSuiteFinished, ProcessOutputType.STDOUT)
       }
 
-      is TestReport -> {
-        val testFinished = "\n" + ServiceMessageBuilder.testFinished(data.target.uri).toString() + "\n"
+      is TestFinish -> {
+        val testFinished = "\n" + ServiceMessageBuilder.testFinished(data.displayName).toString() + "\n"
         handler.notifyTextAvailable(testFinished, ProcessOutputType.STDOUT)
       }
     }
