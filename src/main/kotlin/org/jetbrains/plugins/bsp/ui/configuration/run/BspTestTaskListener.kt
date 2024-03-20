@@ -45,8 +45,11 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   override fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {
     when (data) {
       is TestReport -> {
-        val testSuiteFinished = "\n" + ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString() + "\n"
+        val testSuiteFinished = ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString()
         handler.notifyTextAvailable(testSuiteFinished, ProcessOutputType.STDOUT)
+
+        handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
+
       }
 
       is TestFinish -> {
@@ -60,10 +63,10 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
 
         if (failureMessageBuilder != null) {
           failureMessageBuilder.addAttribute("message", data.message ?: "No message")
-          handler.notifyTextAvailable("\n" + failureMessageBuilder.toString() + "\n", ProcessOutputType.STDOUT)
+          handler.notifyTextAvailable( failureMessageBuilder.toString(), ProcessOutputType.STDOUT)
         }
 
-        val testFinished = "\n" + ServiceMessageBuilder.testFinished(data.displayName).toString() + "\n"
+        val testFinished = ServiceMessageBuilder.testFinished(data.displayName).toString()
         handler.notifyTextAvailable(testFinished, ProcessOutputType.STDOUT)
       }
     }
