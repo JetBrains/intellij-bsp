@@ -46,6 +46,10 @@ public class BspTestCommandLineState(
     val console: BaseTestsOutputConsoleView =
       SMTestRunnerConnectionUtil.createAndAttachConsole(BspPluginBundle.message("console.tasks.test.framework.name"), handler, properties)
 
+    handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString(), ProcessOutputType.STDOUT)
+    handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
+
+
     val actions = createActions(console, handler, executor)
 
     return DefaultExecutionResult(console, handler, *actions)

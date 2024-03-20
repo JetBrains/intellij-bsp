@@ -7,6 +7,8 @@ import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
 import com.intellij.execution.process.AnsiEscapeDecoder
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
@@ -16,6 +18,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
 public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
+
   override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
     when (data) {
       is TestTask -> {
@@ -35,21 +38,26 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
       is TestReport -> {
         val testSuiteFinished = "\n" + ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString() + "\n"
         handler.notifyTextAvailable(testSuiteFinished, ProcessOutputType.STDOUT)
+
+        handler.notifyTextAvailable("\n##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
+
       }
 
       is TestFinish -> {
-        val builder = when (data.status!!) {
+        val failureMessageBuilder = when (data.status!!) {
           TestStatus.FAILED -> { ServiceMessageBuilder.testFailed(data.displayName) }
           TestStatus.CANCELLED -> { ServiceMessageBuilder.testIgnored(data.displayName) }
-          TestStatus.PASSED -> { ServiceMessageBuilder.testFinished(data.displayName) }
           TestStatus.IGNORED -> { ServiceMessageBuilder.testIgnored(data.displayName) }
           TestStatus.SKIPPED -> { ServiceMessageBuilder.testIgnored(data.displayName) }
+          else -> null
         }
 
-        builder.addAttribute("message", data.message ?: "No message")
+        if (failureMessageBuilder != null) {
+          failureMessageBuilder.addAttribute("message", data.message ?: "No message")
+          handler.notifyTextAvailable("\n" + failureMessageBuilder.toString() + "\n", ProcessOutputType.STDOUT)
+        }
 
-        val testFinished = "\n" + builder.toString() + "\n"
-
+        val testFinished = "\n" + ServiceMessageBuilder.testFinished(data.displayName).toString() + "\n"
         handler.notifyTextAvailable(testFinished, ProcessOutputType.STDOUT)
       }
     }
