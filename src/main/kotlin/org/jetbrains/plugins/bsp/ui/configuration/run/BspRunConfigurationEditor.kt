@@ -3,14 +3,18 @@ package org.jetbrains.plugins.bsp.ui.configuration.run
 import com.intellij.compiler.options.CompileStepBeforeRun
 import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.ui.*
+import com.intellij.ide.macro.MacrosDialog
 import com.intellij.openapi.externalSystem.service.execution.configuration.addBeforeRunFragment
-import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
+import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
+import com.intellij.openapi.util.Predicates
+import com.intellij.ui.RawCommandLineEditor
+import com.intellij.ui.components.TextComponentEmptyText
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
+import java.util.function.BiConsumer
 
 
 public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) : RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
@@ -23,33 +27,41 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
       addBeforeRunFragment(CompileStepBeforeRun.ID)
       addAll(BeforeRunFragment.createGroup())
       add(CommonTags.parallelRun())
-      if (runConfiguration is BspRunConfiguration) {
-        (this as SettingsEditorFragmentContainer<BspRunConfiguration>).addBspTargetFragment()
-      }
-
+      addBspTargetFragment()
       addBspEnvironmentFragment()
-//      addBspDebuggerTypeFragment()
     }
 
-//  private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspDebuggerTypeFragment() {
-//    this.addLabeledSettingsEditorFragment(
-//      object : LabeledSettingsFragmentInfo { // TODO: Use bundle
-//        override val editorLabel: String = "Debugger type"
-//        override val settingsId: String = "bsp.debugger.type.fragment"
-//        override val settingsName: String = "Debugger type"
-//        override val settingsGroup: String = "BSP"
-//        override val settingsHint: String = "Debugger type"
-//        override val settingsActionHint: String = "Debugger type"
-//     },
-//      { DropDownLink<BspDebugType?>(null, BspDebugType.entries.toList() + null) },
-//      { it, c ->
-//        c.selectedItem = it.debugType
-//      },
-//      { it, c ->
-//        it.debugType = c.selectedItem
-//      },
-//      { true }
-//    )
+//  public fun programArguments(): SettingsEditorFragment<BspRunConfigurationBase, RawCommandLineEditor> {
+//    val programArguments = RawCommandLineEditor()
+//    CommandLinePanel.setMinimumWidth(programArguments, 400)
+//    val message = ExecutionBundle.message("run.configuration.program.parameters.placeholder")
+//    programArguments.editorField.emptyText.setText(message)
+//    programArguments.editorField.accessibleContext.accessibleName = message
+//    TextComponentEmptyText.setupPlaceholderVisibility(programArguments.editorField)
+//    CommonParameterFragments.setMonospaced(programArguments.textField)
+//
+//    val parameters: SettingsEditorFragment<BspRunConfigurationBase, RawCommandLineEditor> =
+//      SettingsEditorFragment<BspRunConfigurationBase, RawCommandLineEditor>(
+//        "commandLineParameters",
+//        ExecutionBundle.message("run.configuration.program.parameters.name"),
+//        null,
+//        programArguments,
+//        100,
+//        { settings: BspRunConfigurationBase, component: RawCommandLineEditor ->
+//          component.text = settings.getProgramParameters()
+//        },
+//        { component: RawCommandLineEditor ->
+//          settings.setProgramParameters(
+//            component.text
+//          )
+//        },
+//        { true }
+//      )
+//    parameters.isRemovable = false
+//    parameters.setEditorGetter { editor: RawCommandLineEditor -> editor.editorField }
+//    parameters.setHint(ExecutionBundle.message("run.configuration.program.parameters.hint"))
+//
+//    return parameters
 //  }
 
   private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspEnvironmentFragment() {
@@ -71,7 +83,7 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
     )
   }
 
-  private fun SettingsEditorFragmentContainer<BspRunConfiguration>.addBspTargetFragment() {
+  private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspTargetFragment() {
     this.addLabeledSettingsEditorFragment(
       object : LabeledSettingsFragmentInfo { // TODO: Use bundle
         override val editorLabel: String = "Build target"

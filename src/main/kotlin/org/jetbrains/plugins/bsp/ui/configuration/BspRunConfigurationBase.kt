@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.configuration
 
+import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.LocatableConfigurationBase
@@ -25,7 +26,8 @@ public abstract class BspRunConfigurationBase(
 
   public var targets: List<BuildTargetInfo> = emptyList()
     set(value) {
-      this.runHandler = BspRunHandler.getRunHandler(value)
+      runHandler = BspRunHandler.getRunHandler(value)
+      runHandler.prepareRunConfiguration(this)
       field = value
     }
 
@@ -35,6 +37,9 @@ public abstract class BspRunConfigurationBase(
   override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> {
     return BspRunConfigurationEditor(this)
   }
+
+  override fun getBeforeRunTasks(): List<BeforeRunTask<*>> =
+    runHandler.getBeforeRunTasks(this)
 }
 
 public class BspRunConfiguration(
