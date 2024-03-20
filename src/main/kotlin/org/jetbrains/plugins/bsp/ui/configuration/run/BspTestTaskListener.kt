@@ -23,7 +23,7 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   init {
     handler.addProcessListener(object : ProcessListener {
       override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
-        handler.notifyTextAvailable("\n##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
+        handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
       }
     })
   }
@@ -31,12 +31,12 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
     when (data) {
       is TestTask -> {
-        val testSuiteStarted = "\n" + ServiceMessageBuilder.testSuiteStarted(data.target.uri).toString() + "\n"
+        val testSuiteStarted = ServiceMessageBuilder.testSuiteStarted(data.target.uri).toString()
         handler.notifyTextAvailable(testSuiteStarted, ProcessOutputType.STDOUT)
       }
 
       is TestStart -> {
-        val testStarted = "\n" + ServiceMessageBuilder.testStarted(data.displayName).toString() + "\n"
+        val testStarted = ServiceMessageBuilder.testStarted(data.displayName).toString()
         handler.notifyTextAvailable(testStarted, ProcessOutputType.STDOUT)
       }
     }
