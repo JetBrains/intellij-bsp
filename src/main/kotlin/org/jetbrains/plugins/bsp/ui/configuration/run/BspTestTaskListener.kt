@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStart
+import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessOutputType
@@ -37,11 +38,19 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
       }
 
       is TestFinish -> {
-        val testFinished = "\n" + ServiceMessageBuilder.testFinished(data.displayName).toString() + "\n"
-        handler.notifyTextAvailable(testFinished, ProcessOutputType.STDOUT)
+        val testFinished = "\n" + when (data.status!!) {
+          TestStatus.FAILED -> { ServiceMessageBuilder.testFailed(data.displayName).toString() }
+          TestStatus.CANCELLED -> { ServiceMessageBuilder.testIgnored(data.displayName).toString() }
+          TestStatus.PASSED -> { ServiceMessageBuilder.testFinished(data.displayName).toString() }
+          TestStatus.IGNORED -> { ServiceMessageBuilder.testIgnored(data.displayName).toString() }
+          TestStatus.SKIPPED -> { ServiceMessageBuilder.testIgnored(data.displayName).toString() }
+        } + "\n"
+
+
+          handler.notifyTextAvailable(testFinished, ProcessOutputType.STDOUT)
+        }
       }
     }
-  }
 
   override fun onOutputStream(taskId: TaskId?, text: String) {
     ansiEscapeDecoder.escapeText(text, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
