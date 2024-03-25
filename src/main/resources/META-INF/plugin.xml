@@ -6,6 +6,7 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.java</depends>
   <depends>org.jetbrains.kotlin</depends>
+  <depends optional="true" config-file="bsp-withGo.xml">org.jetbrains.plugins.go</depends>
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
   <depends optional="true" config-file="bsp-withAndroid.xml">org.jetbrains.android</depends>
 
@@ -27,6 +28,9 @@
                     dynamic="true"/>
     <extensionPoint name="bspRunHandler"
                     interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler"
+                    dynamic="true"/>
+    <extensionPoint name="GoSdkExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.GoSdkExtension"
                     dynamic="true"/>
     <extensionPoint name="bspProjectOpenProcessorExtension"
                     interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
@@ -104,6 +108,7 @@
     <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
     <registryKey defaultValue="false" description="Default to use JPS to build project instead of BSP" key="bsp.jps.project.compilation"/>
     <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
+    <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 

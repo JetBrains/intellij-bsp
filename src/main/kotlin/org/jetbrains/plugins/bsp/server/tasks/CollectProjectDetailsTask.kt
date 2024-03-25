@@ -12,6 +12,10 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.goide.project.GoModuleSettings
+import com.goide.sdk.GoSdk
+import com.goide.sdk.GoSdkService
+import com.goide.vgo.project.workspaceModel.VgoWorkspaceModelUpdater
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -20,6 +24,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.reportSequentialProgress
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,6 +38,7 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
@@ -43,6 +50,8 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.goSdkExtension
+import org.jetbrains.plugins.bsp.extension.points.goSdkExtensionExists
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
@@ -97,6 +106,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var androidSdks: Set<AndroidSdk>? = null
 
+  private var goSdks: Set<GoSdk>? = null
+
   private lateinit var coroutineJob: Job
 
   public suspend fun execute(name: String, cancelable: Boolean) {
@@ -120,6 +131,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
+  @Suppress("CognitiveComplexMethod")
   private suspend fun doExecute() {
     reportSequentialProgress { reporter ->
       val projectDetails =
@@ -152,6 +164,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
         reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
           calculateAllAndroidSdkInfosSubtask(projectDetails)
+        }
+      }
+
+      if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+          calculateAllGoSdkInfosSubtask(projectDetails)
         }
       }
 
@@ -330,6 +348,33 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       )
     }
 
+  private suspend fun calculateAllGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-go-sdk-infos",
+    BspPluginBundle.message("console.task.model.calculate.go.sdk.infos")
+  ) {
+    runInterruptible {
+      goSdks = logPerformance(it) {
+        calculateAllGoSdkInfos(projectDetails)
+      }
+    }
+  }
+
+  private fun calculateAllGoSdkInfos(projectDetails: ProjectDetails): Set<GoSdk> =
+    projectDetails.targets
+      .mapNotNull {
+        createGoSdk(it)
+      }
+      .toSet()
+
+  private fun createGoSdk(target: BuildTarget): GoSdk? =
+    extractGoBuildTarget(target)?.let {
+      if (it.sdkHomePath == null) {
+        GoSdk.NULL
+      } else {
+        GoSdk.fromHomePath(it.sdkHomePath?.path)
+      }
+    }
+
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
@@ -363,6 +408,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     if (BspFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
+    }
+
+    if (BspFeatureFlags.isGoSupportEnabled) {
+      addBspFetchedGoSdks()
+      VgoWorkspaceModelUpdater(project).restoreModulesRegistry()
+      enableGoSupportInTargets()
     }
   }
 
@@ -437,6 +488,33 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     val sdk = writeAction { androidSdkGetterExtension.getAndroidSdk(androidSdk) } ?: return
     SdkUtils.addSdkIfNeeded(sdk)
   }
+
+  private suspend fun addBspFetchedGoSdks() =
+    goSdkExtension()?.let { extension ->
+      withSubtask("add-bsp-fetched-go-sdks", BspPluginBundle.message("console.task.model.add.go.fetched.sdks")) {
+        logPerformanceSuspend("add-bsp-fetched-go-sdks") {
+          val goSdkService = GoSdkService.getInstance(project)
+          goSdks?.forEach { writeAction { extension.addGoSdk(it, goSdkService) } }
+        }
+      }
+    }
+
+  private suspend fun enableGoSupportInTargets() =
+    goSdkExtension()?.let { withSubtask(
+      "enable-go-support-in-targets",
+      BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
+      logPerformanceSuspend("enable-go-support-in-targets") {
+        val workspaceModel = WorkspaceModel.getInstance(project)
+        workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
+          moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+            writeAction {
+              GoModuleSettings.getInstance(module).isGoSupportEnabled = true
+            }
+          }
+        }
+      }
+    }
+    }
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(
     "apply-changes-on-workspace-model",

@@ -5,9 +5,11 @@ import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToGoModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesGo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
 import java.nio.file.Path
 
@@ -32,6 +34,11 @@ public object TargetIdToModuleEntitiesMap {
       projectBasePath,
       hasDefaultPythonInterpreter,
     )
+    val moduleDetailsToGoModuleTransformer = ModuleDetailsToGoModuleTransformer(
+      targetsMap,
+      projectDetails,
+      moduleNameProvider
+    )
 
     val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
 
@@ -39,6 +46,8 @@ public object TargetIdToModuleEntitiesMap {
       val moduleDetails = transformer.moduleDetailsForTargetId(it)
       val module = if (moduleDetails.target.languageIds.includesPython()) {
         moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+      } else if (moduleDetails.target.languageIds.includesGo()) {
+        moduleDetailsToGoModuleTransformer.transform(moduleDetails)
       } else {
         moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
       }
