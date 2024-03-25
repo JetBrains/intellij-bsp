@@ -41,9 +41,9 @@ public class MobileInstallBeforeRunTaskProvider : BeforeRunTaskProvider<MobileIn
     task: Task,
   ): Boolean {
     val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
-    if (runConfiguration.runHandler !is AndroidBspRunHandler) return false
+    if (runConfiguration.handler !is AndroidBspRunHandler) return false
 
-    val targetId = runConfiguration.targets.singleOrNull()?.id?.toBsp4JTargetIdentifier() ?: return false
+    val targetId = runConfiguration.targets.singleOrNull()?.toBsp4JTargetIdentifier() ?: return false
     val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY) ?: return false
 
     val startType = when (environment.executor.id) {

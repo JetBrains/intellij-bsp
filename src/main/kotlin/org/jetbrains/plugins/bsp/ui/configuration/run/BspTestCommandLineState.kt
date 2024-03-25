@@ -32,11 +32,10 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import java.util.concurrent.CompletableFuture
 
 public class BspTestCommandLineState(
-  private val project: Project,
   private val environment: ExecutionEnvironment,
   private val configuration: BspTestConfiguration,
   private val originId: OriginId
-) : BspCommandLineStateBase(project, environment, configuration, originId) {
+) : BspCommandLineStateBase(environment, configuration, originId) {
   private val log = logger<BspTestCommandLineState>()
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
@@ -64,7 +63,7 @@ public class BspTestCommandLineState(
   override fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener = BspTestTaskListener(handler)
 
   override fun startBsp(server: BspServer): CompletableFuture<Any> {
-    val targets = configuration.targets.map { BuildTargetIdentifier(it.id) }
+    val targets = configuration.targets.map { BuildTargetIdentifier(it) }
     val runParams = TestParams(targets)
     runParams.originId = originId
     return server.buildTargetTest(runParams) as CompletableFuture<Any>

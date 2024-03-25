@@ -3,24 +3,41 @@ package org.jetbrains.plugins.bsp.ui.configuration.run
 import com.intellij.compiler.options.CompileStepBeforeRun
 import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.ui.*
-import com.intellij.ide.macro.MacrosDialog
 import com.intellij.openapi.externalSystem.service.execution.configuration.addBeforeRunFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
+import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.util.Predicates
-import com.intellij.ui.RawCommandLineEditor
-import com.intellij.ui.components.TextComponentEmptyText
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
-import java.util.function.BiConsumer
+import javax.swing.Box
+import javax.swing.JComponent
 
 
+public class HandlerSpecificSettingsEditorFragment(private val runConfiguration: BspRunConfigurationBase):
+  SettingsEditorFragment<BspRunConfigurationBase, JComponent>(null, null, null, Box.createVerticalBox(), 0,
+    { configuration, component -> runConfiguration.settingsEditor.resetFrom(configuration.handler.settings) },
+    { configuration, component -> runConfiguration.settingsEditor.applyTo(configuration.handler.settings) },
+    { true }) {
+
+  init {
+    runConfiguration.handlerChangeListeners.add(BspRunConfigurationBase.HandlerChangeListener {
+      component.removeAll()
+      component.add(runConfiguration.settingsEditor.component)
+    })
+  }
+}
+
+/**
+ * The base editor for a BSP run configuration.
+ * Takes care of targets, the common settings and sets up the handler-specific settings editor.
+ */
 public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) : RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
   runConfiguration,
   BspRunConfigurationExtensionManager.getInstance()
 ) {
+
   override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonParameterFragments.createRunHeader())
@@ -28,7 +45,7 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
       addAll(BeforeRunFragment.createGroup())
       add(CommonTags.parallelRun())
       addBspTargetFragment()
-      addBspEnvironmentFragment()
+      add(HandlerSpecificSettingsEditorFragment(runConfiguration))
     }
 
 //  public fun programArguments(): SettingsEditorFragment<BspRunConfigurationBase, RawCommandLineEditor> {
@@ -64,24 +81,24 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
 //    return parameters
 //  }
 
-  private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspEnvironmentFragment() {
-    this.addEnvironmentFragment(
-      object : LabeledSettingsFragmentInfo {
-        override val editorLabel: String = ExecutionBundle.message("environment.variables.component.title")
-        override val settingsId: String = "external.system.environment.variables.fragment" // TODO: does it matter?
-        override val settingsName: String = ExecutionBundle.message("environment.variables.fragment.name")
-        override val settingsGroup: String = ExecutionBundle.message("group.operating.system")
-        override val settingsHint: String = ExecutionBundle.message("environment.variables.fragment.hint")
-        override val settingsActionHint: String =
-          ExecutionBundle.message("set.custom.environment.variables.for.the.process")
-      },
-      { runConfiguration.env.envs },
-      { runConfiguration.env.with(it) },
-      { runConfiguration.env.isPassParentEnvs },
-      { runConfiguration.env.with(it) },
-      false
-    )
-  }
+//  private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspEnvironmentFragment() {
+//    this.addEnvironmentFragment(
+//      object : LabeledSettingsFragmentInfo {
+//        override val editorLabel: String = ExecutionBundle.message("environment.variables.component.title")
+//        override val settingsId: String = "external.system.environment.variables.fragment" // TODO: does it matter?
+//        override val settingsName: String = ExecutionBundle.message("environment.variables.fragment.name")
+//        override val settingsGroup: String = ExecutionBundle.message("group.operating.system")
+//        override val settingsHint: String = ExecutionBundle.message("environment.variables.fragment.hint")
+//        override val settingsActionHint: String =
+//          ExecutionBundle.message("set.custom.environment.variables.for.the.process")
+//      },
+//      { runConfiguration.env.envs },
+//      { runConfiguration.env.with(it) },
+//      { runConfiguration.env.isPassParentEnvs },
+//      { runConfiguration.env.with(it) },
+//      false
+//    )
+//  }
 
   private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspTargetFragment() {
     this.addLabeledSettingsEditorFragment(
@@ -95,10 +112,10 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
      },
       { BspTargetBrowserComponent() },
       { it, c ->
-        c.text = it.targets.singleOrNull()?.id ?: ""
+        c.text = it.targets.singleOrNull() ?: "(multiple targets)"
       },
       { it, c ->
-        // TODO: set target
+        it.targets = listOf(c.text)
       },
       { true }
     )

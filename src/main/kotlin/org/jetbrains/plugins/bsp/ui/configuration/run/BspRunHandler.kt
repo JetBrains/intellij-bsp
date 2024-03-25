@@ -7,29 +7,24 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 
+/**
+ * Supports the run configuration flow for BSP run configurations.
+ *
+ * <p>Provides language-specific configuration state, validation, presentation, and runner.
+ */
 public interface BspRunHandler {
-  public fun canRun(targets: List<BuildTargetInfo>): Boolean
+  public val settings: BspRunConfigurationSettings
 
-  public fun canDebug(targets: List<BuildTargetInfo>): Boolean
-
-  public fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {}
+  /**
+   * The name of the run handler (shown in the UI).
+   */
+  public val name: String
 
   public fun getRunProfileState(
-    project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
   ): RunProfileState
-
-  public fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> = emptyList()
-
-  public companion object {
-    public val ep: ExtensionPointName<BspRunHandler> =
-      ExtensionPointName.create("org.jetbrains.bsp.bspRunHandler")
-
-    public fun getRunHandler(targets: List<BuildTargetInfo>): BspRunHandler =
-      ep.extensionList.firstOrNull { it.canRun(targets) } ?: GenericBspRunHandler()
-  }
 }

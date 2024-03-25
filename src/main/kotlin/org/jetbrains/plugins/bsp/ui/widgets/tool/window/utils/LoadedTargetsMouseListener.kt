@@ -11,6 +11,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BspRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
@@ -114,7 +115,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (target.capabilities.canDebug && BspRunHandler.getRunHandler(listOf(target)).canDebug(listOf(target))) {
+  if (target.capabilities.canDebug && BspRunHandlerProvider.getRunHandlerProvider(listOf(target)).canRun(listOf(target))) {
     addAction(
       RunTargetAction(
         targetInfo = target,

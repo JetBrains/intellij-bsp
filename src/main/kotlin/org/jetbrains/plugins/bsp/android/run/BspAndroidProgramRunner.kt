@@ -15,7 +15,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     if (profile !is BspRunConfiguration) return false
-    if (profile.runHandler !is AndroidBspRunHandler) return false
+    if (profile.handler !is AndroidBspRunHandler) return false
     return super.canRun(executorId, profile)
   }
 

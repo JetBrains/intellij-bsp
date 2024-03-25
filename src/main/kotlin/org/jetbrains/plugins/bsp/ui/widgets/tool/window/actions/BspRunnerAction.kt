@@ -27,8 +27,7 @@ internal abstract class BspRunnerAction(
     val settings =
       RunManager.getInstance(project).createConfiguration(calculateConfigurationName(buildTargetInfo), factory)
     (settings.configuration as? BspRunConfigurationBase)?.apply {
-      logger<BspRunnerAction>().warn("kurwa ustawiam targety")
-      targets = listOf(buildTargetInfo)
+      targets = listOf(buildTargetInfo.id)
     }
     return settings
   }

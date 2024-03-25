@@ -49,7 +49,7 @@ public class BspSourceProvidersFactory : SourceProvidersFactory {
 public val Module.androidAddendum: AndroidAddendum?
   get() {
     val magicMetaModel = MagicMetaModelService.getInstance(this.project).value
-    val moduleDetails = magicMetaModel.getDetailsForTargetId(this.name)
+    val moduleDetails = magicMetaModel.getModuleForTargetId(this.name)
     if (moduleDetails !is JavaModule) return null
     return moduleDetails.androidAddendum
   }

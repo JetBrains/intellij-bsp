@@ -27,64 +27,78 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-public class JvmBspRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.languageIds.isJvmTarget() ||
-      it.languageIds.includesAndroid() && it.capabilities.canTest }
+public class JvmBspRunHandler(private val configuration: BspRunConfigurationBase) : BspRunHandler {
+  override val name: String = "Jvm BSP Run Handler"
 
-  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
+  override val settings: BspRunConfigurationSettings
+    get() = TODO("Not yet implemented")
 
   override fun getRunProfileState(
-    project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
   ): RunProfileState {
     return when {
       executor is DefaultDebugExecutor -> {
-        JvmDebugHandlerState(project, environment, configuration, UUID.randomUUID().toString())
+        JvmDebugHandlerState(environment, configuration, UUID.randomUUID().toString())
       }
+
       configuration is BspTestConfiguration -> {
-        BspTestCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+        BspTestCommandLineState(environment, configuration, UUID.randomUUID().toString())
       }
+
       configuration is BspRunConfiguration -> {
-        BspRunCommandLineState(project, environment, configuration, UUID.randomUUID().toString())
+        BspRunCommandLineState(environment, configuration, UUID.randomUUID().toString())
       }
+
       else -> {
         throw ExecutionException("JvmBspRunHanlder can run only JVM or generic BSP targets")
       }
     }
   }
 
-  public class JvmDebugHandlerState(
-    project: Project,
-    environment: ExecutionEnvironment,
-    private val configuration: BspRunConfigurationBase,
-    private val originId: OriginId,
-  ) : BspCommandLineStateBase(project, environment, configuration, originId) {
-    public val remoteConnection: RemoteConnection =
-      RemoteConnection(true, "localhost", "0", true)
+  public object JvmBspRunHandlerProvider : BspRunHandlerProvider {
+    override val id: String = "JvmBspRunHandlerProvider"
 
-    public val portForDebug: Int?
-      get() = remoteConnection.debuggerAddress?.toInt()
+    override fun createRunHandler(configuration: BspRunConfigurationBase): BspRunHandler =
+      JvmBspRunHandler(configuration)
 
-    override fun checkRun(capabilities: BazelBuildServerCapabilities) {
-      if (!capabilities.runWithDebugProvider) {
-        throw ExecutionException("BSP server does not support running")
+    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+      targetInfos.all {
+        it.languageIds.isJvmTarget() ||
+            it.languageIds.includesAndroid() && it.capabilities.canTest
       }
+
+  }
+}
+
+public class JvmDebugHandlerState(
+  environment: ExecutionEnvironment,
+  private val configuration: BspRunConfigurationBase,
+  private val originId: OriginId,
+) : BspCommandLineStateBase(environment, configuration, originId) {
+  public val remoteConnection: RemoteConnection =
+    RemoteConnection(true, "localhost", "0", true)
+
+  public val portForDebug: Int?
+    get() = remoteConnection.debuggerAddress?.toInt()
+
+  override fun checkRun(capabilities: BazelBuildServerCapabilities) {
+    if (!capabilities.runWithDebugProvider) {
+      throw ExecutionException("BSP server does not support running")
     }
+  }
 
-    override fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
-      BspRunTaskListener(handler)
+  override fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
+    BspRunTaskListener(handler)
 
-    override fun startBsp(server: BspServer): CompletableFuture<Any> {
-      // SAFETY: safe to unwrap because we checked in checkRun
-      val targetId = BuildTargetIdentifier(configuration.targets.single().id)
-      val runParams = RunParams(targetId)
-      runParams.originId = originId
-      val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
-      val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
+  override fun startBsp(server: BspServer): CompletableFuture<Any> {
+    // SAFETY: safe to unwrap because we checked in checkRun
+    val targetId = BuildTargetIdentifier(configuration.targets.single())
+    val runParams = RunParams(targetId)
+    runParams.originId = originId
+    val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
+    val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-      return server.buildTargetRunWithDebug(runWithDebugParams) as CompletableFuture<Any>
-    }
+    return server.buildTargetRunWithDebug(runWithDebugParams) as CompletableFuture<Any>
   }
 }
