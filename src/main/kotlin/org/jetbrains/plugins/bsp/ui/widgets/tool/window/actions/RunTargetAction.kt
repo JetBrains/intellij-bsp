@@ -4,7 +4,7 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationType
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
 internal class RunTargetAction(
@@ -16,18 +16,16 @@ internal class RunTargetAction(
   targetInfo = targetInfo,
   text = {
     if (text != null) text()
-    else if (isDebugAction) BspPluginBundle.messageVerbose(
+    else if (isDebugAction) BspPluginBundle.message(
       "target.debug.action.text",
-      verboseText,
-      targetInfo.getBuildTargetName()
+      if (verboseText) targetInfo.getBuildTargetName() else ""
     )
-    else BspPluginBundle.messageVerbose(
+    else BspPluginBundle.message(
       "target.run.action.text",
-      verboseText,
-      targetInfo.getBuildTargetName()
+      if (verboseText) targetInfo.getBuildTargetName() else ""
     )
   },
   isDebugAction = isDebugAction,
 ) {
-  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
+  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType()
 }

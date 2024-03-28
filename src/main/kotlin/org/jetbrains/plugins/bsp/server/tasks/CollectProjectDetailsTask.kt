@@ -28,6 +28,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
@@ -72,7 +73,6 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 
 public data class PythonSdk(
@@ -99,13 +99,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private lateinit var coroutineJob: Job
 
-  public suspend fun execute(name: String, cancelable: Boolean) {
+  public suspend fun execute(name: String, cancelable: Boolean, buildProject: Boolean = false) {
     saveAllFiles()
     withContext(Dispatchers.Default) {
       coroutineJob = launch {
         try {
           withBackgroundProgress(project, name, cancelable) {
-            doExecute()
+            doExecute(buildProject)
           }
           PerformanceLogger.dumpMetrics()
         } catch (e: CancellationException) {
@@ -120,11 +120,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private suspend fun doExecute() {
+  private suspend fun doExecute(buildProject: Boolean) {
     reportSequentialProgress { reporter ->
       val projectDetails =
         reporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
-          runInterruptible { calculateProjectDetailsSubtask() }
+          runInterruptible { calculateProjectDetailsSubtask(buildProject) }
         } ?: return
 
       reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -165,15 +165,17 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun calculateProjectDetailsSubtask() =
+  private fun calculateProjectDetailsSubtask(buildProject: Boolean) =
     logPerformance("collect-project-details") {
-      connectAndExecuteWithServer { server, capabilities -> collectModel(server, capabilities, cancelOnFuture) }
+      connectAndExecuteWithServer { server, capabilities ->
+        collectModel(server, capabilities, cancelOnFuture, buildProject) }
     }
 
   private fun collectModel(
     server: BspServer,
     capabilities: BazelBuildServerCapabilities,
     cancelOn: CompletableFuture<Void>,
+    buildProject: Boolean,
   ): ProjectDetails? {
     fun isCancellationException(e: Throwable): Boolean =
       e is CompletionException && e.cause is CancellationException
@@ -215,6 +217,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         projectRootDir = project.rootDir.url,
         errorCallback = { errorCallback(it) },
         cancelOn = cancelOn,
+        buildProject = buildProject
       )
 
     bspSyncConsole.finishSubtask(importSubtaskId, BspPluginBundle.message("console.task.model.collect.success"))
@@ -326,7 +329,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     extractAndroidBuildTarget(target)?.androidJar?.let { androidJar ->
       AndroidSdk(
         name = androidJar.androidJarToAndroidSdkName(),
-        androidJar = androidJar.toPath(),
+        androidJar = androidJar,
       )
     }
 
@@ -466,6 +469,7 @@ public fun calculateProjectDetailsWithCapabilities(
   projectRootDir: String,
   errorCallback: (Throwable) -> Unit,
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
+  buildProject: Boolean,
 ): ProjectDetails? {
   val log = logger<Any>()
 
@@ -484,8 +488,10 @@ public fun calculateProjectDetailsWithCapabilities(
     else null
 
   try {
-    val workspaceBuildTargetsResult = query(true, "workspace/buildTargets") { server.workspaceBuildTargets() }!!
-      .get()
+    val workspaceBuildTargetsResult =
+      if (!buildProject) query(true, "workspace/buildTargets") { server.workspaceBuildTargets() }!!
+        .get() else query(true, "workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }!!
+        .get()
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
@@ -512,6 +518,15 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val directoriesFuture = query(buildServerCapabilities.workspaceDirectoriesProvider, "workspace/directories") {
       (server as BazelBuildServer).workspaceDirectories()
+    }
+
+    val jvmBinaryJarsFuture = query(
+      BspFeatureFlags.isAndroidSupportEnabled &&
+        buildServerCapabilities.jvmBinaryJarsProvider &&
+        javaTargetIds.isNotEmpty(),
+      "buildTarget/jvmBinaryJars",
+    ) {
+      server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
     }
 
     // We use javacOptions only do build dependency tree based on classpath
@@ -557,6 +572,7 @@ public fun calculateProjectDetailsWithCapabilities(
       libraries = libraries?.libraries,
       directories = directoriesFuture?.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
+      jvmBinaryJars = jvmBinaryJarsFuture?.get()?.items ?: emptyList(),
     )
   } catch (e: Exception) {
     // TODO the type xd

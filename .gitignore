@@ -7,4 +7,5 @@
 # gradle
 .gradle/
 build/
+
 .intellijPlatform
