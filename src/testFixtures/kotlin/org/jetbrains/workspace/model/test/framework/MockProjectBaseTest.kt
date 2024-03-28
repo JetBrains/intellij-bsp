@@ -1,5 +1,6 @@
 package org.jetbrains.workspace.model.test.framework
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
 @TestApplication
-public open class MockProjectBaseTest {
+public open class MockProjectBaseTest: Disposable {
   @JvmField
   @RegisterExtension
   protected val projectModel: ProjectModelExtension = ProjectModelExtension()
@@ -34,5 +35,11 @@ public open class MockProjectBaseTest {
     }
 
     return result!!
+  }
+
+  override fun dispose() {
+    // Required for the test framework to clean up the project
+    // Otherwise the "hidden" leak hunter test will fail
+    project.dispose()
   }
 }
