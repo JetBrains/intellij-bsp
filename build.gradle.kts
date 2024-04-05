@@ -44,7 +44,7 @@ tasks.runIde{
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
   pluginName.set(Plugin.name)
-  version.set(Platform.version)
+  version.set(Platform.snapshotVersion)
   type.set(Platform.type)
   downloadSources.set(Platform.downloadSources)
   updateSinceUntilBuild.set(true)
@@ -73,7 +73,7 @@ subprojects {
   apply(plugin = "org.jetbrains.intellij")
 
   intellij {
-    version.set(Platform.version)
+    version.set(Platform.snapshotVersion)
   }
 
   tasks.withType(PublishPluginTask::class.java) {

@@ -17,7 +17,8 @@ const val pluginVerifierIdeVersions = "241.14494.17"
 
 object Platform {
   const val type = "IC"
-  const val version = "241.14494.17-EAP-SNAPSHOT"
+  const val version = "241.14494.17"
+  const val snapshotVersion = "241.14494.17-EAP-SNAPSHOT"
   const val downloadSources = true
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
@@ -28,3 +29,6 @@ object Platform {
 
 const val javaVersion = "17"
 const val kotlinVersion = "1.9"
+
+// Probe dependencies
+const val scalaPluginVersion = "2024.1.3"
