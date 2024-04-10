@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
-import java.net.URI
 import java.nio.file.Path
 
 public data class JavaSourceRoot(
@@ -23,6 +22,7 @@ public data class JavaModule(
   // otherwise it will be null
   val moduleLevelLibraries: List<Library>?,
   val jvmJdkName: String? = null,
+  val jvmBinaryJars: List<Path> = emptyList(),
   val kotlinAddendum: KotlinAddendum? = null,
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
@@ -35,6 +35,7 @@ public data class JavaModule(
     resourceRoots = resourceRoots.map { it.toState() },
     libraries = moduleLevelLibraries?.map { it.toState() },
     jvmJdkName = jvmJdkName,
+    jvmBinaryJars = jvmBinaryJars.map { it.toString() },
     kotlinAddendum = kotlinAddendum?.toState(),
     scalaAddendum = scalaAddendum?.toState(),
     androidAddendum = androidAddendum?.toState(),
@@ -60,6 +61,6 @@ public data class JavaAddendum(
 public data class AndroidAddendum(
   val androidSdkName: String,
   val androidTargetType: AndroidTargetType,
-  val manifest: URI?,
-  val resourceFolders: List<URI>,
-)
+  val manifest: Path?,
+  val resourceFolders: List<Path>,
+) : WorkspaceModelEntity()

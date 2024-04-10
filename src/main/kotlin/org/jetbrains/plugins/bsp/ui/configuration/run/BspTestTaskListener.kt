@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
 import com.intellij.execution.process.AnsiEscapeDecoder
-import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
@@ -23,6 +22,7 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   init {
     handler.addProcessListener(object : ProcessListener {
       override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+        // Not having this line causes the test tree to show "TERMINATED"
         handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
       }
     })
@@ -47,23 +47,32 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
       is TestReport -> {
         val testSuiteFinished = ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString()
         handler.notifyTextAvailable(testSuiteFinished, ProcessOutputType.STDOUT)
-
-        handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
-
       }
 
       is TestFinish -> {
         val failureMessageBuilder = when (data.status!!) {
-          TestStatus.FAILED -> { ServiceMessageBuilder.testFailed(data.displayName) }
-          TestStatus.CANCELLED -> { ServiceMessageBuilder.testIgnored(data.displayName) }
-          TestStatus.IGNORED -> { ServiceMessageBuilder.testIgnored(data.displayName) }
-          TestStatus.SKIPPED -> { ServiceMessageBuilder.testIgnored(data.displayName) }
+          TestStatus.FAILED -> {
+            ServiceMessageBuilder.testFailed(data.displayName)
+          }
+
+          TestStatus.CANCELLED -> {
+            ServiceMessageBuilder.testIgnored(data.displayName)
+          }
+
+          TestStatus.IGNORED -> {
+            ServiceMessageBuilder.testIgnored(data.displayName)
+          }
+
+          TestStatus.SKIPPED -> {
+            ServiceMessageBuilder.testIgnored(data.displayName)
+          }
+
           else -> null
         }
 
         if (failureMessageBuilder != null) {
           failureMessageBuilder.addAttribute("message", data.message ?: "No message")
-          handler.notifyTextAvailable( failureMessageBuilder.toString(), ProcessOutputType.STDOUT)
+          handler.notifyTextAvailable(failureMessageBuilder.toString(), ProcessOutputType.STDOUT)
         }
 
         val testFinished = ServiceMessageBuilder.testFinished(data.displayName).toString()

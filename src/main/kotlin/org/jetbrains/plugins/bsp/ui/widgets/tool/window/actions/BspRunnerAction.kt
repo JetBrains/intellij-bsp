@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo

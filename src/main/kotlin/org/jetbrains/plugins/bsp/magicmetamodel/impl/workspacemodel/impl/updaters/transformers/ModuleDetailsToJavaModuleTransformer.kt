@@ -18,7 +18,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
-import java.net.URI
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.io.path.name
@@ -66,6 +66,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
           }) else null,
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
+      jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
       javaAddendum = toJavaAddendum(inputEntity),
@@ -100,7 +101,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun ModuleDetails.calculateDummyJavaSourceRoots(): List<Path> =
-    sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
+    sources.mapNotNull { it.roots }.flatten().map { it.safeCastToURI().toPath() }
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? =
     toJdkName() ?: defaultJdkName
@@ -140,8 +141,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
       AndroidAddendum(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),
         androidTargetType = androidTargetType,
-        manifest = manifest,
-        resourceFolders = resourceFolders,
+        manifest = manifest?.safeCastToURI()?.toPath(),
+        resourceFolders = resourceFolders.map { it.safeCastToURI().toPath() },
       )
     }
   }
@@ -161,7 +162,7 @@ public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 public fun String.projectNameToJdkName(javaHomeUri: String): String =
   projectNameToBaseJdkName() + "-" + javaHomeUri.md5Hash()
 
-public fun URI.androidJarToAndroidSdkName(): String = "android-sdk-" + this.toString().md5Hash()
+public fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + this.md5Hash()
 
 private fun String.md5Hash(): String {
   val md = MessageDigest.getInstance("MD5")

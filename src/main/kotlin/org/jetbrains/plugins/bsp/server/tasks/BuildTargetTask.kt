@@ -11,13 +11,11 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import org.jetbrains.kotlin.fir.scopes.impl.overrides
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -45,8 +43,11 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
     val taskListener = object : BspTaskListener {
       override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
-        if (parentId == null) bspBuildConsole.startSubtask(originId, taskId, message)
-        else bspBuildConsole.startSubtask(taskId, parentId, message)
+        if (parentId == null) {
+          bspBuildConsole.startSubtask(originId, taskId, message)
+        } else {
+          bspBuildConsole.startSubtask(taskId, parentId, message)
+        }
       }
 
       override fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {
@@ -64,6 +65,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
               bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
             }
           }
+
           else -> bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
         }
       }
@@ -74,7 +76,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
         line: Int,
         character: Int,
         severity: MessageEvent.Kind,
-        message: String
+        message: String,
       ) {
         bspBuildConsole.addDiagnosticMessage(
           originId,
@@ -91,16 +93,17 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       }
     }
 
-    BspTaskEventsService.getInstance(project).addListener(originId, taskListener)
+    BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
     startBuildConsoleTask(targetsIds, bspBuildConsole, originId, cancelOn)
     val compileParams = createCompileParams(targetsIds, originId)
 
-    val buildFuture = server.buildTargetCompile(compileParams)
-    return BspTaskStatusLogger(buildFuture, bspBuildConsole, originId, cancelOn) { statusCode }.getResult()
-      .also {
-        BspTaskEventsService.getInstance(project).removeListener(originId)
-      }
+    try {
+      val buildFuture = server.buildTargetCompile(compileParams)
+      return BspTaskStatusLogger(buildFuture, bspBuildConsole, originId, cancelOn) { statusCode }.getResult()
+    } finally {
+      BspTaskEventsService.getInstance(project).removeListener(originId)
+    }
   }
 
   private fun startBuildConsoleTask(
@@ -120,41 +123,37 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
   }
 
-  private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
-    when (targetIds.size) {
-      0 -> BspPluginBundle.message("console.task.build.no.targets")
-      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().uri)
-      else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
-    }
+  private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String = when (targetIds.size) {
+    0 -> BspPluginBundle.message("console.task.build.no.targets")
+    1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().uri)
+    else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
+  }
 
   private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
-    CompileParams(targetIds)
-      .apply {
-        this.originId = originId
-      }
+    CompileParams(targetIds).apply {
+      this.originId = originId
+    }
 }
 
 public suspend fun runBuildTargetTask(
   targetIds: List<BuildTargetIdentifier>,
   project: Project,
   log: Logger,
-): CompileResult? =
-  try {
-    saveAllFiles()
-    withBackgroundProgress(project, "Building target(s)...") {
-      BuildTargetTask(project).connectAndExecute(targetIds)
-    }
-  } catch (e: Exception) {
-    when {
-      doesCompletableFutureGetThrowCancelledException(e) ->
-        CompileResult(StatusCode.CANCELLED)
+): CompileResult? = try {
+  saveAllFiles()
+  withBackgroundProgress(project, "Building target(s)...") {
+    BuildTargetTask(project).connectAndExecute(targetIds)
+  }
+} catch (e: Exception) {
+  when {
+    doesCompletableFutureGetThrowCancelledException(e) -> CompileResult(StatusCode.CANCELLED)
 
-      else -> {
-        log.error(e)
-        null
-      }
+    else -> {
+      log.error(e)
+      null
     }
   }
+}
 
 // TODO https://youtrack.jetbrains.com/issue/BAZEL-630
 public fun saveAllFiles() {

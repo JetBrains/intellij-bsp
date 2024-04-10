@@ -8,7 +8,12 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import javax.swing.Icon
 
-public abstract class BspRunConfigurationTypeBase(id: String, name: String, description: String, icon: NotNullLazyValue<Icon>) : SimpleConfigurationType(id, name, description, icon)
+public abstract class BspRunConfigurationTypeBase(
+  id: String,
+  name: String,
+  description: String,
+  icon: NotNullLazyValue<Icon>,
+) : SimpleConfigurationType(id, name, description, icon)
 
 public class BspRunConfigurationType : BspRunConfigurationTypeBase(
   id = ID,

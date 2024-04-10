@@ -1,18 +1,11 @@
 package org.jetbrains.plugins.bsp.jvm
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.bsp.protocol.RemoteDebugData
-import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget

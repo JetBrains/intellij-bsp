@@ -6,14 +6,23 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.util.alsoIfNull
+import java.util.concurrent.ConcurrentHashMap
 
 internal typealias OriginId = String
 
 internal typealias TaskId = String
 
 public interface BspTaskListener {
-  public fun onDiagnostic(textDocument: String, buildTarget: String, line: Int, character: Int, severity: MessageEvent.Kind, message: String) {}
+  public fun onDiagnostic(
+    textDocument: String,
+    buildTarget: String,
+    line: Int,
+    character: Int,
+    severity: MessageEvent.Kind,
+    message: String,
+  ) {
+  }
+
   public fun onOutputStream(taskId: TaskId?, text: String) {}
   public fun onErrorStream(taskId: TaskId?, text: String) {}
 
@@ -29,7 +38,7 @@ public interface BspTaskListener {
 internal class BspTaskEventsService {
   private val log = logger<BspTaskEventsService>()
 
-  private val taskListeners: MutableMap<OriginId, BspTaskListener> = mutableMapOf()
+  private val taskListeners: ConcurrentHashMap<OriginId, BspTaskListener> = ConcurrentHashMap()
 
   private fun get(id: OriginId): BspTaskListener? {
     val listener = taskListeners[id]
@@ -39,12 +48,15 @@ internal class BspTaskEventsService {
     return listener
   }
 
-  fun addListener(id: OriginId, listener: BspTaskListener) {
+  fun existsListener(id: OriginId): Boolean =
+    taskListeners.containsKey(id)
+
+  fun saveListener(id: OriginId, listener: BspTaskListener) {
     taskListeners[id] = listener
   }
 
   fun withListener(id: OriginId, block: BspTaskListener.() -> Unit) {
-    get(id)?.also { it.block() }
+    get(id)?.apply { block() }
   }
 
   fun removeListener(id: OriginId) {
@@ -55,5 +67,4 @@ internal class BspTaskEventsService {
     @JvmStatic
     fun getInstance(project: Project) = project.service<BspTaskEventsService>()
   }
-
 }

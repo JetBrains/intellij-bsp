@@ -58,6 +58,12 @@ public class BspClient(
 
     log.warn("Got log message: $params")
 
+    // Legacy task handling
+    if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
+      addMessageToConsole(params.originId, params.message)
+      return
+    }
+
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
 
@@ -75,7 +81,7 @@ public class BspClient(
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
-    val data = when (params.dataKind) {
+    val data: Any? = when (params.dataKind) {
       TaskStartDataKind.TEST_START -> {
         gson.fromJson(params.data as JsonObject, TestStart::class.java)
       }
@@ -115,7 +121,7 @@ public class BspClient(
     log.warn("Got task finish: $params")
     val originId = params.originId ?: return // TODO
 
-    val data = when (params.dataKind) {
+    val data: Any? = when (params.dataKind) {
       TaskFinishDataKind.TEST_FINISH -> {
         gson.fromJson(params.data as JsonObject, TestFinish::class.java)
       }
@@ -164,6 +170,13 @@ public class BspClient(
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
     onBuildEvent()
+
+    // Legacy task handling
+    if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
+      log.warn("Got diagnostics without listener: $params")
+      addDiagnosticToConsole(params)
+      return
+    }
 
     val originId = params.originId ?: return // TODO
     val textDocument = params.textDocument.uri ?: return // TODO
@@ -217,14 +230,13 @@ public class BspClient(
     }
   }
 
-  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
-    when (severity) {
-      DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-      DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-      DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-      DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
-      null -> MessageEvent.Kind.SIMPLE
-    }
+  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind = when (severity) {
+    DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+    DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+    DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+    DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+    null -> MessageEvent.Kind.SIMPLE
+  }
 
   private fun logDiagnosticBySeverity(severity: DiagnosticSeverity?, message: String) {
     when (severity) {

@@ -18,6 +18,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationSettings
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
@@ -69,6 +70,6 @@ public class AndroidBspRunHandler(private val configuration: BspRunConfiguration
       AndroidBspRunHandler(configuration)
 
     override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
-      BspFeatureFlags.isAndroidSupportEnabled && targetInfos.all {it.languageIds.includesAndroid()  && !it.capabilities.canTest }
+      BspFeatureFlags.isAndroidSupportEnabled && targetInfos.size == 1 && targetInfos.all {it.languageIds.includesAndroid()  && !it.capabilities.canTest }
   }
 }

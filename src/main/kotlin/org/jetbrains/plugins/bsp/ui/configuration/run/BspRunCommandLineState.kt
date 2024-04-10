@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -18,37 +17,40 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import java.util.concurrent.CompletableFuture
-import kotlin.math.log
 
 public abstract class BspCommandLineStateBase(
+  private val project: Project,
   private val environment: ExecutionEnvironment,
   private val configuration: BspRunConfigurationBase,
-  private val originId: OriginId
+  private val originId: OriginId,
 ) : CommandLineState(environment) {
-  protected abstract fun checkRun(capabilities: BazelBuildServerCapabilities)
+  protected abstract fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities)
 
-  protected abstract fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener
+  protected abstract fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener
 
-  protected abstract fun startBsp(server: BspServer): CompletableFuture<Any>
+  protected abstract fun startBsp(server: BspServer): CompletableFuture<*>
 
   final override fun startProcess(): BspProcessHandler<out Any> {
     // We have to start runFuture later, because we need to register the listener first
     // Otherwise, we might miss some events
     val computationStarter = CompletableFuture<Unit>()
     val runFuture = computationStarter.thenCompose {
-      configuration.project.connection.runWithServer { server, capabilities ->
-          checkRun(capabilities)
-          startBsp(server)
-        }
+      val completableFuture: CompletableFuture<*> = project.connection.runWithServer { server, capabilities ->
+        checkRunCapabilities(capabilities)
+        startBsp(server)
       }
+      // The above "useless" type is actually needed because of a bug in Kotlin compiler
+      completableFuture
+    }
 
     val handler = BspProcessHandler(runFuture)
-    val runListener = makeTaskListener(handler)
+    val runListener = createAndAddTaskListener(handler)
 
-    with(BspTaskEventsService.getInstance(configuration.project)) {
-      addListener(originId, runListener)
+    with(BspTaskEventsService.getInstance(project)) {
+      saveListener(originId, runListener)
       runFuture.handle { _, _ ->
-        removeListener(originId) }
+        removeListener(originId)
+      }
     }
 
     computationStarter.complete(Unit)
@@ -59,25 +61,25 @@ public abstract class BspCommandLineStateBase(
 }
 
 internal class BspRunCommandLineState(
+  project: Project,
   environment: ExecutionEnvironment,
   private val configuration: BspRunConfiguration,
-  private val originId: OriginId
-) : BspCommandLineStateBase(environment, configuration, originId) {
-  override fun checkRun(capabilities: BazelBuildServerCapabilities) {
-    if (configuration.targets.singleOrNull() == null || capabilities.runProvider == null) {
+  private val originId: OriginId,
+) : BspCommandLineStateBase(project, environment, configuration, originId) {
+  override fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities) {
+    if (configuration.targets.singleOrNull()?.id == null || capabilities.runProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
   }
 
-  override fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener {
-    return BspRunTaskListener(handler)
-  }
+  override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
+    BspRunTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<Any> {
-    // SAFETY: safe to unwrap because we checked in checkRun
-    val targetId = BuildTargetIdentifier(configuration.targets.single())
+  override fun startBsp(server: BspServer): CompletableFuture<*> {
+    // SAFETY: safe to unwrap because we checked in checkRunCapabilities
+    val targetId = BuildTargetIdentifier(configuration.targets.single().id)
     val runParams = RunParams(targetId)
     runParams.originId = originId
-    return server.buildTargetRun(runParams) as CompletableFuture<Any>
+    return server.buildTargetRun(runParams)
   }
 }

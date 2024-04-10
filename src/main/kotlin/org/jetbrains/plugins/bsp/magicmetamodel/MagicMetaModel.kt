@@ -14,6 +14,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.DefaultMagicMetaModelState
@@ -21,7 +22,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
@@ -74,6 +74,7 @@ public data class ProjectDetails(
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
   var defaultJdkName: String? = null,
+  var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
 )
 
 /**
@@ -166,11 +167,6 @@ public interface MagicMetaModel {
   public fun clear()
 
   public fun getLibraries(): List<Library>
-
-  public fun getModuleForTargetId(targetId: BuildTargetId): Module?
-
-  public fun getBuildTargetInfo(targetId: BuildTargetId): BuildTargetInfo? =
-    (getAllLoadedTargets() + getAllNotLoadedTargets()).find { it.id == targetId }
 
   public companion object {
     private val log = logger<MagicMetaModel>()

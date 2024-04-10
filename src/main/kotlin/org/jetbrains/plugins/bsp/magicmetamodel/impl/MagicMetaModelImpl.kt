@@ -123,6 +123,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private fun createLibraries(libraries: List<LibraryItem>?) = libraries?.map {
     Library(
       displayName = it.id.uri,
+      iJars = it.ijars,
       classJars = it.jars,
       sourceJars = it.sourceJars,
     )
@@ -351,8 +352,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun getLibraries(): List<Library> = libraries.orEmpty()
-
-  override fun getModuleForTargetId(targetId: BuildTargetId): Module? = facade.getModuleForTargetId(targetId)
 
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =
