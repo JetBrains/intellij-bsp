@@ -168,6 +168,9 @@ public interface MagicMetaModel {
 
   public fun getLibraries(): List<Library>
 
+  public fun getBuildTargetInfo(targetId: BuildTargetId): BuildTargetInfo? =
+    (getAllLoadedTargets() + getAllNotLoadedTargets()).find { it.id == targetId }
+
   public companion object {
     private val log = logger<MagicMetaModel>()
 

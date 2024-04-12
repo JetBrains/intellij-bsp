@@ -18,6 +18,7 @@ import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.xdebugger.impl.XDebugSessionImpl
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
@@ -84,7 +85,8 @@ public class BspAndroidConfigurationExecutor(
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
     val target = bspRunConfiguration.targets.singleOrNull() ?: return null
     val moduleNameProvider = environment.project.findModuleNameProvider().orDefault()
-    val moduleName = moduleNameProvider(target)
+    val targetInfo = MagicMetaModelService.getInstance(configuration.project).value.getBuildTargetInfo(target) ?: return null
+    val moduleName = moduleNameProvider(targetInfo)
     val module = ModuleManager.getInstance(environment.project).findModuleByName(moduleName) ?: return null
     return module.getModuleSystem().getPackageName()
   }

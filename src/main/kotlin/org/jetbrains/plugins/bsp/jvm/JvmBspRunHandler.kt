@@ -1,11 +1,16 @@
 package org.jetbrains.plugins.bsp.jvm
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.RunParams
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.project.Project
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.RemoteDebugData
+import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
@@ -16,8 +21,14 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.run.*
-import java.util.*
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspCommandLineStateBase
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunCommandLineState
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationSettings
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunTaskListener
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspTestCommandLineState
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 public class JvmBspRunHandler(private val configuration: BspRunConfigurationBase) : BspRunHandler {
@@ -75,16 +86,16 @@ public class JvmDebugHandlerState(
   public val portForDebug: Int?
     get() = remoteConnection.debuggerAddress?.toInt()
 
-  override fun checkRun(capabilities: BazelBuildServerCapabilities) {
+  override fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities) {
     if (!capabilities.runWithDebugProvider) {
       throw ExecutionException("BSP server does not support running")
     }
   }
 
-  override fun makeTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
+  override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
     BspRunTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<Any> {
+  override fun startBsp(server: BspServer): CompletableFuture<*> {
     // SAFETY: safe to unwrap because we checked in checkRun
     val targetId = BuildTargetIdentifier(configuration.targets.single())
     val runParams = RunParams(targetId)
@@ -92,6 +103,6 @@ public class JvmDebugHandlerState(
     val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    return server.buildTargetRunWithDebug(runWithDebugParams) as CompletableFuture<Any>
+    return server.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

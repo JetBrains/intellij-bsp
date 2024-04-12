@@ -23,11 +23,10 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import java.util.concurrent.CompletableFuture
 
 public class BspTestCommandLineState(
-  private val project: Project,
   private val environment: ExecutionEnvironment,
   private val configuration: BspTestConfiguration,
   private val originId: OriginId,
-) : BspCommandLineStateBase(project, environment, configuration, originId) {
+) : BspCommandLineStateBase(environment, configuration, originId) {
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
     val properties = configuration.createTestConsoleProperties(executor)
     val handler = startProcess()
@@ -39,7 +38,8 @@ public class BspTestCommandLineState(
     )
 
     handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString(), ProcessOutputType.STDOUT)
-    // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage ignores the first testingStarted event
+    // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage
+    //  ignores the first testingStarted event
     handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
     handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
 
@@ -58,7 +58,7 @@ public class BspTestCommandLineState(
     BspTestTaskListener(handler)
 
   override fun startBsp(server: BspServer): CompletableFuture<*> {
-    val targets = configuration.targets.map { BuildTargetIdentifier(it.id) }
+    val targets = configuration.targets.map { BuildTargetIdentifier(it) }
     val runParams = TestParams(targets)
     runParams.originId = originId
     return server.buildTargetTest(runParams)

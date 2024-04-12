@@ -20,7 +20,7 @@ public interface BspRunConfigurationSettings {
   /**
    * @return A [RunConfigurationSettingsEditor] for this state.
    */
-  public fun getEditor(project: Project): SettingsEditor<BspRunConfigurationSettings>
+  public fun getEditor(project: Project): SettingsEditor<out BspRunConfigurationSettings>
 }
 
 public abstract class BspCompositeRunConfigurationSettings : BspRunConfigurationSettings {

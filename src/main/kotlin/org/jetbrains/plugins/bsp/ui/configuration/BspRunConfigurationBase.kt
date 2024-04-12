@@ -46,7 +46,7 @@ public abstract class BspRunConfigurationBase(
 
   public var handler: BspRunHandler = handlerProvider.createRunHandler(this)
 
-  public var settingsEditor: SettingsEditor<BspRunConfigurationSettings> = handler.settings.getEditor(project)
+  public var settingsEditor: SettingsEditor<out BspRunConfigurationSettings> = handler.settings.getEditor(project)
 
   public fun interface HandlerChangeListener {
     public fun run(newHandler: BspRunHandler)
@@ -88,19 +88,23 @@ public abstract class BspRunConfigurationBase(
     super.readExternal(element)
 
     val targets = mutableListOf<String>()
-    for (targetElement in bspElementState.getChildren(TARGET_TAG)) {
+    for (targetElement in element.getChildren(TARGET_TAG)) {
       targets.add(targetElement.text)
     }
 
     // It should be possible to load the configuration before the project is synchronized,
     // so we can't access targets' data here. Instead, we have to use the stored provider ID.
     // TODO: is that true?
-    val providerId = bspElementState.getAttributeValue(HANDLER_PROVIDER_ATTR)
+    val providerId = element.getAttributeValue(HANDLER_PROVIDER_ATTR)
+    if (providerId == null) {
+      logger.warn("No handler provider ID found in run configuration")
+      return
+    }
     val provider = BspRunHandlerProvider.findRunHandlerProvider(providerId)
     if (provider != null) {
       handlerProvider = provider
     } else {
-      logger.error("Failed to find run handler provider with ID $providerId")
+      logger.warn("Failed to find run handler provider with ID $providerId")
     }
 
     bspElementState = element
@@ -123,10 +127,7 @@ public abstract class BspRunConfigurationBase(
 
     handler.settings.writeExternal(bspElementState)
 
-    logger.warn(bspElementState.toString())
-    logger.warn(element.toString())
-
-    element.addContent(bspElementState)
+    element.addContent(bspElementState.clone())
   }
 
   public companion object {
