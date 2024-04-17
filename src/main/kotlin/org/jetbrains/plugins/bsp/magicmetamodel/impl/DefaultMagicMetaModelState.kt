@@ -278,12 +278,16 @@ public data class AndroidAddendumState(
   var androidTargetType: AndroidTargetType = AndroidTargetType.LIBRARY,
   var manifest: String? = null,
   var resourceFolders: List<String> = emptyList(),
+  var resourceJavaPackage: String? = null,
+  var assetFolders: List<String> = emptyList(),
 ) : ConvertableFromState<AndroidAddendum> {
   override fun fromState(): AndroidAddendum = AndroidAddendum(
     androidSdkName = androidSdkName,
     androidTargetType = androidTargetType,
     manifest = manifest?.let { Path(it) },
     resourceFolders = resourceFolders.map { Path(it) },
+    resourceJavaPackage = resourceJavaPackage,
+    assetFolders = assetFolders.map { Path(it) },
   )
 }
 
@@ -316,6 +320,8 @@ public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumStat
   androidTargetType = androidTargetType,
   manifest = manifest?.toString(),
   resourceFolders = resourceFolders.map { it.toString() },
+  resourceJavaPackage = resourceJavaPackage,
+  assetFolders = assetFolders.map { it.toString() },
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(

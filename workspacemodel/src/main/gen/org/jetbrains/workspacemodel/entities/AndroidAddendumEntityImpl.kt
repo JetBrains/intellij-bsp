@@ -64,6 +64,18 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       return dataSource.resourceFolders
     }
 
+  override val resourceJavaPackage: String?
+    get() {
+      readField("resourceJavaPackage")
+      return dataSource.resourceJavaPackage
+    }
+
+  override val assetFolders: List<VirtualFileUrl>
+    get() {
+      readField("assetFolders")
+      return dataSource.assetFolders
+    }
+
   override val module: ModuleEntity
     get() = snapshot.extractOneToOneParent(MODULE_CONNECTION_ID, this)!!
 
@@ -103,6 +115,7 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
 
       index(this, "manifest", this.manifest)
       index(this, "resourceFolders", this.resourceFolders)
+      index(this, "assetFolders", this.assetFolders)
       // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
       checkInitialization() // TODO uncomment and check failed tests
@@ -121,6 +134,9 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       }
       if (!getEntityData().isResourceFoldersInitialized()) {
         error("Field AndroidAddendumEntity#resourceFolders should be initialized")
+      }
+      if (!getEntityData().isAssetFoldersInitialized()) {
+        error("Field AndroidAddendumEntity#assetFolders should be initialized")
       }
       if (_diff != null) {
         if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
@@ -142,6 +158,10 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       if (collection_resourceFolders is MutableWorkspaceList<*>) {
         collection_resourceFolders.cleanModificationUpdateAction()
       }
+      val collection_assetFolders = getEntityData().assetFolders
+      if (collection_assetFolders is MutableWorkspaceList<*>) {
+        collection_assetFolders.cleanModificationUpdateAction()
+      }
     }
 
     // Relabeling code, move information from dataSource to this builder
@@ -153,6 +173,9 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       if (this.manifest != dataSource?.manifest) this.manifest = dataSource.manifest
       if (this.resourceFolders != dataSource.resourceFolders) this.resourceFolders =
         dataSource.resourceFolders.toMutableList()
+      if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage =
+        dataSource.resourceJavaPackage
+      if (this.assetFolders != dataSource.assetFolders) this.assetFolders = dataSource.assetFolders.toMutableList()
       updateChildToParentReferences(parents)
     }
 
@@ -215,6 +238,36 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         resourceFoldersUpdater.invoke(value)
       }
 
+    override var resourceJavaPackage: String?
+      get() = getEntityData().resourceJavaPackage
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).resourceJavaPackage = value
+        changedProperty.add("resourceJavaPackage")
+      }
+
+    private val assetFoldersUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
+      val _diff = diff
+      if (_diff != null) index(this, "assetFolders", value)
+      changedProperty.add("assetFolders")
+    }
+    override var assetFolders: MutableList<VirtualFileUrl>
+      get() {
+        val collection_assetFolders = getEntityData().assetFolders
+        if (collection_assetFolders !is MutableWorkspaceList) return collection_assetFolders
+        if (diff == null || modifiable.get()) {
+          collection_assetFolders.setModificationUpdateAction(assetFoldersUpdater)
+        } else {
+          collection_assetFolders.cleanModificationUpdateAction()
+        }
+        return collection_assetFolders
+      }
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).assetFolders = value
+        assetFoldersUpdater.invoke(value)
+      }
+
     override var module: ModuleEntity
       get() {
         val _diff = diff
@@ -259,10 +312,13 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
   public lateinit var androidTargetType: AndroidTargetType
   public var manifest: VirtualFileUrl? = null
   public lateinit var resourceFolders: MutableList<VirtualFileUrl>
+  public var resourceJavaPackage: String? = null
+  public lateinit var assetFolders: MutableList<VirtualFileUrl>
 
   internal fun isAndroidSdkNameInitialized(): Boolean = ::androidSdkName.isInitialized
   internal fun isAndroidTargetTypeInitialized(): Boolean = ::androidTargetType.isInitialized
   internal fun isResourceFoldersInitialized(): Boolean = ::resourceFolders.isInitialized
+  internal fun isAssetFoldersInitialized(): Boolean = ::assetFolders.isInitialized
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<AndroidAddendumEntity> {
     val modifiable = AndroidAddendumEntityImpl.Builder(null)
@@ -291,6 +347,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     val clonedEntity = super.clone()
     clonedEntity as AndroidAddendumEntityData
     clonedEntity.resourceFolders = clonedEntity.resourceFolders.toMutableWorkspaceList()
+    clonedEntity.assetFolders = clonedEntity.assetFolders.toMutableWorkspaceList()
     return clonedEntity
   }
 
@@ -305,8 +362,9 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
-    return AndroidAddendumEntity(androidSdkName, androidTargetType, resourceFolders, entitySource) {
+    return AndroidAddendumEntity(androidSdkName, androidTargetType, resourceFolders, assetFolders, entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
+      this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
       parents.filterIsInstance<ModuleEntity>().singleOrNull()?.let { this.module = it }
     }
   }
@@ -328,6 +386,8 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     if (this.androidTargetType != other.androidTargetType) return false
     if (this.manifest != other.manifest) return false
     if (this.resourceFolders != other.resourceFolders) return false
+    if (this.resourceJavaPackage != other.resourceJavaPackage) return false
+    if (this.assetFolders != other.assetFolders) return false
     return true
   }
 
@@ -341,6 +401,8 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     if (this.androidTargetType != other.androidTargetType) return false
     if (this.manifest != other.manifest) return false
     if (this.resourceFolders != other.resourceFolders) return false
+    if (this.resourceJavaPackage != other.resourceJavaPackage) return false
+    if (this.assetFolders != other.assetFolders) return false
     return true
   }
 
@@ -350,6 +412,8 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     result = 31 * result + androidTargetType.hashCode()
     result = 31 * result + manifest.hashCode()
     result = 31 * result + resourceFolders.hashCode()
+    result = 31 * result + resourceJavaPackage.hashCode()
+    result = 31 * result + assetFolders.hashCode()
     return result
   }
 
@@ -359,6 +423,8 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     result = 31 * result + androidTargetType.hashCode()
     result = 31 * result + manifest.hashCode()
     result = 31 * result + resourceFolders.hashCode()
+    result = 31 * result + resourceJavaPackage.hashCode()
+    result = 31 * result + assetFolders.hashCode()
     return result
   }
 }

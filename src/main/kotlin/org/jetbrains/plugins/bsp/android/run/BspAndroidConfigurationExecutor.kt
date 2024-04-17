@@ -5,7 +5,6 @@ import com.android.tools.idea.execution.common.AndroidConfigurationExecutor
 import com.android.tools.idea.execution.common.debug.DebugSessionStarter
 import com.android.tools.idea.execution.common.debug.impl.java.AndroidJavaDebugger
 import com.android.tools.idea.execution.common.processhandler.AndroidProcessHandler
-import com.android.tools.idea.projectsystem.getModuleSystem
 import com.android.tools.idea.run.ShowLogcatListener
 import com.android.tools.idea.run.configuration.execution.createRunContentDescriptor
 import com.intellij.execution.ExecutionException
@@ -22,6 +21,7 @@ import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
+import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
 
 public class BspAndroidConfigurationExecutor(
   private val environment: ExecutionEnvironment,
@@ -30,8 +30,8 @@ public class BspAndroidConfigurationExecutor(
     get() = environment.runProfile as RunConfiguration
 
   override fun run(indicator: ProgressIndicator): RunContentDescriptor = runBlockingCancellable {
-    val packageName = getPackageNameOrThrow()
-    val processHandler = AndroidProcessHandler(packageName, { it.forceStop(packageName) })
+    val applicationId = getApplicationIdOrThrow()
+    val processHandler = AndroidProcessHandler(applicationId, { it.forceStop(applicationId) })
     val console = createConsole().apply {
       attachToProcess(processHandler)
     }
@@ -39,22 +39,22 @@ public class BspAndroidConfigurationExecutor(
     val device = getDevice()
     processHandler.addTargetDevice(device)
 
-    showLogcat(device, packageName)
+    showLogcat(device, applicationId)
 
     createRunContentDescriptor(processHandler, console, environment)
   }
 
   override fun debug(indicator: ProgressIndicator): RunContentDescriptor = runBlockingCancellable {
     val device = getDevice()
-    val packageName = getPackageNameOrThrow()
-    val debugSession = startDebugSession(device, packageName, environment, indicator)
-    showLogcat(device, packageName)
+    val applicationId = getApplicationIdOrThrow()
+    val debugSession = startDebugSession(device, applicationId, environment, indicator)
+    showLogcat(device, applicationId)
     debugSession.runContentDescriptor
   }
 
   private suspend fun startDebugSession(
     device: IDevice,
-    packageName: String,
+    applicationId: String,
     environment: ExecutionEnvironment,
     indicator: ProgressIndicator,
   ): XDebugSessionImpl {
@@ -63,11 +63,11 @@ public class BspAndroidConfigurationExecutor(
 
     return DebugSessionStarter.attachDebuggerToStartedProcess(
       device,
-      packageName,
+      applicationId,
       environment,
       debugger,
       debuggerState,
-      destroyRunningProcess = { d -> d.forceStop(packageName) },
+      destroyRunningProcess = { d -> d.forceStop(applicationId) },
       indicator,
     )
   }
@@ -78,24 +78,24 @@ public class BspAndroidConfigurationExecutor(
     return deviceFuture.get()
   }
 
-  private fun getPackageNameOrThrow(): String =
-    getPackageName() ?: throw ExecutionException("Couldn't get package name")
+  private fun getApplicationIdOrThrow(): String =
+    getApplicationId() ?: throw ExecutionException("Couldn't get application ID")
 
-  private fun getPackageName(): String? {
+  private fun getApplicationId(): String? {
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
     val target = bspRunConfiguration.targets.singleOrNull() ?: return null
     val moduleNameProvider = environment.project.findModuleNameProvider().orDefault()
     val targetInfo = MagicMetaModelService.getInstance(configuration.project).value.getBuildTargetInfo(target) ?: return null
     val moduleName = moduleNameProvider(targetInfo)
     val module = ModuleManager.getInstance(environment.project).findModuleByName(moduleName) ?: return null
-    return module.getModuleSystem().getPackageName()
+    return getApplicationIdFromManifest(module)
   }
 
   private fun createConsole(): ConsoleView =
     TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
 
-  private fun showLogcat(device: IDevice, packageName: String) {
-    environment.project.messageBus.syncPublisher(ShowLogcatListener.TOPIC).showLogcat(device, packageName)
+  private fun showLogcat(device: IDevice, applicationId: String) {
+    environment.project.messageBus.syncPublisher(ShowLogcatListener.TOPIC).showLogcat(device, applicationId)
   }
 
   // The "Apply changes" button isn't available for BspRunConfiguration, so this is an unexpected code path
