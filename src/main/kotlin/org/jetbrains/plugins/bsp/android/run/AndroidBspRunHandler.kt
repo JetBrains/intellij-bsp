@@ -5,12 +5,10 @@ import com.android.tools.idea.execution.common.AndroidConfigurationExecutorRunPr
 import com.android.tools.idea.execution.common.DeployableToDevice
 import com.android.tools.idea.run.editor.DeployTargetContext
 import com.google.common.util.concurrent.ListenableFuture
-import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.util.containers.addIfNotNull
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
@@ -18,7 +16,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationSettings
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationState
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
 
@@ -35,7 +33,7 @@ public class AndroidBspRunHandler(private val configuration: BspRunConfiguration
     configuration.beforeRunTasks.addIfNotNull(mobileInstallTask)
   }
 
-  override val settings: BspRunConfigurationSettings
+  override val settings: BspRunConfigurationState
     get() = TODO("Not yet implemented")
 
   override val name: String = "Android BSP Run Handler"

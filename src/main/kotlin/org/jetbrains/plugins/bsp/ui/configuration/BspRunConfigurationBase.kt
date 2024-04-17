@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.configuration
 
 import com.intellij.execution.Executor
-import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
@@ -16,7 +15,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationEditor
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationSettings
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationState
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationStateEditor
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
 
@@ -46,7 +46,7 @@ public abstract class BspRunConfigurationBase(
 
   public var handler: BspRunHandler = handlerProvider.createRunHandler(this)
 
-  public var settingsEditor: SettingsEditor<out BspRunConfigurationSettings> = handler.settings.getEditor(project)
+  public var settingsEditor: BspRunConfigurationStateEditor = handler.settings.getEditor(project)
 
   public fun interface HandlerChangeListener {
     public fun run(newHandler: BspRunHandler)

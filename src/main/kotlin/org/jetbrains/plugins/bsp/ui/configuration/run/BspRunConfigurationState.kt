@@ -8,7 +8,7 @@ import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element;
 
 
-public interface BspRunConfigurationSettings {
+public interface BspRunConfigurationState {
   /** Loads this handler's state from the external data.  */
   @Throws(InvalidDataException::class)
   public fun readExternal(element: Element)
@@ -18,12 +18,12 @@ public interface BspRunConfigurationSettings {
   public fun writeExternal(element: Element)
 
   /**
-   * @return A [RunConfigurationSettingsEditor] for this state.
+   * @return A [BspRunConfigurationStateEditor] for this state.
    */
-  public fun getEditor(project: Project): SettingsEditor<out BspRunConfigurationSettings>
+  public fun getEditor(project: Project): BspRunConfigurationStateEditor
 }
 
-public abstract class BspCompositeRunConfigurationSettings : BspRunConfigurationSettings {
-  protected val settings: MutableList<BspRunConfigurationSettings> = mutableListOf()
+public abstract class BspCompositeRunConfigurationState : BspRunConfigurationState {
+  protected val settings: MutableList<BspRunConfigurationState> = mutableListOf()
 
 }

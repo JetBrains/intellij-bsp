@@ -14,27 +14,30 @@ import java.util.UUID
 import javax.swing.JComponent
 import javax.swing.JTextField
 
-public class GenericSettings : BspRunConfigurationSettings {
+public class GenericState : BspRunConfigurationState {
   public var count: Int = 0
 
-  public class BullshitEditor(project: Project) : SettingsEditor<GenericSettings>() {
+  public class BullshitEditor(project: Project) : BspRunConfigurationStateEditor {
     private val tf = JTextField()
 
     init {
       thisLogger().warn("Initializing BullshitEditor")
     }
 
-    override fun resetEditorFrom(s: GenericSettings) {
+
+
+    override fun resetEditorFrom(s: BspRunConfigurationState) {
+      val s = s as GenericState
       s.count++
       tf.text = s.count.toString()
       thisLogger().warn("Resetting BullshitEditor")
     }
 
-    override fun applyEditorTo(s: GenericSettings) {
+    override fun applyEditorTo(state: BspRunConfigurationState) {
       thisLogger().warn("Applying BullshitEditor")
     }
 
-    override fun createEditor(): JComponent {
+    override fun createComponent(): JComponent {
       thisLogger().warn("Creating BullshitEditor")
       return tf
     }
@@ -50,11 +53,11 @@ public class GenericSettings : BspRunConfigurationSettings {
     element.setAttribute("count", count.toString())
   }
 
-  override fun getEditor(project: Project): SettingsEditor<out BspRunConfigurationSettings> = BullshitEditor(project)
+  override fun getEditor(project: Project): BspRunConfigurationStateEditor = BullshitEditor(project)
 }
 
 public class GenericBspRunHandler(private val configuration: BspRunConfigurationBase) : BspRunHandler {
-  override val settings: BspRunConfigurationSettings = GenericSettings()
+  override val settings: BspRunConfigurationState = GenericState()
 
   override val name: String = "Generic BSP Run Handler"
 

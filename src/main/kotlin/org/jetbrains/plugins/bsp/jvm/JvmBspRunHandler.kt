@@ -23,7 +23,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspCommandLineStateBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunCommandLineState
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationSettings
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationState
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunTaskListener
@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture
 public class JvmBspRunHandler(private val configuration: BspRunConfigurationBase) : BspRunHandler {
   override val name: String = "Jvm BSP Run Handler"
 
-  override val settings: BspRunConfigurationSettings
+  override val settings: BspRunConfigurationState
     get() = TODO("Not yet implemented")
 
   override fun getRunProfileState(

@@ -21,14 +21,15 @@ import javax.swing.JComponent
 
 public class HandlerSpecificSettingsEditorFragment(private val runConfiguration: BspRunConfigurationBase):
   SettingsEditorFragment<BspRunConfigurationBase, JComponent>(null, null, null, Box.createVerticalBox(), 0,
-    { configuration, component -> runConfiguration.settingsEditor.resetFrom(configuration.handler.settings) },
-    { configuration, component -> runConfiguration.settingsEditor.applyTo(configuration.handler.settings) },
+    { configuration, component -> runConfiguration.settingsEditor.resetEditorFrom(configuration.handler.settings) },
+    { configuration, component -> runConfiguration.settingsEditor.applyEditorTo(configuration.handler.settings) },
     { true }) {
 
   init {
+    component.add(runConfiguration.settingsEditor.createComponent())
     runConfiguration.handlerChangeListeners.add(BspRunConfigurationBase.HandlerChangeListener {
       component.removeAll()
-      component.add(runConfiguration.settingsEditor.component)
+      component.add(runConfiguration.settingsEditor.createComponent())
     })
   }
 }
