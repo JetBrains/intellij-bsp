@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -30,12 +31,16 @@ public interface BspRunHandlerProvider {
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
     public fun getRunHandlerProvider(targetInfos: List<BuildTargetInfo>): BspRunHandlerProvider {
-      return ep.extensionList.firstOrNull { it.canRun(targetInfos) } ?: GenericBspRunHandlerProvider()
+      return ep.extensionList.first { it.canRun(targetInfos) }
     }
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
     public fun getRunHandlerProvider(project: Project, targets: List<String>): BspRunHandlerProvider {
       val targetInfos = targets.mapNotNull { MagicMetaModelService.getInstance(project).value.getBuildTargetInfo(it) }
+      if (targetInfos.size != targets.size) {
+        thisLogger().warn("Some targets could not be found: ${targets - targetInfos.map { it.id }.toSet()}")
+      }
+
       return getRunHandlerProvider(targetInfos)
     }
 

@@ -9,6 +9,7 @@ import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesP
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -16,7 +17,6 @@ import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationEditor
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationState
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationStateEditor
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandlerProvider
 
@@ -28,47 +28,32 @@ public abstract class BspRunConfigurationBase(
   RunConfigurationWithSuppressedDefaultDebugAction,
   DumbAware {
 
+    init {
+
+      thisLogger().warn("BspRunConfigurationBase init")
+    }
+
   private val logger: Logger = logger<BspRunConfigurationBase>()
 
   /** The BSP-specific parts of the last serialized state of this run configuration. */
   private var bspElementState = Element(BSP_STATE_TAG)
 
   public var targets: List<String> = emptyList()
-    set(value) {
-      handlerProvider = BspRunHandlerProvider.getRunHandlerProvider(project, value)
-      field = value
-    }
+
   private var handlerProvider: BspRunHandlerProvider = BspRunHandlerProvider.getRunHandlerProvider(project, targets)
-    set(value) {
-      updateHandler(value)
-      field = value
-    }
 
   public var handler: BspRunHandler = handlerProvider.createRunHandler(this)
 
-  public var settingsEditor: BspRunConfigurationStateEditor = handler.settings.getEditor(project)
-
-  public fun interface HandlerChangeListener {
-    public fun run(newHandler: BspRunHandler)
-  }
-
-  public val handlerChangeListeners: MutableList<HandlerChangeListener> = mutableListOf()
-
-  private fun updateHandler(newProvider: BspRunHandlerProvider) {
-    if (newProvider == handlerProvider) return
+  public fun updateHandlerIfDifferentProvider(newProvider: BspRunHandlerProvider) {
+    if (newProvider == handlerProvider) return // TODO
     try {
       handler.settings.writeExternal(bspElementState)
     } catch (e: WriteExternalException) {
       logger.error("Failed to write BSP state", e)
     }
-    handler = newProvider.createRunHandler(this)
-    try {
-      for (listener in handlerChangeListeners) {
-        listener.run(handler)
-      }
-    } catch (e: Exception) {
-      logger.error("Error while execution handlerChangeListener", e)
-    }
+    handlerProvider = newProvider
+    handler = handlerProvider.createRunHandler(this)
+
     try {
       handler.settings.readExternal(bspElementState)
     } catch (e: Exception) {
@@ -87,29 +72,35 @@ public abstract class BspRunConfigurationBase(
   override fun readExternal(element: Element) {
     super.readExternal(element)
 
+    val bspElement = element.getChild(BSP_STATE_TAG) ?: return
+
     val targets = mutableListOf<String>()
-    for (targetElement in element.getChildren(TARGET_TAG)) {
+    for (targetElement in bspElement.getChildren(TARGET_TAG)) {
       targets.add(targetElement.text)
     }
+
+    this.targets = targets
 
     // It should be possible to load the configuration before the project is synchronized,
     // so we can't access targets' data here. Instead, we have to use the stored provider ID.
     // TODO: is that true?
-    val providerId = element.getAttributeValue(HANDLER_PROVIDER_ATTR)
+    val providerId = bspElement.getAttributeValue(HANDLER_PROVIDER_ATTR)
     if (providerId == null) {
       logger.warn("No handler provider ID found in run configuration")
       return
     }
     val provider = BspRunHandlerProvider.findRunHandlerProvider(providerId)
     if (provider != null) {
-      handlerProvider = provider
+      updateHandlerIfDifferentProvider(provider)
+      // TODO the above already reads
+      handler.settings.readExternal(bspElementState)
     } else {
       logger.warn("Failed to find run handler provider with ID $providerId")
+      val newProvider = BspRunHandlerProvider.getRunHandlerProvider(project, targets)
+      updateHandlerIfDifferentProvider(newProvider)
     }
 
-    bspElementState = element
-    handler.settings.readExternal(bspElementState)
-
+    bspElementState = bspElement
   }
 
   override fun writeExternal(element: Element) {

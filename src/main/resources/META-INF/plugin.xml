@@ -67,6 +67,8 @@
     <connectionDetailsProviderExtension
       implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
+    <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.ui.configuration.run.OtherHandlerProvider"/>
+    <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.ui.configuration.run.GenericBspRunHandlerProvider"/>
     <bspRunHandler implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler"/>
   </extensions>
 

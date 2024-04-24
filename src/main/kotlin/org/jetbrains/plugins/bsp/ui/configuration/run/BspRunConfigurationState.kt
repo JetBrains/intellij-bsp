@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element;
+import java.awt.Component
 
 
 public interface BspRunConfigurationState {
@@ -17,10 +18,14 @@ public interface BspRunConfigurationState {
   @Throws(WriteExternalException::class)
   public fun writeExternal(element: Element)
 
-  /**
-   * @return A [BspRunConfigurationStateEditor] for this state.
-   */
-  public fun getEditor(project: Project): BspRunConfigurationStateEditor
+  public fun getEditor(): BspRunConfigurationStateEditor
+}
+
+// Neded because of the generics in SettingsEditor<T>
+public interface BspRunConfigurationStateEditor {
+  public fun resetEditorFrom(state: BspRunConfigurationState)
+  public fun applyEditorTo(state: BspRunConfigurationState)
+  public fun getEditorComponent(): Component
 }
 
 public abstract class BspCompositeRunConfigurationState : BspRunConfigurationState {

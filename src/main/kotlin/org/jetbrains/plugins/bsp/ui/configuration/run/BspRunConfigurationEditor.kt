@@ -1,47 +1,37 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
 import com.intellij.compiler.options.CompileStepBeforeRun
-import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.ui.BeforeRunFragment
 import com.intellij.execution.ui.CommonParameterFragments
 import com.intellij.execution.ui.CommonTags
 import com.intellij.execution.ui.RunConfigurationFragmentedEditor
 import com.intellij.execution.ui.SettingsEditorFragment
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.configuration.addBeforeRunFragment
-import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import javax.swing.Box
 import javax.swing.JComponent
-
-
-public class HandlerSpecificSettingsEditorFragment(private val runConfiguration: BspRunConfigurationBase):
-  SettingsEditorFragment<BspRunConfigurationBase, JComponent>(null, null, null, Box.createVerticalBox(), 0,
-    { configuration, component -> runConfiguration.settingsEditor.resetEditorFrom(configuration.handler.settings) },
-    { configuration, component -> runConfiguration.settingsEditor.applyEditorTo(configuration.handler.settings) },
-    { true }) {
-
-  init {
-    component.add(runConfiguration.settingsEditor.createComponent())
-    runConfiguration.handlerChangeListeners.add(BspRunConfigurationBase.HandlerChangeListener {
-      component.removeAll()
-      component.add(runConfiguration.settingsEditor.createComponent())
-    })
-  }
-}
+import kotlin.properties.Delegates
 
 /**
  * The base editor for a BSP run configuration.
  * Takes care of targets, the common settings and sets up the handler-specific settings editor.
  */
-public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) : RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
-  runConfiguration,
-  BspRunConfigurationExtensionManager.getInstance()
-) {
+public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) :
+  RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
+    runConfiguration,
+    BspRunConfigurationExtensionManager.getInstance()
+  ) {
+
+    private var stateEditor = runConfiguration.handler.settings.getEditor()
+  private val editorFragment = SettingsEditorFragment<BspRunConfigurationBase, JComponent>(null, null, null, Box.createVerticalBox(), 0,
+    { configuration, component -> stateEditor.resetEditorFrom(configuration.handler.settings) },
+    { configuration, component -> stateEditor.applyEditorTo(configuration.handler.settings) },
+    { true })
 
   override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
@@ -50,7 +40,7 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
       addAll(BeforeRunFragment.createGroup())
       add(CommonTags.parallelRun())
       addBspTargetFragment()
-      add(HandlerSpecificSettingsEditorFragment(runConfiguration))
+      add(editorFragment)
     }
 
 //  public fun programArguments(): SettingsEditorFragment<BspRunConfigurationBase, RawCommandLineEditor> {
@@ -114,13 +104,22 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
         override val settingsGroup: String = "BSP"
         override val settingsHint: String = "Build target"
         override val settingsActionHint: String = "Build target"
-     },
+      },
       { BspTargetBrowserComponent() },
       { it, c ->
-        c.text = it.targets.singleOrNull() ?: "(multiple targets)"
+        c.text = it.targets.joinToString(", ")
       },
       { it, c ->
-        it.targets = listOf(c.text)
+        val newTargets = c.text.split(",").mapNotNull { it.ifBlank { null } }
+        if (newTargets != it.targets) {
+          it.targets = newTargets
+          it.updateHandlerIfDifferentProvider(BspRunHandlerProvider.getRunHandlerProvider(it.project, newTargets))
+
+          stateEditor = it.handler.settings.getEditor()
+          editorFragment.component().removeAll()
+          logger<BspRunConfigurationBase>().warn("Adding new editor component: ${stateEditor.getEditorComponent().javaClass.name}")
+          editorFragment.component().add(stateEditor.getEditorComponent())
+        }
       },
       { true }
     )
