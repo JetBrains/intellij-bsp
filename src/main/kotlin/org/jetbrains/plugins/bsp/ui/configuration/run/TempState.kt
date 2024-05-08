@@ -9,45 +9,38 @@ import com.intellij.execution.ui.FragmentedSettingsEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.components.BaseState
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
 import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
+import com.intellij.openapi.options.SettingsEditor
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Property
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XCollection
+import javaslang.control.Option.Some
 import org.jdom.Element
-import java.awt.Component
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import javax.swing.JCheckBox
 import javax.swing.JSpinner
 import javax.swing.JTextField
 
-public class OtherState : BaseState(), FragmentedSettings, BspRunConfigurationState {
+public class OtherState : BspRunConfigurationState() {
 
   @com.intellij.configurationStore.Property(description = "Env")
   @get:Attribute("env")
   public var env: EnvironmentVariablesData by property(EnvironmentVariablesData.DEFAULT) { it == EnvironmentVariablesData.DEFAULT }
 
-  @get:XCollection(propertyElementName = "selectedOptions")
-  override var selectedOptions: MutableList<FragmentedSettings.Option> by list()
-  override fun readExternal(element: Element) {
-    element.deserializeInto(this)
-  }
-
-  override fun writeExternal(element: Element) {
-    serializeObjectInto(this, element)
-  }
-
-  override fun getEditor(): BspRunConfigurationStateEditor {
-    return OtherEditor(this)
+  override fun getEditor(configuration: BspRunConfigurationBase): SettingsEditor<BspRunConfigurationBase> {
+    return OtherEditor(configuration)
   }
 }
 
-public class OtherEditor(private val settings: OtherState) : FragmentedSettingsEditor<OtherState>(settings),
-  BspRunConfigurationStateEditor {
-  override fun createFragments(): Collection<SettingsEditorFragment<OtherState, *>> =
+public class OtherEditor(private val config: BspRunConfigurationBase) : BspStateFragmentedSettingsEditor<OtherState>(config) {
+
+  override fun createFragments(): Collection<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
       addEnvironmentFragment(object : LabeledSettingsFragmentInfo {
         override val editorLabel: String = "Environment Variables"
@@ -59,31 +52,17 @@ public class OtherEditor(private val settings: OtherState) : FragmentedSettingsE
         override val settingsPriority: Int = 0
         override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
       },
-        { settings.env.envs },
-        { settings.env = settings.env.with(it) },
-        { settings.env.isPassParentEnvs },
-        { settings.env = settings.env.with(it) },
+        { handlerState.env.envs },
+        { handlerState.env = handlerState.env.with(it) },
+        { handlerState.env.isPassParentEnvs },
+        { handlerState.env = handlerState.env.with(it) },
         false
       )
     }
-
-  override fun resetEditorFrom(state: BspRunConfigurationState) {
-    val otherState = state as? OtherState ?: return
-    resetFrom(otherState)
-  }
-
-  override fun applyEditorTo(state: BspRunConfigurationState) {
-    val otherState = state as? OtherState ?: return
-    applyTo(otherState)
-  }
-
-  override fun getEditorComponent(): Component {
-    return component
-  }
 }
 
 
-public class SomeState : BaseState(), FragmentedSettings, BspRunConfigurationState {
+public class SomeState : BspRunConfigurationState() {
 
   @com.intellij.configurationStore.Property(description = "Show console when a message is printed to standard error stream")
   @get:Attribute("someName")
@@ -105,25 +84,18 @@ public class SomeState : BaseState(), FragmentedSettings, BspRunConfigurationSta
   @get:Property
   public var outputFileOptions: OutputFileOptions by property(OutputFileOptions())
 
-  @get:XCollection(propertyElementName = "selectedOptions")
-  override var selectedOptions: MutableList<FragmentedSettings.Option> by list()
-
-  override fun readExternal(element: Element) {
-    element.deserializeInto(this)
-  }
-
-  override fun writeExternal(element: Element) {
-    serializeObjectInto(this, element)
-  }
-
-  override fun getEditor(): BspRunConfigurationStateEditor {
-    return SomeEditor(this)
+  override fun getEditor(runConfiguration: BspRunConfigurationBase): SettingsEditor<BspRunConfigurationBase> {
+    return SomeEditor(runConfiguration)
   }
 }
 
-public class SomeEditor(private val settings: SomeState) : FragmentedSettingsEditor<SomeState>(settings),
-  BspRunConfigurationStateEditor {
-  override fun createFragments(): Collection<SettingsEditorFragment<SomeState, *>> =
+public abstract class BspStateFragmentedSettingsEditor<State: BspRunConfigurationState>(private val config: BspRunConfigurationBase) : FragmentedSettingsEditor<BspRunConfigurationBase>(config) {
+  protected val handlerState: State = config.handler.settings as State
+}
+
+public class SomeEditor(private val config: BspRunConfigurationBase) : BspStateFragmentedSettingsEditor<SomeState>(config) {
+
+  override fun createFragments(): Collection<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonParameterFragments.createHeader("WITAJ W EDYTORZE KONFIGURACJI"))
       addSettingsEditorFragment(object : SettingsFragmentInfo {
@@ -137,8 +109,8 @@ public class SomeEditor(private val settings: SomeState) : FragmentedSettingsEdi
         override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
       },
         { JTextField() },
-        { settings, component -> component.text = settings.someName ?: "" },
-        { settings, component -> settings.someName = component.text })
+        { _, component -> component.text = handlerState.someName ?: "" },
+        { _, component -> handlerState.someName = component.text })
 
       addSettingsEditorFragment(object : LabeledSettingsFragmentInfo {
         override val editorLabel: String = "Counter"
@@ -151,8 +123,8 @@ public class SomeEditor(private val settings: SomeState) : FragmentedSettingsEdi
         override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
       },
         { JSpinner() },
-        { settings, component -> component.value = settings.counter },
-        { settings, component -> settings.counter = component.value as Int })
+        { _, component -> component.value = handlerState.counter },
+        { _, component -> handlerState.counter = component.value as Int })
 
       // output file
       addSettingsEditorFragment(object : SettingsFragmentInfo {
@@ -165,8 +137,8 @@ public class SomeEditor(private val settings: SomeState) : FragmentedSettingsEdi
         override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
       },
         { JTextField() },
-        { settings, component -> component.text = settings.outputFileOptions.fileOutputPath ?: "" },
-        { settings, component -> settings.outputFileOptions.fileOutputPath = component.text })
+        { settings, component -> component.text = handlerState.outputFileOptions.fileOutputPath ?: "" },
+        { settings, component -> handlerState.outputFileOptions.fileOutputPath = component.text })
 
       // save output
       addSettingsEditorFragment(object : SettingsFragmentInfo {
@@ -179,21 +151,7 @@ public class SomeEditor(private val settings: SomeState) : FragmentedSettingsEdi
         override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
       },
         { JCheckBox() },
-        { settings, component -> component.isSelected = settings.outputFileOptions.isSaveOutput },
-        { settings, component -> settings.outputFileOptions.isSaveOutput = component.isSelected })
+        { settings, component -> component.isSelected = handlerState.outputFileOptions.isSaveOutput },
+        { settings, component -> handlerState.outputFileOptions.isSaveOutput = component.isSelected })
     }
-
-  override fun resetEditorFrom(state: BspRunConfigurationState) {
-    val someState = state as? SomeState ?: return
-    resetFrom(someState)
-  }
-
-  override fun applyEditorTo(state: BspRunConfigurationState) {
-    val someState = state as? SomeState ?: return
-    applyTo(someState)
-  }
-
-  override fun getEditorComponent(): Component {
-    return component
-  }
 }

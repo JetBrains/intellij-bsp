@@ -11,11 +11,11 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.addBe
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.util.Disposer
+import com.intellij.ui.components.JBTextField
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import javax.swing.Box
 import javax.swing.JComponent
-import kotlin.properties.Delegates
 
 /**
  * The base editor for a BSP run configuration.
@@ -23,15 +23,15 @@ import kotlin.properties.Delegates
  */
 public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfigurationBase) :
   RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
-    runConfiguration,
-    BspRunConfigurationExtensionManager.getInstance()
+    runConfiguration, BspRunConfigurationExtensionManager.getInstance()
   ) {
 
-    private var stateEditor = runConfiguration.handler.settings.getEditor()
-  private val editorFragment = SettingsEditorFragment<BspRunConfigurationBase, JComponent>(null, null, null, Box.createVerticalBox(), 0,
-    { configuration, component -> stateEditor.resetEditorFrom(configuration.handler.settings) },
-    { configuration, component -> stateEditor.applyEditorTo(configuration.handler.settings) },
-    { true })
+  private val editorFragment = SettingsEditorFragment.createWrapper(
+    "handlerSettings",
+    "Handler Settings",
+    null,
+    runConfiguration.handler.settings.getEditor(runConfiguration)
+  ) { true }
 
   override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
@@ -96,36 +96,22 @@ public class BspRunConfigurationEditor(public val runConfiguration: BspRunConfig
 //  }
 
   private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspTargetFragment() {
-    this.addLabeledSettingsEditorFragment(
-      object : LabeledSettingsFragmentInfo { // TODO: Use bundle
-        override val editorLabel: String = "Build target"
-        override val settingsId: String = "bsp.target.fragment"
-        override val settingsName: String = "Build target"
-        override val settingsGroup: String = "BSP"
-        override val settingsHint: String = "Build target"
-        override val settingsActionHint: String = "Build target"
-      },
-      { BspTargetBrowserComponent() },
-      { it, c ->
-        c.text = it.targets.joinToString(", ")
-      },
-      { it, c ->
-        val newTargets = c.text.split(",").mapNotNull { it.ifBlank { null } }
-        if (newTargets != it.targets) {
-          it.targets = newTargets
-          it.updateHandlerIfDifferentProvider(BspRunHandlerProvider.getRunHandlerProvider(it.project, newTargets))
-
-          stateEditor = it.handler.settings.getEditor()
-          editorFragment.component().removeAll()
-          logger<BspRunConfigurationBase>().warn("Adding new editor component: ${stateEditor.getEditorComponent().javaClass.name}")
-          editorFragment.component().add(stateEditor.getEditorComponent())
-        }
-      },
-      { true }
-    )
+    this.addLabeledSettingsEditorFragment(object : LabeledSettingsFragmentInfo { // TODO: Use bundle
+      override val editorLabel: String = "Build target"
+      override val settingsId: String = "bsp.target.fragment"
+      override val settingsName: String = "Build target"
+      override val settingsGroup: String = "BSP"
+      override val settingsHint: String = "Build target"
+      override val settingsActionHint: String = "Build target"
+    }, { BspTargetComponent() }, { e, c ->
+      c.text = e.targets.joinToString(", ")
+    }, { _, _ -> {}
+    }, { true })
   }
 }
 
-public class BspTargetBrowserComponent : TextFieldWithBrowseButton() {
-  // TODO: implement a browser
+public class BspTargetComponent : JBTextField() {
+  init {
+    this.isEditable = false
+  }
 }

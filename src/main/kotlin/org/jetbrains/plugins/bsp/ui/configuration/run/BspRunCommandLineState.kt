@@ -22,6 +22,7 @@ public abstract class BspCommandLineStateBase(
   private val configuration: BspRunConfigurationBase,
   private val originId: OriginId,
 ) : CommandLineState(environment) {
+  /** Throws an exception if the server does not support running the configuration */
   protected abstract fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities)
 
   protected abstract fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener
@@ -35,7 +36,7 @@ public abstract class BspCommandLineStateBase(
     val runFuture = computationStarter.thenCompose {
       // The "useless" type below is actually needed because of a bug in Kotlin compiler
       val completableFuture: CompletableFuture<*> =
-        configuration.project.connection.runWithServer { server, capabilities ->
+        configuration.project.connection.runWithServer { server: BspServer, capabilities: BazelBuildServerCapabilities ->
           checkRunCapabilities(capabilities)
           startBsp(server)
         }

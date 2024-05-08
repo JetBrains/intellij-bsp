@@ -1,34 +1,31 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import com.intellij.execution.impl.RunConfigurationSettingsEditor
+import com.intellij.configurationStore.deserializeInto
+import com.intellij.configurationStore.serializeObjectInto
+import com.intellij.execution.ui.FragmentedSettings
+import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException
-import org.jdom.Element;
-import java.awt.Component
+import com.intellij.util.xmlb.annotations.XCollection
+import org.jdom.Element
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 
-
-public interface BspRunConfigurationState {
+public abstract class BspRunConfigurationState : BaseState(), FragmentedSettings {
   /** Loads this handler's state from the external data.  */
   @Throws(InvalidDataException::class)
-  public fun readExternal(element: Element)
+  public fun readExternal(element: Element) {
+    element.deserializeInto(this)
+  }
 
   /** Updates the element with the handler's state.  */
   @Throws(WriteExternalException::class)
-  public fun writeExternal(element: Element)
+  public fun writeExternal(element: Element) {
+    serializeObjectInto(this, element)
+  }
 
-  public fun getEditor(): BspRunConfigurationStateEditor
-}
+  @get:XCollection(propertyElementName = "selectedOptions")
+  override var selectedOptions: MutableList<FragmentedSettings.Option> by list()
 
-// Neded because of the generics in SettingsEditor<T>
-public interface BspRunConfigurationStateEditor {
-  public fun resetEditorFrom(state: BspRunConfigurationState)
-  public fun applyEditorTo(state: BspRunConfigurationState)
-  public fun getEditorComponent(): Component
-}
-
-public abstract class BspCompositeRunConfigurationState : BspRunConfigurationState {
-  protected val settings: MutableList<BspRunConfigurationState> = mutableListOf()
-
+  public abstract fun getEditor(configuration: BspRunConfigurationBase): SettingsEditor<BspRunConfigurationBase>
 }

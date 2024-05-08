@@ -28,11 +28,6 @@ public abstract class BspRunConfigurationBase(
   RunConfigurationWithSuppressedDefaultDebugAction,
   DumbAware {
 
-    init {
-
-      thisLogger().warn("BspRunConfigurationBase init")
-    }
-
   private val logger: Logger = logger<BspRunConfigurationBase>()
 
   /** The BSP-specific parts of the last serialized state of this run configuration. */
@@ -93,7 +88,7 @@ public abstract class BspRunConfigurationBase(
     if (provider != null) {
       updateHandlerIfDifferentProvider(provider)
       // TODO the above already reads
-      handler.settings.readExternal(bspElementState)
+      handler.settings.readExternal(bspElement)
     } else {
       logger.warn("Failed to find run handler provider with ID $providerId")
       val newProvider = BspRunHandlerProvider.getRunHandlerProvider(project, targets)
