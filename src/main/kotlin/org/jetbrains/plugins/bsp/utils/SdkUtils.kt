@@ -33,18 +33,26 @@ internal object SdkUtils {
     val existingSdk = logPerformance("sdkTable.findJdk(sdk.name, sdk.sdkType.name)") {
       sdkTable.findJdk(sdk.name, sdk.sdkType.name)
     }
+    println("Before log")
     logPerformanceSuspend("if blah writeAction") {
+      println("before if")
       if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
+        println("Before write action")
         writeAction {
+          println("before log performance existing jdk")
           logPerformance("existingSdk?.let { sdkTable.removeJdk(existingSdk) }") {
+            println("inside log perfromance existing jdk")
             existingSdk?.let { sdkTable.removeJdk(existingSdk) }
           }
           logPerformance("sdkTable.addJdk(sdk)") {
             sdkTable.addJdk(sdk)
           }
+          println("before write action finished")
         }
+        println("write action finished")
       }
     }
+    println("after log")
   }
 
   fun getProjectJdkOrMostRecentJdk(project: Project): Sdk? =
