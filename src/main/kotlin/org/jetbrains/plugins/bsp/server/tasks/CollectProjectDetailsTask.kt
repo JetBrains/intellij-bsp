@@ -374,6 +374,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     BspPluginBundle.message("console.task.model.add.fetched.jdks")
   ) {
     logPerformanceSuspend("add-bsp-fetched-jdks") {
+      println("Unique java homes size: ${uniqueJavaHomes?.size}")
+      println("First 100 java homes: ${uniqueJavaHomes?.take(100)}")
       uniqueJavaHomes?.forEach {
         SdkUtils.addJdkIfNeeded(
           projectName = project.name,

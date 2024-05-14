@@ -34,6 +34,7 @@ public object PerformanceLogger {
 
   private fun logMilliseconds(clearKey: String, value: Long) {
     logMetric("$clearKey.ms", value)
+    println("$clearKey took $value ms")
   }
 
   private fun logMemory(key: String) {
