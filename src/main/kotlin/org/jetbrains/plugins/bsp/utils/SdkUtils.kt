@@ -7,8 +7,9 @@ import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformance
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import kotlin.io.path.toPath
 
@@ -26,31 +27,19 @@ internal object SdkUtils {
     addSdkIfNeeded(jdk)
   }
 
-  suspend fun addSdkIfNeeded(sdk: Sdk) {
-    val sdkTable = logPerformance("ProjectJdkTable.getInstance()") {
-      ProjectJdkTable.getInstance()
-    }
-    val existingSdk = logPerformance("sdkTable.findJdk(sdk.name, sdk.sdkType.name)") {
-      sdkTable.findJdk(sdk.name, sdk.sdkType.name)
-    }
-    println("Before log")
-    logPerformanceSuspend("if blah writeAction") {
-      println("before if")
-      if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
-        println("Before write action")
-        writeAction {
-          println("before log performance existing jdk")
-          logPerformance("existingSdk?.let { sdkTable.removeJdk(existingSdk) }") {
-            println("inside log perfromance existing jdk")
-            existingSdk?.let { sdkTable.removeJdk(existingSdk) }
-          }
-          logPerformance("sdkTable.addJdk(sdk)") {
-            sdkTable.addJdk(sdk)
-          }
-          println("before write action finished")
-        }
-        println("write action finished")
+  suspend fun addSdkIfNeeded(sdk: Sdk) = withContext(Dispatchers.IO) {
+    val sdkTable = ProjectJdkTable.getInstance()
+    val existingSdk = sdkTable.findJdk(sdk.name, sdk.sdkType.name)
+    println("before if")
+    if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
+      println("Before write action")
+      writeAction {
+        println("before remove and add jdk")
+        existingSdk?.let { sdkTable.removeJdk(existingSdk) }
+        sdkTable.addJdk(sdk)
+        println("before write action finished")
       }
+      println("write action finished")
     }
     println("after log")
   }
