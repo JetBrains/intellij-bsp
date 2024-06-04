@@ -1,15 +1,11 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import com.intellij.configurationStore.deserializeInto
-import com.intellij.configurationStore.serializeObjectInto
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.ui.CommonParameterFragments
-import com.intellij.execution.ui.FragmentedSettings
 import com.intellij.execution.ui.FragmentedSettingsEditor
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.components.BaseState
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
@@ -20,28 +16,41 @@ import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Property
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XCollection
-import javaslang.control.Option.Some
-import org.jdom.Element
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
+import java.nio.file.Path
 import javax.swing.JCheckBox
 import javax.swing.JSpinner
 import javax.swing.JTextField
 
-public class OtherState : BspRunConfigurationState() {
+public class TestState : BspRunConfigurationState() {
+
+  @com.intellij.configurationStore.Property(description = "Test filter")
+  @get:Attribute("testFilter")
+  public var testFilter: String? by string()
+
+  @com.intellij.configurationStore.Property(description = "Arguments")
+  @get:XCollection
+  public var arguments: MutableList<String> by list()
+
+  @com.intellij.configurationStore.Property(description = "Working directory")
+  @get:Attribute("workingDirectory")
+  public var workingDirectory: String? by string()
 
   @com.intellij.configurationStore.Property(description = "Env")
   @get:Attribute("env")
   public var env: EnvironmentVariablesData by property(EnvironmentVariablesData.DEFAULT) { it == EnvironmentVariablesData.DEFAULT }
 
   override fun getEditor(configuration: BspRunConfigurationBase): SettingsEditor<BspRunConfigurationBase> {
-    return OtherEditor(configuration)
+    return TestStateEditor(configuration)
   }
 }
 
-public class OtherEditor(private val config: BspRunConfigurationBase) : BspStateFragmentedSettingsEditor<OtherState>(config) {
+public class TestStateEditor(private val config: BspRunConfigurationBase) : BspStateFragmentedSettingsEditor<TestState>(config) {
 
   override fun createFragments(): Collection<SettingsEditorFragment<BspRunConfigurationBase, *>> =
     SettingsEditorFragmentContainer.fragments {
+      add(CommonParameterFragments.createHeader("Test Configuration"))
+
       addEnvironmentFragment(object : LabeledSettingsFragmentInfo {
         override val editorLabel: String = "Environment Variables"
         override val settingsActionHint: String = "Environment Variables Action Hint"

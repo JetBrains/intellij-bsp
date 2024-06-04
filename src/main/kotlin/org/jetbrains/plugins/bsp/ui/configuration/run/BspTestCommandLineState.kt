@@ -23,10 +23,11 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import java.util.concurrent.CompletableFuture
 
 public class BspTestCommandLineState(
-  private val environment: ExecutionEnvironment,
-  private val configuration: BspTestConfiguration,
-  private val originId: OriginId,
-) : BspCommandLineStateBase(environment, configuration, originId) {
+  environment: ExecutionEnvironment,
+  originId: OriginId,
+) : BspCommandLineStateBase(environment, originId) {
+  private val configuration = environment.runProfile as BspTestConfiguration
+
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
     val properties = configuration.createTestConsoleProperties(executor)
     val handler = startProcess()
@@ -48,16 +49,14 @@ public class BspTestCommandLineState(
     return DefaultExecutionResult(console, handler, *actions)
   }
 
-  override fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities) {
-    if (configuration.targets.isEmpty() || capabilities.testProvider == null) {
-      throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
-    }
-  }
-
   override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
     BspTestTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<*> {
+  override fun startBsp(server: BspServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*> {
+    if (configuration.targets.isEmpty() || capabilities.testProvider == null) {
+      throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
+    }
+
     val targets = configuration.targets.map { BuildTargetIdentifier(it) }
     val runParams = TestParams(targets)
     runParams.originId = originId

@@ -68,5 +68,8 @@ public class AndroidBspRunHandler(private val configuration: BspRunConfiguration
 
     override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
       BspFeatureFlags.isAndroidSupportEnabled && targetInfos.size == 1 && targetInfos.all {it.languageIds.includesAndroid()  && !it.capabilities.canTest }
+
+    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean =
+      canRun(targetInfos) && targetInfos.all { it.capabilities.canDebug }
   }
 }

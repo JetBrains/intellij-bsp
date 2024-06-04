@@ -18,7 +18,7 @@ public class BspProcessHandler<T>(private val requestFuture: CompletableFuture<T
         notifyProcessTerminated(0)
       }
     }
-    // Hnadles the case when the future is already completed (because, for example, checkRunCapabilities failed)
+    // Handles the case when the future is already completed (because, for example, checkRunCapabilities failed)
     if (thrownError != null) {
       throw thrownError as Throwable
     }

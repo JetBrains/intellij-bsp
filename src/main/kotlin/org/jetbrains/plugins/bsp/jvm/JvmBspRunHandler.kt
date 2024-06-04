@@ -43,15 +43,15 @@ public class JvmBspRunHandler(private val configuration: BspRunConfigurationBase
   ): RunProfileState {
     return when {
       executor is DefaultDebugExecutor -> {
-        JvmDebugHandlerState(environment, configuration, UUID.randomUUID().toString())
+        JvmDebugHandlerState(environment, UUID.randomUUID().toString())
       }
 
       configuration is BspTestConfiguration -> {
-        BspTestCommandLineState(environment, configuration, UUID.randomUUID().toString())
+        BspTestCommandLineState(environment, UUID.randomUUID().toString())
       }
 
       configuration is BspRunConfiguration -> {
-        BspRunCommandLineState(environment, configuration, UUID.randomUUID().toString())
+        BspRunCommandLineState(environment, UUID.randomUUID().toString())
       }
 
       else -> {
@@ -72,31 +72,32 @@ public class JvmBspRunHandler(private val configuration: BspRunConfigurationBase
             it.languageIds.includesAndroid() && it.capabilities.canTest
       }
 
+    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean {
+      return targetInfos.all { it.capabilities.canDebug }
+    }
+
   }
 }
 
 public class JvmDebugHandlerState(
   environment: ExecutionEnvironment,
-  private val configuration: BspRunConfigurationBase,
-  private val originId: OriginId,
-) : BspCommandLineStateBase(environment, configuration, originId) {
+  originId: OriginId,
+) : BspCommandLineStateBase(environment, originId) {
   public val remoteConnection: RemoteConnection =
     RemoteConnection(true, "localhost", "0", true)
 
   public val portForDebug: Int?
     get() = remoteConnection.debuggerAddress?.toInt()
 
-  override fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities) {
-    if (!capabilities.runWithDebugProvider) {
-      throw ExecutionException("BSP server does not support running")
-    }
-  }
-
   override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
     BspRunTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<*> {
-    // SAFETY: safe to unwrap because we checked in checkRun
+  override fun startBsp(server: BspServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*> {
+    if (!capabilities.runWithDebugProvider) {
+      throw ExecutionException("BSP server does not support running")
+    }
+
+    val configuration = environment.runProfile as BspRunConfiguration
     val targetId = BuildTargetIdentifier(configuration.targets.single())
     val runParams = RunParams(targetId)
     runParams.originId = originId

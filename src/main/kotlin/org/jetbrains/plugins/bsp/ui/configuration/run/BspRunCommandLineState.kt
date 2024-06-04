@@ -18,18 +18,18 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import java.util.concurrent.CompletableFuture
 
 public abstract class BspCommandLineStateBase(
-  private val environment: ExecutionEnvironment,
-  private val configuration: BspRunConfigurationBase,
-  private val originId: OriginId,
+  environment: ExecutionEnvironment,
+  protected val originId: OriginId,
 ) : CommandLineState(environment) {
-  /** Throws an exception if the server does not support running the configuration */
-  protected abstract fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities)
 
   protected abstract fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener
 
-  protected abstract fun startBsp(server: BspServer): CompletableFuture<*>
+  /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
+  protected abstract fun startBsp(server: BspServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*>
 
   final override fun startProcess(): BspProcessHandler<out Any> {
+    val configuration = environment.runProfile as BspRunConfigurationBase
+
     // We have to start runFuture later, because we need to register the listener first
     // Otherwise, we might miss some events
     val computationStarter = CompletableFuture<Unit>()
@@ -37,8 +37,7 @@ public abstract class BspCommandLineStateBase(
       // The "useless" type below is actually needed because of a bug in Kotlin compiler
       val completableFuture: CompletableFuture<*> =
         configuration.project.connection.runWithServer { server: BspServer, capabilities: BazelBuildServerCapabilities ->
-          checkRunCapabilities(capabilities)
-          startBsp(server)
+          startBsp(server, capabilities)
         }
       completableFuture
     }
@@ -62,20 +61,18 @@ public abstract class BspCommandLineStateBase(
 
 internal class BspRunCommandLineState(
   environment: ExecutionEnvironment,
-  private val configuration: BspRunConfiguration,
-  private val originId: OriginId,
-) : BspCommandLineStateBase(environment, configuration, originId) {
-  override fun checkRunCapabilities(capabilities: BazelBuildServerCapabilities) {
-    if (configuration.targets.singleOrNull() == null || capabilities.runProvider == null) {
-      throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
-    }
-  }
+  originId: OriginId,
+) : BspCommandLineStateBase(environment, originId) {
+  private val configuration = environment.runProfile as BspRunConfiguration
 
   override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
     BspRunTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<*> {
-    // SAFETY: safe to unwrap because we checked in checkRunCapabilities
+  override fun startBsp(server: BspServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*> {
+    if (configuration.targets.singleOrNull() == null || capabilities.runProvider == null) {
+      throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
+    }
+
     val targetId = BuildTargetIdentifier(configuration.targets.single())
     val runParams = RunParams(targetId)
     runParams.originId = originId
