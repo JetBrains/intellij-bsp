@@ -44,13 +44,6 @@ internal interface WorkspaceModelUpdater {
 
   fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>)
 
-  fun removeModules(modules: List<ModuleName>) =
-    modules.forEach { removeModule(it) }
-
-  fun removeModule(module: ModuleName)
-
-  fun clear()
-
   companion object {
     fun create(
       workspaceEntityStorageBuilder: MutableEntityStorage,

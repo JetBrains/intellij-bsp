@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import com.intellij.openapi.module.impl.ModuleManagerEx
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
-import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
@@ -15,7 +14,6 @@ import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.platform.workspace.jps.entities.modifyEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
@@ -24,11 +22,9 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.workspacemodel.entities.BspEntitySource
-import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -122,26 +118,3 @@ internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibr
     exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
     scope = DependencyScope.COMPILE,
   )
-
-internal class WorkspaceModuleRemover(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModuleEntityRemover<ModuleName> {
-  override fun removeEntity(entityToRemove: ModuleName) {
-    // TODO https://youtrack.jetbrains.com/issue/BAZEL-634
-    val moduleToRemove =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.resolve(ModuleId(entityToRemove.name))!!
-
-    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(moduleToRemove)
-  }
-
-  override fun clear() {
-    removeEntities(ModuleEntity::class.java)
-    removeEntities(LibraryEntity::class.java)
-    removeEntities(BspProjectDirectoriesEntity::class.java)
-  }
-
-  private fun <E : WorkspaceEntity> removeEntities(entityClass: Class<E>) {
-    val allEntities = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(entityClass)
-    allEntities.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
-  }
-}
