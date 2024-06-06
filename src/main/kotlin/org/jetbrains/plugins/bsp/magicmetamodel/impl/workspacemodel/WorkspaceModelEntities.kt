@@ -9,7 +9,6 @@ import java.nio.file.Path
 public data class BuildTargetInfo(
   val id: BuildTargetId,
   val displayName: String? = null,
-  val dependencies: List<BuildTargetId> = emptyList(),
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val languageIds: LanguageIds = emptyList(),
   val baseDirectory: String? = null,
@@ -21,7 +20,6 @@ public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
   BuildTargetInfo(
     id = id.uri,
     displayName = displayName,
-    dependencies = dependencies.map { it.uri },
     capabilities = capabilities.toModuleCapabilities(),
     languageIds = languageIds,
     baseDirectory = baseDirectory,

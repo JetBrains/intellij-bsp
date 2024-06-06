@@ -53,7 +53,6 @@ public data class BuildTargetInfoState(
     BuildTargetInfo(
       id = id,
       displayName = displayName,
-      dependencies = dependencies,
       capabilities = capabilities.fromState(),
       languageIds = languageIds,
       baseDirectory = baseDirectory,
@@ -63,7 +62,6 @@ public data class BuildTargetInfoState(
 public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoState(
   id = id,
   displayName = displayName,
-  dependencies = dependencies,
   capabilities = capabilities.toState(),
   languageIds = languageIds,
   baseDirectory = baseDirectory,

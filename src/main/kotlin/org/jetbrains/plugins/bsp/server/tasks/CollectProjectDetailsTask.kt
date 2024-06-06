@@ -30,6 +30,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
@@ -122,6 +123,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       coroutineJob = launch {
         try {
           withBackgroundProgress(project, name, cancelable) {
+            val workspaceModel = WorkspaceModel.getInstance(project)
+            workspaceModel.subscribe { initial, changes -> changes.onEach { println("AAA $it") } }
             doExecute(buildProject)
           }
           PerformanceLogger.dumpMetrics()
