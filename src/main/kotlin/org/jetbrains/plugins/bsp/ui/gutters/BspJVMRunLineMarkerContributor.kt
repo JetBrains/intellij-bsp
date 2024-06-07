@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 
@@ -45,13 +45,13 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
       calculateLineMarkerInfo(targetInfos)
     }
 
-  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>): Info =
+  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfoOld>): Info =
     BspLineMakerInfo(
       text = "Run",
       actions = targetInfos.flatMap { it.calculateEligibleActions() }
     )
 
-  private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
+  private fun BuildTargetInfoOld?.calculateEligibleActions(): List<AnAction> =
     if (this == null) emptyList()
     else DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList()
 }

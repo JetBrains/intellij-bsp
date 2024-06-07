@@ -16,7 +16,7 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspProjectModuleBuildTasksTracker
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
@@ -26,7 +26,7 @@ import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
 public abstract class LocalJvmRunnerAction(
-  protected val targetInfo: BuildTargetInfo,
+  protected val targetInfo: BuildTargetInfoOld,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
@@ -35,7 +35,7 @@ public abstract class LocalJvmRunnerAction(
 
   override suspend fun getRunnerSettings(
     project: Project,
-    buildTargetInfo: BuildTargetInfo,
+    buildTargetInfoOld: BuildTargetInfoOld,
   ): RunnerAndConfigurationSettings? {
     val moduleNameProvider = project.findModuleNameProvider().orDefault()
     val module = project.modules.find { it.name == moduleNameProvider(targetInfo) } ?: return null
@@ -65,7 +65,7 @@ public abstract class LocalJvmRunnerAction(
     return RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
   }
 
-  private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
+  private fun calculateConfigurationName(targetInfo: BuildTargetInfoOld): String {
     val targetDisplayName = targetInfo.getBuildTargetName()
     val actionNameKey = when {
       isDebugMode -> "target.debug.with.jvm.runner.config.name"

@@ -8,7 +8,7 @@ import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 
 public fun Project.findModuleNameProvider(): TargetNameReformatProvider? =
   this.buildToolId.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it) }
@@ -22,7 +22,7 @@ private fun createModuleNameProvider(buildToolId: BuildToolId): TargetNameReform
 private fun createLibraryNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider =
   createNameReformatProvider(buildToolId)
 
-private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetInfo) -> String {
+private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetInfoOld) -> String {
   val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
   return { buildTargetInfo ->
     val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).replaceDots()

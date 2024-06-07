@@ -1,0 +1,39 @@
+package org.jetbrains.plugins.bsp.projectStructure
+
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
+import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.ScalacOptionsItem
+import ch.epfl.scala.bsp4j.SourcesItem
+import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
+
+public data class BuildTargetInfo(
+  val target: BuildTarget,
+  val sources: List<SourcesItem>,
+  val resources: List<ResourcesItem>,
+  val dependenciesSources: List<DependencySourcesItem>,
+  val javacOptions: JavacOptionsItem?,
+  val scalacOptions: ScalacOptionsItem?,
+  val pythonOptions: PythonOptionsItem?,
+  val outputPathUris: List<String>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val moduleDependencies: List<BuildTargetIdentifier>,
+  val defaultJdkName: String?,
+  val jvmBinaryJars: List<JvmBinaryJarsItem>,
+)
+
+public interface ProjectStructureUpdater<TDiff: ProjectStructureDiff> {
+  public val diffClass: Class<TDiff>
+
+  public fun isSupported(buildTarget: BuildTarget): Boolean
+
+  public fun addTarget(targetInfo: BuildTargetInfo, diff: TDiff)
+
+  public companion object {
+    internal val ep = ExtensionPointName.create<ProjectStructureUpdater<*>>("org.jetbrains.bsp.projectStructureUpdater")
+  }
+}

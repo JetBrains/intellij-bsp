@@ -6,7 +6,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
-public data class BuildTargetInfo(
+public data class BuildTargetInfoOld(
   val id: BuildTargetId,
   val displayName: String? = null,
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
@@ -14,10 +14,10 @@ public data class BuildTargetInfo(
   val baseDirectory: String? = null,
 )
 
-internal fun BuildTargetInfo.toPair() = this.id to this
+internal fun BuildTargetInfoOld.toPair() = this.id to this
 
-public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
-  BuildTargetInfo(
+public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfoOld =
+  BuildTargetInfoOld(
     id = id.uri,
     displayName = displayName,
     capabilities = capabilities.toModuleCapabilities(),

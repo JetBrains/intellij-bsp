@@ -4,11 +4,11 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.buildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import javax.swing.JComponent
 
 public interface BuildToolWindowTargetActionProviderExtension : WithBuildToolId {
-  public fun getTargetActions(component: JComponent, project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction>
+  public fun getTargetActions(component: JComponent, project: Project, buildTargetInfoOld: BuildTargetInfoOld): List<AnAction>
 
   public companion object {
     internal val ep: ExtensionPointName<BuildToolWindowTargetActionProviderExtension> =

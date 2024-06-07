@@ -3,13 +3,13 @@ package org.jetbrains.plugins.bsp.ui.actions.target
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.server.tasks.JvmRunEnvironmentTask
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
 public class RunWithLocalJvmRunnerAction(
-  targetInfo: BuildTargetInfo,
+  targetInfo: BuildTargetInfoOld,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
   verboseText: Boolean = false,

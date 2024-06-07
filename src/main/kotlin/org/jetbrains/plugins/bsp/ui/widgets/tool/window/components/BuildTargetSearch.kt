@@ -12,7 +12,7 @@ import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
@@ -24,14 +24,14 @@ import javax.swing.Icon
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-internal fun BuildTargetInfo.getBuildTargetName(): String =
+internal fun BuildTargetInfoOld.getBuildTargetName(): String =
   this.displayName ?: this.id
 
 public class BuildTargetSearch(
   private val targetIcon: Icon,
   private val buildToolId: BuildToolId,
   private val toolName: String,
-  targets: Collection<BuildTargetInfo>,
+  targets: Collection<BuildTargetInfoOld>,
   public val searchBarPanel: SearchBarPanel,
 ) : BuildTargetContainer {
   public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
@@ -131,10 +131,10 @@ public class BuildTargetSearch(
     queryChangeListeners.add(listener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? =
+  override fun getSelectedBuildTarget(): BuildTargetInfoOld? =
     chooseTargetSearchPanel().getSelectedBuildTarget()
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfoOld>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
@@ -149,13 +149,13 @@ public class BuildTargetSearch(
     }
   }
 
-  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
+  override fun getTargetActions(project: Project, buildTargetInfoOld: BuildTargetInfoOld): List<AnAction> =
     BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
-      ?.getTargetActions(targetSearchPanel, project, buildTargetInfo) ?: emptyList()
+      ?.getTargetActions(targetSearchPanel, project, buildTargetInfoOld) ?: emptyList()
 
   private class SearchCallable(
     private val query: Regex,
-    private val targets: Collection<BuildTargetInfo>,
+    private val targets: Collection<BuildTargetInfoOld>,
   ) : Callable<SearchResults> {
     override fun call(): SearchResults =
       SearchResults(
@@ -167,5 +167,5 @@ public class BuildTargetSearch(
 
 private data class SearchResults(
   val query: Regex,
-  val targets: List<BuildTargetInfo>,
+  val targets: List<BuildTargetInfoOld>,
 )

@@ -16,7 +16,7 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifiers
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -58,7 +58,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     return buildBspTargets(project, targetsToBuild)
   }
 
-  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
+  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfoOld> {
     val temporaryTargetUtils = project.temporaryTargetUtils
     return tasks.map { it.module.name }
       .mapNotNull { temporaryTargetUtils.getTargetIdForModuleId(it) }
@@ -66,7 +66,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
+  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfoOld>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result = BspCoroutineService.getInstance(project).startAsync {
       runBuildTargetTask(targetIdentifiers.toBsp4JTargetIdentifiers(), project, log)

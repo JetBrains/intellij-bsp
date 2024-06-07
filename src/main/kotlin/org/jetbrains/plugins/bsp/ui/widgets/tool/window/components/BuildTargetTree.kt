@@ -13,7 +13,7 @@ import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionPro
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.Component
 import java.awt.event.MouseListener
@@ -31,7 +31,7 @@ public class BuildTargetTree(
   private val targetIcon: Icon,
   private val invalidTargetIcon: Icon,
   private val buildToolId: BuildToolId,
-  private val targets: Collection<BuildTargetInfo>,
+  private val targets: Collection<BuildTargetInfoOld>,
   private val invalidTargets: List<BuildTargetId>,
   private val labelHighlighter: (String) -> String = { it },
 ) : BuildTargetContainer {
@@ -75,7 +75,7 @@ public class BuildTargetTree(
   }
 
   // only used with Bazel projects
-  private fun BuildTargetId.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
+  private fun BuildTargetId.toFakeBuildTargetInfo() = BuildTargetInfoOld(id = this)
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }
@@ -176,7 +176,7 @@ public class BuildTargetTree(
     treeComponent.addMouseListener(listenerBuilder(this))
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? {
+  override fun getSelectedBuildTarget(): BuildTargetInfoOld? {
     val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
     val userObject = selected?.userObject
     return if (userObject is TargetNodeData)
@@ -184,11 +184,11 @@ public class BuildTargetTree(
     else null
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfoOld>): BuildTargetTree =
     createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)
 
   public fun createNewWithTargetsAndHighlighter(
-    newTargets: Collection<BuildTargetInfo>,
+    newTargets: Collection<BuildTargetInfoOld>,
     labelHighlighter: (String) -> String,
   ): BuildTargetTree {
     val new = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, newTargets, emptyList(), labelHighlighter)
@@ -198,9 +198,9 @@ public class BuildTargetTree(
     return new
   }
 
-  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
+  override fun getTargetActions(project: Project, buildTargetInfoOld: BuildTargetInfoOld): List<AnAction> =
     BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
-      ?.getTargetActions(treeComponent, project, buildTargetInfo) ?: emptyList()
+      ?.getTargetActions(treeComponent, project, buildTargetInfoOld) ?: emptyList()
 }
 
 private interface NodeData
@@ -210,7 +210,7 @@ private data class DirectoryNodeData(val name: String) : NodeData {
 
 private data class TargetNodeData(
   val id: BuildTargetId,
-  val target: BuildTargetInfo?,
+  val target: BuildTargetInfoOld?,
   val displayName: String,
   val isValid: Boolean,
 ) : NodeData {
@@ -219,7 +219,7 @@ private data class TargetNodeData(
 
 private data class BuildTargetTreeIdentifier(
   val id: BuildTargetId,
-  val target: BuildTargetInfo?,
+  val target: BuildTargetInfoOld?,
   val path: List<String>,
   val displayName: String,
 )

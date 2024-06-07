@@ -55,6 +55,13 @@
         <extensionPoint name="projectSyncHook"
                         interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
                         dynamic="true"/>
+
+        <extensionPoint name="projectStructureUpdater"
+                        interface="org.jetbrains.plugins.bsp.projectStructure.ProjectStructureUpdater"
+                        dynamic="true"/>
+        <extensionPoint name="projectStructureProvider"
+                        interface="org.jetbrains.plugins.bsp.projectStructure.ProjectStructureProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">

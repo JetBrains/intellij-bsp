@@ -5,13 +5,13 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 import javax.swing.Icon
 
 public abstract class BspRunnerAction(
-  targetInfo: BuildTargetInfo,
+  targetInfo: BuildTargetInfoOld,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
@@ -20,18 +20,18 @@ public abstract class BspRunnerAction(
 
   override suspend fun getRunnerSettings(
     project: Project,
-    buildTargetInfo: BuildTargetInfo,
+    buildTargetInfoOld: BuildTargetInfoOld,
   ): RunnerAndConfigurationSettings? {
     val factory = getConfigurationType(project).configurationFactories.first()
     val settings =
-      RunManager.getInstance(project).createConfiguration(calculateConfigurationName(buildTargetInfo), factory)
+      RunManager.getInstance(project).createConfiguration(calculateConfigurationName(buildTargetInfoOld), factory)
     (settings.configuration as? BspRunConfigurationBase)?.apply {
-      targets = listOf(buildTargetInfo)
+      targets = listOf(buildTargetInfoOld)
     }
     return settings
   }
 
-  private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
+  private fun calculateConfigurationName(targetInfo: BuildTargetInfoOld): String {
     val targetDisplayName = targetInfo.getBuildTargetName()
     val actionNameKey = when {
       isDebugAction -> "target.debug.config.name"

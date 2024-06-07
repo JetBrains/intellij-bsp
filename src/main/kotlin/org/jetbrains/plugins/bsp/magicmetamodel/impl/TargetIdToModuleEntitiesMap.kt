@@ -8,7 +8,7 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
@@ -20,7 +20,7 @@ public object TargetIdToModuleEntitiesMap {
   public operator fun invoke(
     projectDetails: ProjectDetails,
     projectBasePath: Path,
-    targetsMap: Map<BuildTargetId, BuildTargetInfo>,
+    targetsMap: Map<BuildTargetId, BuildTargetInfoOld>,
     moduleNameProvider: TargetNameReformatProvider,
     libraryNameProvider: TargetNameReformatProvider,
     hasDefaultPythonInterpreter: Boolean,
@@ -58,8 +58,8 @@ public object TargetIdToModuleEntitiesMap {
 }
 
 @TestOnly
-public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetId, BuildTargetInfo> =
+public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetId, BuildTargetInfoOld> =
   associateBy(
     keySelector = { it },
-    valueTransform = { BuildTargetInfo(id = it) }
+    valueTransform = { BuildTargetInfoOld(id = it) }
   )

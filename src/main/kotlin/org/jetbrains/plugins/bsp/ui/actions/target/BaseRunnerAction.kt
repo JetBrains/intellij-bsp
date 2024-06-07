@@ -15,12 +15,12 @@ import com.intellij.openapi.ui.Messages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import javax.swing.Icon
 
 public abstract class BaseRunnerAction(
-  private val buildTargetInfo: BuildTargetInfo,
+  private val buildTargetInfoOld: BuildTargetInfoOld,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
@@ -30,7 +30,7 @@ public abstract class BaseRunnerAction(
 ) {
   protected abstract suspend fun getRunnerSettings(
     project: Project,
-    buildTargetInfo: BuildTargetInfo,
+    buildTargetInfoOld: BuildTargetInfoOld,
   ): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -39,7 +39,7 @@ public abstract class BaseRunnerAction(
 
   internal suspend fun doPerformAction(project: Project) {
     try {
-      val settings = getRunnerSettings(project, buildTargetInfo) ?: return
+      val settings = getRunnerSettings(project, buildTargetInfoOld) ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       ProgramRunner.getRunner(executor.id, settings.configuration)?.let { runner ->

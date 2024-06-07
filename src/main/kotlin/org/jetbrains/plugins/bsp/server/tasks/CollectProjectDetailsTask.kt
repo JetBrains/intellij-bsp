@@ -30,7 +30,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
@@ -83,6 +82,11 @@ import org.jetbrains.plugins.bsp.utils.SdkUtils
 import org.jetbrains.plugins.bsp.utils.findLibraryNameProvider
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
+import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
+import org.jetbrains.plugins.bsp.projectStructure.BuildTargetInfo
+import org.jetbrains.plugins.bsp.xd.ProjectStructureAll
+import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureDiff
+import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureUpdater
 import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 import java.util.concurrent.CancellationException
@@ -123,8 +127,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       coroutineJob = launch {
         try {
           withBackgroundProgress(project, name, cancelable) {
-            val workspaceModel = WorkspaceModel.getInstance(project)
-            workspaceModel.subscribe { initial, changes -> changes.onEach { println("AAA $it") } }
             doExecute(buildProject)
           }
           PerformanceLogger.dumpMetrics()
@@ -407,6 +409,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         }
       }
     }
+  }
+
+  private fun ProjectDetails.newWorkspaceModelSync() {
+    val infos = listOf<BuildTargetInfo>()
+    val allProjectStructuresProvider = AllProjectStructuresProvider(project)
+    val diff = allProjectStructuresProvider.newDiff()
+
+    infos.forEach { diff.addTarget(it) }
+
+    diff.applyAll()
   }
 
   private fun WorkspaceModelUpdater.loadDirectories(

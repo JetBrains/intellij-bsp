@@ -4,7 +4,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import java.awt.Point
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
@@ -50,7 +50,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     searchListModel.addAll(printableTargets)
   }
 
-  private fun takeSomeTargetsAndHighlight(targets: Collection<BuildTargetInfo>): List<PrintableBuildTarget> =
+  private fun takeSomeTargetsAndHighlight(targets: Collection<BuildTargetInfoOld>): List<PrintableBuildTarget> =
     targets.take(TARGETS_TO_HIGHLIGHT).map {
       PrintableBuildTarget(
         it,
@@ -58,10 +58,10 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
       )
     }
 
-  private fun BuildTargetInfo.getBuildTargetName(): String =
+  private fun BuildTargetInfoOld.getBuildTargetName(): String =
     this.displayName ?: this.id
 
-  private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfo>) {
+  private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfoOld>) {
     val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT
     if (remainingTargets > 0) {
       showMoreButton = JButton(BspPluginBundle.message("widget.show.more.targets.button", remainingTargets))
@@ -72,7 +72,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     }
   }
 
-  private fun showMoreTargets(targets: Collection<BuildTargetInfo>) {
+  private fun showMoreTargets(targets: Collection<BuildTargetInfoOld>) {
     component.remove(showMoreButton)
     replaceSearchListElementsWith(targets.map { PrintableBuildTarget(it) })
   }
@@ -81,7 +81,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     searchListComponent.addMouseListener(mouseListener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? =
+  override fun getSelectedBuildTarget(): BuildTargetInfoOld? =
     searchListComponent.selectedValue?.buildTarget
 
   // https://youtrack.jetbrains.com/issue/BAZEL-522

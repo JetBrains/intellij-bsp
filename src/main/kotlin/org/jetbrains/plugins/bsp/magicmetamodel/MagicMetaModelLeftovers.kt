@@ -11,16 +11,16 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 
-public typealias TargetNameReformatProvider = (BuildTargetInfo) -> String
+public typealias TargetNameReformatProvider = (BuildTargetInfoOld) -> String
 
 public object DefaultModuleNameProvider : TargetNameReformatProvider {
-  override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id
+  override fun invoke(targetInfo: BuildTargetInfoOld): String = targetInfo.id
 }
 
 public object DefaultLibraryNameProvider : TargetNameReformatProvider {
-  override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id
+  override fun invoke(targetInfo: BuildTargetInfoOld): String = targetInfo.id
 }
 
 public data class ProjectDetails(

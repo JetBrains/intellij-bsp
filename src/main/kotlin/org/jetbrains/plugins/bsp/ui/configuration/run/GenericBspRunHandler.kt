@@ -5,16 +5,16 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
 import java.util.UUID
 
 public open class GenericBspRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.capabilities.canRun }
+  override fun canRun(targets: List<BuildTargetInfoOld>): Boolean = targets.all { it.capabilities.canRun }
 
-  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = false
+  override fun canDebug(targets: List<BuildTargetInfoOld>): Boolean = false
 
   override fun getRunProfileState(
     project: Project,

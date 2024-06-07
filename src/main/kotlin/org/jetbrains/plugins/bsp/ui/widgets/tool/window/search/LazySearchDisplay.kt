@@ -2,20 +2,20 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import java.awt.event.MouseListener
 import javax.swing.JPanel
 
 public abstract class LazySearchDisplay {
   protected val component: JPanel = JPanel(VerticalLayout(0))
 
-  protected var targets: List<BuildTargetInfo> = emptyList()
+  protected var targets: List<BuildTargetInfoOld> = emptyList()
   protected var invalidTargets: List<BuildTargetId> = emptyList()
   protected var query: Regex = "".toRegex()
 
   private var isOutdated = true
 
-  public fun updateSearch(newTargets: List<BuildTargetInfo>, newQuery: Regex) {
+  public fun updateSearch(newTargets: List<BuildTargetInfoOld>, newQuery: Regex) {
     targets = newTargets
     query = newQuery
     isOutdated = true
@@ -39,10 +39,10 @@ public abstract class LazySearchDisplay {
 
   public abstract fun addMouseListener(mouseListener: MouseListener)
 
-  public abstract fun getSelectedBuildTarget(): BuildTargetInfo?
+  public abstract fun getSelectedBuildTarget(): BuildTargetInfoOld?
 
   protected data class PrintableBuildTarget(
-    val buildTarget: BuildTargetInfo,
+    val buildTarget: BuildTargetInfoOld,
     var displayName: String = buildTarget.let { it.displayName ?: it.id },
   ) {
     override fun toString(): String = buildTarget.displayName ?: buildTarget.id

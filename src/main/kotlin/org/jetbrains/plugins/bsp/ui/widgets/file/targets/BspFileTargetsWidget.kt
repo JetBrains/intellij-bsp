@@ -20,7 +20,7 @@ import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extension.points.targetActionProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
@@ -78,7 +78,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
     return DefaultActionGroup(groups)
   }
 
-  private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
+  private fun BuildTargetInfoOld.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id, true).also {
       if (capabilities.canCompile) {
         it.add(BuildTargetAction(id))

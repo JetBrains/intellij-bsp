@@ -14,7 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
@@ -25,12 +25,12 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 public val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTURE_KEY")
 
 public class AndroidBspRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
+  override fun canRun(targets: List<BuildTargetInfoOld>): Boolean =
     BspFeatureFlags.isAndroidSupportEnabled && targets.size == 1 && targets.all {
       it.languageIds.includesAndroid() && !it.capabilities.canTest
     }
 
-  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
+  override fun canDebug(targets: List<BuildTargetInfoOld>): Boolean = canRun(targets)
 
   override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)

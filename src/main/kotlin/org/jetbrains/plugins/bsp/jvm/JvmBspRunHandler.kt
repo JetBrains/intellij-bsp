@@ -12,7 +12,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.server.connection.BspServer
@@ -35,12 +35,12 @@ public class JvmBspRunHandler : BspRunHandler {
   // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
   //  as opposed to on-device like with android_binary
   // TODO: perhaps better solved by having a tag
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all {
+  override fun canRun(targets: List<BuildTargetInfoOld>): Boolean = targets.all {
     it.languageIds.isJvmTarget() ||
       it.languageIds.includesAndroid() && it.capabilities.canTest
   }
 
-  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
+  override fun canDebug(targets: List<BuildTargetInfoOld>): Boolean = canRun(targets)
 
   override fun getRunProfileState(
     project: Project,

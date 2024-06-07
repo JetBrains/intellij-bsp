@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
@@ -48,9 +48,9 @@ public data class BuildTargetInfoState(
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
   var languageIds: List<String> = emptyList(),
   var baseDirectory: String? = null,
-) : ConvertableFromState<BuildTargetInfo> {
-  override fun fromState(): BuildTargetInfo =
-    BuildTargetInfo(
+) : ConvertableFromState<BuildTargetInfoOld> {
+  override fun fromState(): BuildTargetInfoOld =
+    BuildTargetInfoOld(
       id = id,
       displayName = displayName,
       capabilities = capabilities.fromState(),
@@ -59,7 +59,7 @@ public data class BuildTargetInfoState(
     )
 }
 
-public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoState(
+public fun BuildTargetInfoOld.toState(): BuildTargetInfoState = BuildTargetInfoState(
   id = id,
   displayName = displayName,
   capabilities = capabilities.toState(),

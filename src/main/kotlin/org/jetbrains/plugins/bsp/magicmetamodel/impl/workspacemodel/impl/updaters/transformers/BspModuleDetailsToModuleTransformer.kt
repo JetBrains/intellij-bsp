@@ -7,7 +7,7 @@ import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
@@ -30,7 +30,7 @@ internal data class BspModuleDetails(
 )
 
 internal class BspModuleDetailsToModuleTransformer(
-  private val targetsMap: Map<BuildTargetId, BuildTargetInfo>,
+  private val targetsMap: Map<BuildTargetId, BuildTargetInfoOld>,
   private val moduleNameProvider: TargetNameReformatProvider,
   private val libraryNameProvider: TargetNameReformatProvider,
 ) :
@@ -75,7 +75,7 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 
 internal class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: Set<BuildTargetId>,
-  private val targetsMap: Map<BuildTargetId, BuildTargetInfo>,
+  private val targetsMap: Map<BuildTargetId, BuildTargetInfoOld>,
   private val moduleNameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, IntermediateModuleDependency> {
   override fun transform(inputEntity: BuildTarget): List<IntermediateModuleDependency> =
@@ -85,7 +85,7 @@ internal class BuildTargetToModuleDependencyTransformer(
       .mapNotNull { targetsMap[it.uri]?.toModuleDependency(moduleNameProvider) }
 }
 
-internal fun BuildTargetInfo.toModuleDependency(moduleNameProvider: TargetNameReformatProvider):
+internal fun BuildTargetInfoOld.toModuleDependency(moduleNameProvider: TargetNameReformatProvider):
   IntermediateModuleDependency =
   IntermediateModuleDependency(
     moduleName = moduleNameProvider(this),
@@ -96,6 +96,6 @@ internal fun BuildTargetId.toLibraryDependency(
   isProjectLevelLibrary: Boolean,
 ): IntermediateLibraryDependency =
   IntermediateLibraryDependency(
-    libraryName = libraryNameProvider(BuildTargetInfo(id = this)),
+    libraryName = libraryNameProvider(BuildTargetInfoOld(id = this)),
     isProjectLevelLibrary = isProjectLevelLibrary,
   )

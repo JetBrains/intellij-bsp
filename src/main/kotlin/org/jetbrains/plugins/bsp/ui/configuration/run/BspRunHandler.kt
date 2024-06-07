@@ -6,13 +6,13 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 
 public interface BspRunHandler {
-  public fun canRun(targets: List<BuildTargetInfo>): Boolean
+  public fun canRun(targets: List<BuildTargetInfoOld>): Boolean
 
-  public fun canDebug(targets: List<BuildTargetInfo>): Boolean
+  public fun canDebug(targets: List<BuildTargetInfoOld>): Boolean
 
   public fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {}
 
@@ -29,7 +29,7 @@ public interface BspRunHandler {
     public val ep: ExtensionPointName<BspRunHandler> =
       ExtensionPointName.create("org.jetbrains.bsp.bspRunHandler")
 
-    public fun getRunHandler(targets: List<BuildTargetInfo>): BspRunHandler =
+    public fun getRunHandler(targets: List<BuildTargetInfoOld>): BspRunHandler =
       ep.extensionList.firstOrNull { it.canRun(targets) } ?: GenericBspRunHandler()
   }
 }

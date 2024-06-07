@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.actions.target.BspRunnerAction
@@ -57,7 +57,7 @@ public class LoadedTargetsMouseListener(
     }
   }
 
-  private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
+  private fun calculatePopupGroup(target: BuildTargetInfoOld): ActionGroup =
     DefaultActionGroup().apply {
       addAction(container.copyTargetIdAction)
       addSeparator()
@@ -98,7 +98,7 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 
 @Suppress("CognitiveComplexMethod")
 public fun DefaultActionGroup.fillWithEligibleActions(
-  target: BuildTargetInfo,
+  target: BuildTargetInfoOld,
   verboseText: Boolean,
 ): DefaultActionGroup {
   if (target.capabilities.canRun) {

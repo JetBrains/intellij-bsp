@@ -20,7 +20,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.BuildTargetInfoState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.LibraryState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
@@ -47,7 +47,7 @@ public data class TemporaryTargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)]
 )
 public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
-  private var idToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
+  private var idToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfoOld> = emptyMap()
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
 
   // we must use URI as comparing URI path strings is susceptible to errors.
@@ -105,7 +105,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   ): List<Library> =
     libraries?.map {
       Library(
-        displayName = libraryNameProvider(BuildTargetInfo(id = it.id.uri)),
+        displayName = libraryNameProvider(BuildTargetInfoOld(id = it.id.uri)),
         iJars = it.ijars,
         classJars = it.jars,
         sourceJars = it.sourceJars,
@@ -118,7 +118,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     defaultJdkName: String?,
   ) =
     libraries?.map { library ->
-      val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id.uri))
+      val libraryName = libraryNameProvider(BuildTargetInfoOld(id = library.id.uri))
       JavaModule(
         genericModuleInfo = GenericModuleInfo(
           name = libraryName,
@@ -127,7 +127,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
           modulesDependencies = library.dependencies.map {
             IntermediateModuleDependency(
               libraryNameProvider(
-                BuildTargetInfo(id = it.uri)
+                BuildTargetInfoOld(id = it.uri)
               )
             )
           },
@@ -174,7 +174,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
-  public fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? =
+  public fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfoOld? =
     idToTargetInfo[buildTargetIdentifier]
 
   public fun isBaseDir(virtualFile: VirtualFile): Boolean =

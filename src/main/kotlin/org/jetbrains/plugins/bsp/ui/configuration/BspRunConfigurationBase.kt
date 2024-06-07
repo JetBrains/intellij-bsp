@@ -12,7 +12,7 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationEditor
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
@@ -23,7 +23,7 @@ public abstract class BspRunConfigurationBase(
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationFactory, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   DumbAware {
-  public var targets: List<BuildTargetInfo> = emptyList()
+  public var targets: List<BuildTargetInfoOld> = emptyList()
     set(value) {
       runHandler = BspRunHandler.getRunHandler(value)
       runHandler.prepareRunConfiguration(this)
