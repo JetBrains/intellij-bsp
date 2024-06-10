@@ -1,0 +1,44 @@
+module(
+    name = "intellij-bsp",
+)
+
+bazel_dep(
+    name = "rules_intellij",
+)
+
+git_override(
+    module_name = "rules_intellij",
+    remote = "https://github.com/agluszak/rules_intellij.git",
+    commit = "e2beb5ddd9a2cf9e498e10b50b58dcabd99deda2",
+)
+
+bazel_dep(name = "rules_kotlin", version = "1.9.5")
+
+register_toolchains(
+    "//:kotlin_toolchain",
+)
+
+bazel_dep(name = "rules_java", version = "7.6.1")
+
+bazel_dep(name = "rules_jvm_external", version = "6.1")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
+maven.install(
+    artifacts = [
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "ch.epfl.scala:bsp4j:2.2.0-M2",
+        "io.kotest:kotest-assertions-core:5.8.0",
+        "org.scala-lang:scala-library:2.13.12",
+        "com.google.code.gson:gson:2.10.1",
+    ],
+    generate_compat_repositories = True,
+    fail_if_repin_required = True,
+    lock_file = "//:maven_install.json",
+)
+
+use_repo(
+    maven,
+    "maven",
+#    error_prone_annotations = "com_google_errorprone_error_prone_annotations",
+)

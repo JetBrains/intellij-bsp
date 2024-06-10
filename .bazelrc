@@ -1,0 +1,2 @@
+build --define=ij_product=intellij-2024.1
+build --java_language_version=17 --java_runtime_version=17

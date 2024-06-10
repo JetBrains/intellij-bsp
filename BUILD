@@ -1,0 +1,77 @@
+load(
+    "@rules_intellij//build_defs:build_defs.bzl",
+    "intellij_plugin",
+    "intellij_plugin_library",
+    "stamped_plugin_xml",
+    "repackaged_files",
+    "plugin_deploy_zip",
+)
+load(
+    "@rules_intellij//intellij_platform_sdk:build_defs.bzl",
+    "select_for_ide",
+    "select_from_plugin_api_directory",
+)
+load(
+    "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
+    "intellij_plugin_debug_target",
+)
+load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+
+define_kt_toolchain(
+    name = "kotlin_toolchain",
+    api_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
+    jvm_target = "17", # "1.6", "1.8", "9", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20" or "21"
+    language_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
+)
+
+intellij_plugin_library(
+    name = "plugin_library",
+    optional_plugin_xmls = [],
+    plugin_xmls = ["//src/main/resources/META-INF:plugin.xml"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//workspacemodel/src:workspacemodel",
+        "//protocol/src:protocol",
+        "//src:plugin",
+        "//jps-compilation/src:jps-compilation",
+    ],
+)
+
+stamped_plugin_xml(
+    name = "stamped_plugin_xml",
+    plugin_name = "Hello World Plugin",
+    version = "1",
+)
+
+intellij_plugin(
+    name = "plugin",
+    plugin_xml = ":stamped_plugin_xml",
+    tags = [],
+    deps = [
+        ":plugin_library",
+    ] + select_for_ide(
+        intellij = [],
+        intellij_ue = [],
+    ),
+)
+
+intellij_plugin_debug_target(
+    name = "ijwb_bazel_dev",
+    deps = [
+        ":plugin_jar",
+    ],
+)
+
+repackaged_files(
+    name = "plugin_jar",
+    srcs = [":plugin"],
+    prefix = "ijwb/lib",
+)
+
+plugin_deploy_zip(
+    name = "plugin_zip",
+    srcs = [
+        ":plugin_jar",
+    ],
+    zip_filename = "ijwb_bazel.zip",
+)
