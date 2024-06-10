@@ -4,14 +4,17 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
 public interface ProjectStructureDiff {
-  public fun apply(project: Project)
+  public suspend fun apply(project: Project)
 }
 
-internal class AllProjectStructuresDiff(diffs: List<ProjectStructureDiff>, private val project: Project) {
+internal class AllProjectStructuresDiff(
+  diffs: List<ProjectStructureDiff>,
+  private val updaters: List<ProjectStructureUpdater<*>>,
+  private val project: Project
+) {
   private val diffs = diffs.associateBy { it::class.java }
 
   internal fun addTarget(buildTargetInfo: BuildTargetInfo) {
-    val updaters = ProjectStructureUpdater.ep.extensionList
     updaters.forEach { buildTargetInfo.addIfSupported(it, it.diffClass) }
   }
 
@@ -32,7 +35,7 @@ internal class AllProjectStructuresDiff(diffs: List<ProjectStructureDiff>, priva
   private fun <TDiff: ProjectStructureDiff>getDiff(diffClazz: Class<TDiff>): TDiff =
     diffs[diffClazz] as? TDiff ?: error("Cannot find a ProjectStructureDiff of type: ${diffClazz.simpleName}")
 
-  internal fun applyAll() {
+  internal suspend fun applyAll() {
     diffs.values.forEach { it.apply(project) }
   }
 }
@@ -50,7 +53,8 @@ internal class AllProjectStructuresProvider(private val project: Project) {
   fun newDiff(): AllProjectStructuresDiff {
     val providers = ProjectStructureProvider.ep.extensionList
     val diffs = providers.map { it.newDiff(project) }
+    val updaters = ProjectStructureUpdater.ep.extensionList
 
-    return AllProjectStructuresDiff(diffs, project)
+    return AllProjectStructuresDiff(diffs, updaters, project)
   }
 }

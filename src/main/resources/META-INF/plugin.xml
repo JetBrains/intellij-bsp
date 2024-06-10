@@ -74,6 +74,9 @@
         <connectionDetailsProviderExtension
                 implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
+        <projectStructureProvider
+                implementation="org.jetbrains.plugins.bsp.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"
+        />
         <bspRunHandler implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler"/>
     </extensions>
 

@@ -13,17 +13,17 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 
 public data class BuildTargetInfo(
   val target: BuildTarget,
-  val sources: List<SourcesItem>,
-  val resources: List<ResourcesItem>,
-  val dependenciesSources: List<DependencySourcesItem>,
-  val javacOptions: JavacOptionsItem?,
-  val scalacOptions: ScalacOptionsItem?,
-  val pythonOptions: PythonOptionsItem?,
-  val outputPathUris: List<String>,
-  val libraryDependencies: List<BuildTargetIdentifier>?,
-  val moduleDependencies: List<BuildTargetIdentifier>,
-  val defaultJdkName: String?,
-  val jvmBinaryJars: List<JvmBinaryJarsItem>,
+//  val sources: List<SourcesItem>,
+//  val resources: List<ResourcesItem>,
+//  val dependenciesSources: List<DependencySourcesItem>,
+//  val javacOptions: JavacOptionsItem?,
+//  val scalacOptions: ScalacOptionsItem?,
+//  val pythonOptions: PythonOptionsItem?,
+//  val outputPathUris: List<String>,
+//  val libraryDependencies: List<BuildTargetIdentifier>?,
+//  val moduleDependencies: List<BuildTargetIdentifier>,
+//  val defaultJdkName: String?,
+//  val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )
 
 public interface ProjectStructureUpdater<TDiff: ProjectStructureDiff> {

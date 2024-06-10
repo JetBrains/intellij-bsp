@@ -70,6 +70,8 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPyth
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesScala
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toPair
+import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
+import org.jetbrains.plugins.bsp.projectStructure.BuildTargetInfo
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -82,11 +84,6 @@ import org.jetbrains.plugins.bsp.utils.SdkUtils
 import org.jetbrains.plugins.bsp.utils.findLibraryNameProvider
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
-import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
-import org.jetbrains.plugins.bsp.projectStructure.BuildTargetInfo
-import org.jetbrains.plugins.bsp.xd.ProjectStructureAll
-import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureDiff
-import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureUpdater
 import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 import java.util.concurrent.CancellationException
@@ -357,6 +354,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
 
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
+    projectDetails.newWorkspaceModelSync()
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
       runInterruptible {
         val projectBasePath = project.rootDir.toNioPath()
@@ -411,7 +409,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun ProjectDetails.newWorkspaceModelSync() {
+  private suspend fun ProjectDetails.newWorkspaceModelSync() {
     val infos = listOf<BuildTargetInfo>()
     val allProjectStructuresProvider = AllProjectStructuresProvider(project)
     val diff = allProjectStructuresProvider.newDiff()
