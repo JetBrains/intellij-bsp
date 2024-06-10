@@ -11,42 +11,6 @@ import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-private abstract class TestableProjectStructureDiffBase : ProjectStructureDiff {
-  val updates: MutableList<BuildTargetIdentifier> = mutableListOf()
-  var hasBeenApplied: Boolean = false
-
-  override suspend fun apply(project: Project) {
-    hasBeenApplied = true
-  }
-}
-
-private class TestableProjectStructureDiff : TestableProjectStructureDiffBase()
-private class AnotherTestableProjectStructureDiff : TestableProjectStructureDiffBase()
-
-private abstract class TestableProjectStructureUpdaterBase<T: TestableProjectStructureDiffBase>(
-  private val unsupportedTargets: List<BuildTargetIdentifier>
-) : ProjectStructureUpdater<T> {
-  override fun isSupported(buildTarget: BuildTarget): Boolean =
-    buildTarget.id !in unsupportedTargets
-
-  override fun addTarget(targetInfo: BuildTargetInfo, diff: T) {
-    diff.updates.add(targetInfo.target.id)
-  }
-}
-
-private class TestableProjectStructureUpdater(
-  unsupportedTargets: List<BuildTargetIdentifier>
-) : TestableProjectStructureUpdaterBase<TestableProjectStructureDiff>(unsupportedTargets) {
-  override val diffClass: Class<TestableProjectStructureDiff> = TestableProjectStructureDiff::class.java
-}
-
-private class AnotherTestableProjectStructureUpdater(
-  unsupportedTargets: List<BuildTargetIdentifier>
-) : TestableProjectStructureUpdaterBase<AnotherTestableProjectStructureDiff>(unsupportedTargets) {
-  override val diffClass: Class<AnotherTestableProjectStructureDiff> = AnotherTestableProjectStructureDiff::class.java
-}
-
-
 @DisplayName("AllProjectStructuresDiff tests")
 class AllProjectStructuresDiffTest : MockProjectBaseTest() {
   @Test
@@ -81,10 +45,8 @@ class AllProjectStructuresDiffTest : MockProjectBaseTest() {
     // when
     allDiff.addTarget(targetInfo)
 
-    runWriteAction {
-      runBlocking {
-        allDiff.applyAll()
-      }
+    runBlocking {
+      allDiff.applyAll()
     }
 
     // then
@@ -106,10 +68,8 @@ class AllProjectStructuresDiffTest : MockProjectBaseTest() {
     // when
     allDiff.addTarget(targetInfo)
 
-    runWriteAction {
-      runBlocking {
-        allDiff.applyAll()
-      }
+    runBlocking {
+      allDiff.applyAll()
     }
 
     // then
@@ -146,10 +106,8 @@ class AllProjectStructuresDiffTest : MockProjectBaseTest() {
     allDiff.addTarget(targetInfo4)
     allDiff.addTarget(targetInfo5)
 
-    runWriteAction {
-      runBlocking {
-        allDiff.applyAll()
-      }
+    runBlocking {
+      allDiff.applyAll()
     }
 
     // then
@@ -159,9 +117,4 @@ class AllProjectStructuresDiffTest : MockProjectBaseTest() {
     diff2.hasBeenApplied shouldBe true
     diff2.updates shouldContainExactlyInAnyOrder listOf(target3Id, target4Id)
   }
-
-  private fun BuildTargetIdentifier.toMockBuildTargetInfo(): BuildTargetInfo =
-    BuildTargetInfo(
-      target = BuildTarget(this, emptyList(), emptyList(), emptyList(), BuildTargetCapabilities()),
-    )
 }
