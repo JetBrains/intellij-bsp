@@ -33,7 +33,7 @@ dependencies {
   testFixturesImplementation(libs.kotest)
 
   intellijPlatform {
-    intellijIdeaCommunity(Platform.version)
+    intellijIdeaUltimate(Platform.version)
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     zipSigner()

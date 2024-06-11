@@ -7,6 +7,9 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoAddendum
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaAddendum
@@ -199,8 +202,9 @@ public data class ModuleState(
   var scalaAddendum: ScalaAddendumState? = null,
   var javaAddendum: JavaAddendumState? = null,
   var androidAddendum: AndroidAddendumState? = null,
+  var goAddendum: GoAddendumState? = null,
 ) : ConvertableFromState<Module> {
-  public fun toJavaModule(): JavaModule = JavaModule(
+  private fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
     baseDirContentRoot = baseDirContentRoot?.fromState(),
     sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
@@ -213,7 +217,7 @@ public data class ModuleState(
     androidAddendum = androidAddendum?.fromState(),
   )
 
-  public fun toPythonModule(): PythonModule = PythonModule(
+  private fun toPythonModule(): PythonModule = PythonModule(
     module = module.fromState(),
     sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
     libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
@@ -221,9 +225,21 @@ public data class ModuleState(
     sdkInfo = sdkInfo?.fromState(),
   )
 
+  private fun toGoModule(): GoModule =
+    GoModule(
+      module = module.fromState(),
+      importPath = goAddendum?.importPath ?: "",
+      root = Path(goAddendum?.root ?: ""),
+      sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
+      resourceRoots = resourceRoots.map { it.toResourceRoot() },
+      goDependencies = goAddendum?.goDependencies?.map { it.fromState() }.orEmpty()
+    )
+
   override fun fromState(): Module =
     if (module.languageIds.includesPython())
       toPythonModule()
+    else if (module.languageIds.contains("go"))
+      toGoModule()
     else
       toJavaModule()
 }
@@ -290,6 +306,28 @@ public data class AndroidAddendumState(
   )
 }
 
+public data class GoAddendumState(
+  var importPath: String = "",
+  var root: String = "",
+  var goDependencies: List<GoModuleDependencyState> = emptyList(),
+) : ConvertableFromState<GoAddendum> {
+  override fun fromState(): GoAddendum = GoAddendum(
+    importPath = importPath,
+    root = Path(root),
+    goDependencies = goDependencies.map { it.fromState() },
+  )
+}
+
+public data class GoModuleDependencyState(
+  var importPath: String = "",
+  var root: String = "",
+) : ConvertableFromState<GoModuleDependency> {
+  override fun fromState(): GoModuleDependency = GoModuleDependency(
+    importPath = importPath,
+    root = Path(root),
+  )
+}
+
 public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
@@ -321,6 +359,17 @@ public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumStat
   resourceDirectories = resourceDirectories.map { it.toString() },
   resourceJavaPackage = resourceJavaPackage,
   assetsDirectories = assetsDirectories.map { it.toString() },
+)
+
+public fun GoAddendum.toState(): GoAddendumState = GoAddendumState(
+  importPath = importPath,
+  root = root.toString(),
+  goDependencies = goDependencies.map { it.toState() },
+)
+
+public fun GoModuleDependency.toState(): GoModuleDependencyState = GoModuleDependencyState(
+  importPath = importPath,
+  root = root.toString(),
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(

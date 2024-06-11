@@ -17,7 +17,7 @@ object Platform {
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
   val plugins =
-    listOf("PythonCore:241.15989.150", "org.jetbrains.android:241.15989.150")
+    listOf("PythonCore:241.15989.150", "org.jetbrains.android:241.15989.150", "org.jetbrains.plugins.go:241.15989.21")
   val bundledPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 
 }

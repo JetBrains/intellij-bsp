@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
+import java.net.URI
 import java.nio.file.Path
 
 public data class BuildTargetInfo(
@@ -53,7 +54,9 @@ public data class Library(
   val iJars: List<String> = listOf(),
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
-) : WorkspaceModelEntity(), ResourceRootEntity {
+  val goImportPath: String? = "",
+  val goRoot: URI? = URI(""),
+  ) : WorkspaceModelEntity(), ResourceRootEntity {
   public companion object {
     public fun formatJarString(jar: String): String =
       if (jar.endsWith(".jar")) {

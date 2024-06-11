@@ -6,6 +6,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.kotlin</depends>
+    <depends optional="true" config-file="bsp-withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="bsp-withAndroid.xml">org.jetbrains.android</depends>
 
@@ -24,6 +25,12 @@
                         dynamic="true"/>
         <extensionPoint name="androidFacetEntityUpdaterExtension"
                         interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                        dynamic="true"/>
+        <extensionPoint name="goSdkGetterExtension"
+                        interface="org.jetbrains.plugins.bsp.extension.points.GoSdkGetterExtension"
+                        dynamic="true"/>
+        <extensionPoint name="goEntitiesExtension"
+                        interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.GoEntitiesExtension"
                         dynamic="true"/>
         <extensionPoint name="bspRunHandler"
                         interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler"
@@ -128,6 +135,7 @@
                      key="bsp.jps.compilation.default"/>
         <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.compilation.enable"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
+        <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
         <registryKey defaultValue="false"
                      description="Shorten module/library names by hashing the first parts and retaining the others"
                      key="bsp.shorten.module.library.names"/>

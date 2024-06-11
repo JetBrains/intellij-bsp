@@ -6,12 +6,14 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.GoModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
@@ -39,6 +41,7 @@ internal class WorkspaceModelUpdaterImpl(
   private val javaModuleUpdater =
     JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
+  private val goModuleUpdater = GoModuleUpdater(workspaceModelEntityUpdaterConfig)
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
   private val javaModuleToDummyJavaModulesTransformerHACK =
@@ -52,6 +55,7 @@ internal class WorkspaceModelUpdaterImpl(
         javaModuleUpdater.addEntity(module)
       }
       is PythonModule -> pythonModuleUpdater.addEntity(module)
+      is GoModule -> goModuleUpdater.addEntity(module)
     }
   }
 

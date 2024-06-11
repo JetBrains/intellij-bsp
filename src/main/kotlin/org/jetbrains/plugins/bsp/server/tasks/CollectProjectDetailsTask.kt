@@ -24,10 +24,12 @@ import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
 import com.intellij.platform.workspace.jps.JpsFileEntitySource
 import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -51,6 +53,8 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.goSdkExtension
+import org.jetbrains.plugins.bsp.extension.points.goSdkExtensionExists
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
@@ -137,6 +141,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
+  @Suppress("CognitiveComplexMethod")
   private suspend fun doExecute(buildProject: Boolean) {
     reportSequentialProgress { reporter ->
       val projectDetails =
@@ -169,6 +174,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
         reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
           calculateAllAndroidSdkInfosSubtask(projectDetails)
+        }
+      }
+
+      if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+          calculateAllGoSdkInfosSubtask(projectDetails)
         }
       }
 
@@ -351,6 +362,17 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       )
     }
 
+  private suspend fun calculateAllGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-go-sdk-infos",
+    BspPluginBundle.message("console.task.model.calculate.go.sdk.infos")
+  ) {
+    runInterruptible {
+      logPerformance(it) {
+        goSdkExtension()?.calculateAllGoSdkInfos(projectDetails)
+      }
+    }
+  }
+
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
       runInterruptible {
@@ -441,6 +463,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     if (BspFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
     }
+
+    if (BspFeatureFlags.isGoSupportEnabled) {
+      addBspFetchedGoSdks()
+      goSdkExtension()?.restoreGoModulesRegistry(project)
+      enableGoSupportInTargets()
+    }
   }
 
   private suspend fun addBspFetchedJdks() = withSubtask(
@@ -514,6 +542,33 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     val sdk = writeAction { androidSdkGetterExtension.getAndroidSdk(androidSdk) } ?: return
     SdkUtils.addSdkIfNeeded(sdk)
   }
+
+  private suspend fun addBspFetchedGoSdks() =
+    goSdkExtension()?.let { extension ->
+      withSubtask("add-bsp-fetched-go-sdks", BspPluginBundle.message("console.task.model.add.go.fetched.sdks")) {
+        logPerformanceSuspend("add-bsp-fetched-go-sdks") {
+          extension.addGoSdks(project)
+        }
+      }
+    }
+
+  private suspend fun enableGoSupportInTargets() =
+    goSdkExtension()?.let { extension ->
+      withSubtask(
+        "enable-go-support-in-targets",
+        BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
+        logPerformanceSuspend("enable-go-support-in-targets") {
+          val workspaceModel = WorkspaceModel.getInstance(project)
+          workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
+            moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+              writeAction {
+                extension.enableGoSupportForModule(module)
+              }
+            }
+          }
+        }
+      }
+    }
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(
     "apply-changes-on-workspace-model",
