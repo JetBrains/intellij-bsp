@@ -9,7 +9,7 @@ bazel_dep(
 git_override(
     module_name = "rules_intellij",
     remote = "https://github.com/agluszak/rules_intellij.git",
-    commit = "e2beb5ddd9a2cf9e498e10b50b58dcabd99deda2",
+    commit = "edb6cba60bbcce882ba5f3d102741383b856a7d4",
 )
 
 bazel_dep(name = "rules_kotlin", version = "1.9.5")
@@ -28,7 +28,12 @@ maven.install(
     artifacts = [
         "org.junit.jupiter:junit-jupiter:5.10.2",
         "ch.epfl.scala:bsp4j:2.2.0-M2",
-        "io.kotest:kotest-assertions-core:5.8.0",
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "org.junit.platform:junit-platform-console:1.10.2",
+        "io.kotest:kotest-assertions-api-jvm:5.9.1",
+        "io.kotest:kotest-assertions-core-jvm:5.9.1",
+        "io.kotest:kotest-assertions-shared-jvm:5.9.1",
+        "io.kotest:kotest-common-jvm:5.9.1",
         "org.scala-lang:scala-library:2.13.12",
         "com.google.code.gson:gson:2.10.1",
     ],
@@ -40,5 +45,4 @@ maven.install(
 use_repo(
     maven,
     "maven",
-#    error_prone_annotations = "com_google_errorprone_error_prone_annotations",
 )
