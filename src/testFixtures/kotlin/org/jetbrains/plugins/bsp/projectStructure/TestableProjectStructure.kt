@@ -23,7 +23,7 @@ internal abstract class TestableProjectStructureUpdaterBase<T: TestableProjectSt
   override fun isSupported(buildTarget: BuildTarget): Boolean =
     buildTarget.id !in unsupportedTargets
 
-  override fun addTarget(targetInfo: BuildTargetInfo, diff: T) {
+  override fun addTarget(project: Project, targetInfo: BuildTargetInfo, diff: T) {
     diff.updates.add(targetInfo.target.id)
   }
 }

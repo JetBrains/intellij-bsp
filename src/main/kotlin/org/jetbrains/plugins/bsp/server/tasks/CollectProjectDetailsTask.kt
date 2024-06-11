@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
@@ -354,8 +355,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
 
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
-    projectDetails.newWorkspaceModelSync()
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
+      val allProjectStructuresProvider = AllProjectStructuresProvider(project)
+      val diff = allProjectStructuresProvider.newDiff()
+
       runInterruptible {
         val projectBasePath = project.rootDir.toNioPath()
         val moduleNameProvider = project.findModuleNameProvider().orDefault()
@@ -372,6 +375,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             libraryNameProvider = libraryNameProvider,
             defaultJdkName = projectDetails.defaultJdkName,
           )
+
           TargetIdToModuleEntitiesMap(
             projectDetails = projectDetails,
             projectBasePath = projectBasePath,
@@ -398,25 +402,19 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
           )
 
-          val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
+          val modulesToLoad = targetIdToModuleEntitiesMap.values.toList().map { BuildTargetInfo(BuildTarget(
+            BuildTargetIdentifier("XD"), emptyList(), emptyList(), emptyList(),  BuildTargetCapabilities()), it)}
 
-          workspaceModelUpdater.loadModules(modulesToLoad + project.temporaryTargetUtils.getAllLibraryModules())
-          workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
-          workspaceModelUpdater
-            .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)
+          modulesToLoad.forEach { diff.addTarget(it) }
+
+//          workspaceModelUpdater.loadModules(modulesToLoad + project.temporaryTargetUtils.getAllLibraryModules())
+//          workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
+//          workspaceModelUpdater
+//            .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)
         }
       }
+      diff.applyAll()
     }
-  }
-
-  private suspend fun ProjectDetails.newWorkspaceModelSync() {
-    val infos = listOf<BuildTargetInfo>()
-    val allProjectStructuresProvider = AllProjectStructuresProvider(project)
-    val diff = allProjectStructuresProvider.newDiff()
-
-    infos.forEach { diff.addTarget(it) }
-
-    diff.applyAll()
   }
 
   private fun WorkspaceModelUpdater.loadDirectories(
@@ -533,7 +531,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     BspPluginBundle.message("console.task.model.apply.changes")
   ) {
     logPerformanceSuspend("apply-changes-on-workspace-model") {
-      applyOnWorkspaceModel()
+//      applyOnWorkspaceModel()
     }
   }
 

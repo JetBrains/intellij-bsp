@@ -27,7 +27,7 @@ internal class AllProjectStructuresDiff(
 
   private fun <TDiff: ProjectStructureDiff> BuildTargetInfo.addIfSupported(updater: ProjectStructureUpdater<TDiff>, diff: TDiff) {
     if (updater.isSupported(target)) {
-      updater.addTarget(this, diff)
+      updater.addTarget(project, this, diff)
     }
   }
 

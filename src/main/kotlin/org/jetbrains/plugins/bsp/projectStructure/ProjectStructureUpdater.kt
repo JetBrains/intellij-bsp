@@ -9,21 +9,24 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 
 public data class BuildTargetInfo(
   val target: BuildTarget,
-//  val sources: List<SourcesItem>,
-//  val resources: List<ResourcesItem>,
-//  val dependenciesSources: List<DependencySourcesItem>,
-//  val javacOptions: JavacOptionsItem?,
-//  val scalacOptions: ScalacOptionsItem?,
-//  val pythonOptions: PythonOptionsItem?,
-//  val outputPathUris: List<String>,
-//  val libraryDependencies: List<BuildTargetIdentifier>?,
-//  val moduleDependencies: List<BuildTargetIdentifier>,
-//  val defaultJdkName: String?,
-//  val jvmBinaryJars: List<JvmBinaryJarsItem>,
+  val moduleInfo: Module? = null,
+  val sources: List<SourcesItem>,
+  val resources: List<ResourcesItem>,
+  val dependenciesSources: List<DependencySourcesItem>,
+  val javacOptions: JavacOptionsItem? = null,
+  val scalacOptions: ScalacOptionsItem? = null,
+  val pythonOptions: PythonOptionsItem? = null,
+  val outputPathUris: List<String>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val moduleDependencies: List<BuildTargetIdentifier>,
+  val defaultJdkName: String?,
+  val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )
 
 public interface ProjectStructureUpdater<TDiff: ProjectStructureDiff> {
@@ -31,7 +34,7 @@ public interface ProjectStructureUpdater<TDiff: ProjectStructureDiff> {
 
   public fun isSupported(buildTarget: BuildTarget): Boolean
 
-  public fun addTarget(targetInfo: BuildTargetInfo, diff: TDiff)
+  public fun addTarget(project: Project, targetInfo: BuildTargetInfo, diff: TDiff)
 
   public companion object {
     internal val ep = ExtensionPointName.create<ProjectStructureUpdater<*>>("org.jetbrains.bsp.projectStructureUpdater")
