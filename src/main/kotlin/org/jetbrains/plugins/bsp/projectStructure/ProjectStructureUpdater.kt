@@ -12,6 +12,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
+import org.jetbrains.plugins.bsp.server.tasks.BspTargetInfo
 
 public data class BuildTargetInfo(
   val target: BuildTarget,
@@ -29,14 +30,15 @@ public data class BuildTargetInfo(
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )
 
-public interface ProjectStructureUpdater<TDiff: ProjectStructureDiff> {
+public interface ProjectStructureUpdater<TDiff: ProjectStructureDiff, TInfo> {
   public val diffClass: Class<TDiff>
+  public val additionalTargetInfoClass: Class<TInfo>
 
   public fun isSupported(buildTarget: BuildTarget): Boolean
 
-  public fun addTarget(project: Project, targetInfo: BuildTargetInfo, diff: TDiff)
+  public fun addTarget(project: Project, targetInfo: BspTargetInfo<TInfo>, diff: TDiff)
 
   public companion object {
-    internal val ep = ExtensionPointName.create<ProjectStructureUpdater<*>>("org.jetbrains.bsp.projectStructureUpdater")
+    internal val ep = ExtensionPointName.create<ProjectStructureUpdater<*, *>>("org.jetbrains.bsp.projectStructureUpdater")
   }
 }

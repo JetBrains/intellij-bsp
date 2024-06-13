@@ -7,7 +7,7 @@ public interface ProjectStructureDiff {
   public suspend fun apply(project: Project)
 }
 
-internal class AllProjectStructuresDiff(
+public class AllProjectStructuresDiff(
   diffs: List<ProjectStructureDiff>,
   private val updaters: List<ProjectStructureUpdater<*>>,
   private val project: Project
