@@ -71,6 +71,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPyth
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesScala
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toPair
+import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.plugins.bsp.projectStructure.BuildTargetInfo
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
@@ -79,6 +80,7 @@ import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.utils.SdkUtils
@@ -102,7 +104,7 @@ public data class PythonSdk(
 )
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
-  BspServerTask<ProjectDetails>("collect project details", project) {
+  BspServerTask<Unit>("collect project details", project) {
   private val cancelOnFuture = CompletableFuture<Void>()
 
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -142,55 +144,62 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun doExecute(buildProject: Boolean) {
     reportSequentialProgress { reporter ->
-      val projectDetails =
-        reporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
-          runInterruptible { calculateProjectDetailsSubtask(buildProject) }
-        } ?: return
-
-      reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
-        calculateAllUniqueJdkInfosSubtask(projectDetails)
-        uniqueJavaHomes.orEmpty().also {
-          if (it.isNotEmpty())
-            projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
-          else
-            projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
-        }
+      val aa = NewBigSync(project)
+      connectAndExecuteWithServer { server, cap ->
+        aa.xd(server, cap, buildProject)
       }
-
-      if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
-        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
-          calculateAllPythonSdkInfosSubtask(projectDetails)
-        }
-      }
-
-      if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
-        reporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
-          calculateAllScalaSdkInfosSubtask(projectDetails)
-        }
-      }
-
-      if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
-        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
-          calculateAllAndroidSdkInfosSubtask(projectDetails)
-        }
-      }
-
-      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
-        updateInternalModelSubtask(projectDetails)
-      }
-
-      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.post.processing")) {
-        postprocessingSubtask()
-      }
+      aa.a()
+//      val projectDetails =
+//        reporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
+//          runInterruptible { calculateProjectDetailsSubtask(buildProject) }
+//        } ?: return
+//
+//      reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
+//        calculateAllUniqueJdkInfosSubtask(projectDetails)
+//        uniqueJavaHomes.orEmpty().also {
+//          if (it.isNotEmpty())
+//            projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
+//          else
+//            projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+//        }
+//      }
+//
+//      if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
+//        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
+//          calculateAllPythonSdkInfosSubtask(projectDetails)
+//        }
+//      }
+//
+//      if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
+//        reporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+//          calculateAllScalaSdkInfosSubtask(projectDetails)
+//        }
+//      }
+//
+//      if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
+//        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
+//          calculateAllAndroidSdkInfosSubtask(projectDetails)
+//        }
+//      }
+//
+//      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
+//        updateInternalModelSubtask(projectDetails)
+//      }
+//
+//      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.post.processing")) {
+//        postprocessingSubtask()
+//      }
     }
   }
 
-  private fun calculateProjectDetailsSubtask(buildProject: Boolean) =
-    logPerformance("collect-project-details") {
-      connectAndExecuteWithServer { server, capabilities ->
-        collectModel(server, capabilities, cancelOnFuture, buildProject)
-      }
-    }
+//  private fun calculateProjectDetailsSubtask(buildProject: Boolean) =
+//    logPerformance("collect-project-details") {
+////      connectAndExecuteWithServer { server, capabilities ->
+////        val r = NewBigSync(project)
+//
+////        collectModel(server, capabilities, cancelOnFuture, buildProject)
+//      }
+//    }
 
   private fun collectModel(
     server: BspServer,
@@ -402,15 +411,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
           )
 
-          val modulesToLoad = targetIdToModuleEntitiesMap.values.toList().map { BuildTargetInfo(BuildTarget(
-            BuildTargetIdentifier("XD"), emptyList(), emptyList(), emptyList(),  BuildTargetCapabilities()), it)}
+          val modulesToLoad = targetIdToModuleEntitiesMap.values
 
-          modulesToLoad.forEach { diff.addTarget(it) }
-
-//          workspaceModelUpdater.loadModules(modulesToLoad + project.temporaryTargetUtils.getAllLibraryModules())
-//          workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
-//          workspaceModelUpdater
-//            .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)
+          workspaceModelUpdater.loadModules(modulesToLoad + project.temporaryTargetUtils.getAllLibraryModules())
+          workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
+          workspaceModelUpdater
+            .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)
         }
       }
       diff.applyAll()
@@ -722,7 +728,7 @@ private fun calculatePythonTargetsIds(
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
 
-private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
+public fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
   this.whenComplete { _, exception ->
     exception?.let { errorCallback(it) }
   }

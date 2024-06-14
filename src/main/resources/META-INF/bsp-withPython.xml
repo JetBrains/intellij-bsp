@@ -2,5 +2,8 @@
   <extensions defaultExtensionNs="org.jetbrains.bsp">
     <pythonSdkGetterExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetter" />
+
+    <xd implementation="org.jetbrains.plugins.bsp.server.tasks.PythonSync"/>
+    <xd implementation="org.jetbrains.plugins.bsp.server.tasks.JVMSync"/>
   </extensions>
 </idea-plugin>

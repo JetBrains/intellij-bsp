@@ -9,30 +9,30 @@ public interface ProjectStructureDiff {
 
 public class AllProjectStructuresDiff(
   diffs: List<ProjectStructureDiff>,
-  private val updaters: List<ProjectStructureUpdater<*>>,
+//  private val updaters: List<ProjectStructureUpdater<*>>,
   private val project: Project
 ) {
   private val diffs = diffs.associateBy { it::class.java }
 
   internal fun addTarget(buildTargetInfo: BuildTargetInfo) {
-    updaters.forEach { buildTargetInfo.addIfSupported(it, it.diffClass) }
+//    updaters.forEach { buildTargetInfo.addIfSupported(it, it.diffClass) }
   }
+
+//  @Suppress("UNCHECKED_CAST")
+//  private fun <TDiff: ProjectStructureDiff> BuildTargetInfo.addIfSupported(updater: ProjectStructureUpdater<*>, diffClazz: Class<TDiff>) {
+////    val typedUpdater = updater as ProjectStructureUpdater<ProjectStructureDiff>
+////    val diff = getDiff(diffClazz)
+////    addIfSupported(typedUpdater, diff)
+//  }
+
+//  private fun <TDiff: ProjectStructureDiff> BuildTargetInfo.addIfSupported(updater: ProjectStructureUpdater<TDiff>, diff: TDiff) {
+//    if (updater.isSupported(target)) {
+//      updater.addTarget(project, this, diff)
+//    }
+//  }
 
   @Suppress("UNCHECKED_CAST")
-  private fun <TDiff: ProjectStructureDiff> BuildTargetInfo.addIfSupported(updater: ProjectStructureUpdater<*>, diffClazz: Class<TDiff>) {
-    val typedUpdater = updater as ProjectStructureUpdater<ProjectStructureDiff>
-    val diff = getDiff(diffClazz)
-    addIfSupported(typedUpdater, diff)
-  }
-
-  private fun <TDiff: ProjectStructureDiff> BuildTargetInfo.addIfSupported(updater: ProjectStructureUpdater<TDiff>, diff: TDiff) {
-    if (updater.isSupported(target)) {
-      updater.addTarget(project, this, diff)
-    }
-  }
-
-  @Suppress("UNCHECKED_CAST")
-  private fun <TDiff: ProjectStructureDiff>getDiff(diffClazz: Class<TDiff>): TDiff =
+  public fun <TDiff: ProjectStructureDiff>getDiff(diffClazz: Class<TDiff>): TDiff =
     diffs[diffClazz] as? TDiff ?: error("Cannot find a ProjectStructureDiff of type: ${diffClazz.simpleName}")
 
   internal suspend fun applyAll() {
@@ -53,8 +53,8 @@ internal class AllProjectStructuresProvider(private val project: Project) {
   fun newDiff(): AllProjectStructuresDiff {
     val providers = ProjectStructureProvider.ep.extensionList
     val diffs = providers.map { it.newDiff(project) }
-    val updaters = ProjectStructureUpdater.ep.extensionList
+//    val updaters = ProjectStructureUpdater.ep.extensionList
 
-    return AllProjectStructuresDiff(diffs, updaters, project)
+    return AllProjectStructuresDiff(diffs, project)
   }
 }

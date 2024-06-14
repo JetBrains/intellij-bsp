@@ -8,6 +8,7 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
@@ -26,46 +27,67 @@ public data class BaseBspTargetInfo(
   public val resources: List<ResourcesItem>,
 )
 
-internal class BaseBspSyncTask {
+internal class BaseBspSyncTask(
+  private val project: Project,
+  private val errorCallback: (Throwable) -> Unit,
+  private val cancelOn: CompletableFuture<Void>,
+) {
 
-  fun xd(server: BspServer,
-         buildServerCapabilities: BazelBuildServerCapabilities, buildProject: Boolean): BaseBspTargetInfo {
+  fun execute(
+    server: BspServer,
+    buildServerCapabilities: BazelBuildServerCapabilities,
+    buildProject: Boolean
+  ): List<BaseBspTargetInfo> {
     try {
-      val workspaceBuildTargetsResult =
-        if (!buildProject) query(true, "workspace/buildTargets") { server.workspaceBuildTargets() }!!
-          .get() else query(true, "workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }!!
-          .get()
+      val workspaceBuildTargetsFuture =
+        if (buildProject) query1("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
+        else query1("workspace/buildTargets") { server.workspaceBuildTargets() }
+      val workspaceBuildTargets = workspaceBuildTargetsFuture?.get() ?: error("XD")
 
-      val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
+      val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargets)
 
-      val sourcesFuture = query(true, "buildTarget/sources") {
+      val sources = query1("buildTarget/sources") {
         server.buildTargetSources(SourcesParams(allTargetsIds))
-      }!!
+      }?.get() ?: error("XD")
 
-      // We have to check == true because bsp4j uses non-primitive Boolean (which is Boolean? in Kotlin)
-      val resourcesFuture = query(buildServerCapabilities.resourcesProvider == true, "buildTarget/resources") {
+      val resources = query(buildServerCapabilities.resourcesProvider == true, "buildTarget/resources") {
         server.buildTargetResources(ResourcesParams(allTargetsIds))
-      }
+      }?.get() ?: error("XD")
 
-      return BaseBspTargetInfo(
-        targets = workspaceBuildTargetsResult.targets.toSet(),
-        sources = sourcesFuture.get().items,
-        resources = resourcesFuture?.get()?.items ?: emptyList(),
-      )
+      return workspaceBuildTargets.targets.map { targ ->
+        BaseBspTargetInfo(
+          target = targ,
+          sources = sources.items.filter { it.target == targ.id },
+          resources = resources.items.filter { it.target == targ.id }
+        )
+      }
     } catch (e: Exception) {
       // TODO the type xd
       if (e is ExecutionException && e.cause is CancellationException) {
-        log.debug("calculateProjectDetailsWithCapabilities has been cancelled", e)
+        thisLogger().debug("calculateProjectDetailsWithCapabilities has been cancelled", e)
       } else {
-        log.error("calculateProjectDetailsWithCapabilities has failed", e)
+        thisLogger().error("calculateProjectDetailsWithCapabilities has failed", e)
       }
     }
+    error("XD")
   }
 
   private fun calculateAllTargetsIds(
     workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
   ): List<BuildTargetIdentifier> =
     workspaceBuildTargetsResult.targets.map { it.id }
+
+  private fun <Result> query1(
+    queryName: String,
+    doQuery: () -> CompletableFuture<Result>,
+  ): CompletableFuture<Result>? =
+    doQuery()
+      .reactToExceptionIn(cancelOn)
+      .catchSyncErrors(errorCallback)
+      .exceptionally {
+        thisLogger().warn("Query '$queryName' has failed", it)
+        null
+      }
 
   private fun <Result> query(
     check: Boolean,
@@ -76,66 +98,31 @@ internal class BaseBspSyncTask {
       .reactToExceptionIn(cancelOn)
       .catchSyncErrors(errorCallback)
       .exceptionally {
-        log.warn("Query '$queryName' has failed", it)
+        thisLogger().warn("Query '$queryName' has failed", it)
         null
       }
     else null
+
+  private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
+    this.whenComplete { _, exception ->
+      exception?.let { errorCallback(it) }
+    }
 }
 
 public interface ProjectSyncHook {
   public fun isEnabled(project: Project): Boolean
 
   public fun execute(
+    project: Project,
     server: BspServer,
     capabilities: BazelBuildServerCapabilities,
     baseInfos: List<BaseBspTargetInfo>,
-    diff: AllProjectStructuresDiff
+    diff: AllProjectStructuresDiff,
+    errorCallback: (Throwable) -> Unit,
+    cancelOn: CompletableFuture<Void>,
   )
 
   public companion object {
-    internal val ep = ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bsp.projectSyncHook")
-  }
-}
-
-public class PythonSync : ProjectSyncHook {
-
-
-  fun <Result> query(
-    check: Boolean,
-    queryName: String,
-    doQuery: () -> CompletableFuture<Result>,
-  ): CompletableFuture<Result>? =
-    if (check) doQuery()
-      .reactToExceptionIn(cancelOn)
-      .catchSyncErrors(errorCallback)
-      .exceptionally {
-        log.warn("Query '$queryName' has failed", it)
-        null
-      }
-    else null
-  private fun calculatePythonTargetsIds(
-    workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
-  ): List<BuildTargetIdentifier> =
-    workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
-
-  override fun isEnabled(project: Project): Boolean {
-    TODO("Not yet implemented")
-  }
-
-  override fun execute(
-    server: BspServer,
-    capabilities: BazelBuildServerCapabilities,
-    baseInfos: List<BaseBspTargetInfo>,
-    diff: AllProjectStructuresDiff
-  ) {
-    val pythonTargetsIds = baseInfos.filter { it.target.languageIds.includesPython() }.map { it.target.id }
-    val pythonOptionsFuture =
-      query(pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled, "buildTarget/pythonOptions") {
-        server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetsIds))
-      }
-
-    val pythonOptionsFuture1 = pythonOptionsFuture!!.get()
-    // TODO wodkapce model update
-
+    internal val ep = ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bsp.xd")
   }
 }

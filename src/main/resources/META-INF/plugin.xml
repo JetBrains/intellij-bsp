@@ -62,6 +62,9 @@
         <extensionPoint name="projectStructureProvider"
                         interface="org.jetbrains.plugins.bsp.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
+        <extensionPoint name="xd"
+                        interface="org.jetbrains.plugins.bsp.server.tasks.ProjectSyncHook"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
