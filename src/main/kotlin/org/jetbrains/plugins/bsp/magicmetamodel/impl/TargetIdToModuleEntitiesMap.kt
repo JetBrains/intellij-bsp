@@ -11,7 +11,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfoOld
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
 import java.nio.file.Path
@@ -23,7 +22,6 @@ public object TargetIdToModuleEntitiesMap {
     targetsMap: Map<BuildTargetId, BuildTargetInfoOld>,
     moduleNameProvider: TargetNameReformatProvider,
     libraryNameProvider: TargetNameReformatProvider,
-    hasDefaultPythonInterpreter: Boolean,
     isAndroidSupportEnabled: Boolean,
     transformer: ProjectDetailsToModuleDetailsTransformer,
   ): Map<BuildTargetId, Module> {
@@ -34,25 +32,18 @@ public object TargetIdToModuleEntitiesMap {
       projectBasePath,
       isAndroidSupportEnabled,
     )
-    val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
-      targetsMap,
-      moduleNameProvider,
-      libraryNameProvider,
-      hasDefaultPythonInterpreter,
-    )
 
     return runBlocking(Dispatchers.Default) {
       projectDetails.targetsId.map {
         async {
           val moduleDetails = transformer.moduleDetailsForTargetId(it)
-          val module = if (moduleDetails.target.languageIds.includesPython()) {
-            moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+          if (moduleDetails.target.languageIds.includesPython()) {
+            null
           } else {
-            moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+            it.uri to moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
           }
-          it.uri to module
         }
-      }.awaitAll().toMap()
+      }.awaitAll().filterNotNull().toMap()
     }
   }
 }

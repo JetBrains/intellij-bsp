@@ -46,7 +46,6 @@ internal interface WorkspaceModelUpdater {
       virtualFileUrlManager: VirtualFileUrlManager,
       projectBasePath: Path,
       project: Project,
-      isPythonSupportEnabled: Boolean = false,
       isAndroidSupportEnabled: Boolean = false,
     ): WorkspaceModelUpdater =
       WorkspaceModelUpdaterImpl(
@@ -54,7 +53,6 @@ internal interface WorkspaceModelUpdater {
         virtualFileUrlManager = virtualFileUrlManager,
         projectBasePath = projectBasePath,
         project = project,
-        isPythonSupportEnabled = isPythonSupportEnabled,
         isAndroidSupportEnabled = isAndroidSupportEnabled,
       )
   }

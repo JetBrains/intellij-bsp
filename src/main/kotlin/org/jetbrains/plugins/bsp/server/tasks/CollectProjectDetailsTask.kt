@@ -391,7 +391,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             targetsMap = projectDetails.targets.associate { it.toBuildTargetInfo().toPair() },
             moduleNameProvider = moduleNameProvider,
             libraryNameProvider = libraryNameProvider,
-            hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
             isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             transformer = transformer,
           )
@@ -407,7 +406,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             virtualFileUrlManager,
             projectBasePath,
             project,
-            BspFeatureFlags.isPythonSupportEnabled,
             BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
           )
 

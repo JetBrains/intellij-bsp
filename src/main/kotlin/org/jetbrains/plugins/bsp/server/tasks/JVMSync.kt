@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import kotlinx.coroutines.runInterruptible
 import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
@@ -159,7 +158,6 @@ internal class JVMSync : ProjectSyncHook {
             targetsMap = projectDetails.targets.associate { it.toBuildTargetInfo().toPair() },
             moduleNameProvider = moduleNameProvider,
             libraryNameProvider = libraryNameProvider,
-            hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
             isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             transformer = transformer,
           )
@@ -174,7 +172,6 @@ internal class JVMSync : ProjectSyncHook {
             virtualFileUrlManager,
             projectBasePath,
             project,
-            BspFeatureFlags.isPythonSupportEnabled,
             BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
           )
 

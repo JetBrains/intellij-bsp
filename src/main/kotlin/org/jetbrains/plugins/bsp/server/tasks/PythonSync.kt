@@ -8,13 +8,19 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.WorkspaceModelProjectStructureDiff
@@ -121,10 +127,17 @@ public class PythonSync : ProjectSyncHook {
         )
       }
 
+//
 //    private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
 //      if (isPythonSupportEnabled && entityToAdd.sdkInfo != null)
 //        defaultDependencies + SdkDependency(SdkId(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID))
 //      else
 //        defaultDependencies
+//
+//    private companion object {
+//      val defaultDependencies = listOf(
+//        ModuleSourceDependency,
+//      )
+//    }
   }
 }
