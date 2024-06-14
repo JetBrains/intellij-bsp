@@ -1,8 +1,5 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
-
 public data class PythonSdkInfo(val version: String, val originalName: String) {
   override fun toString(): String = "$originalName$SEPARATOR$version"
 
@@ -18,23 +15,3 @@ public data class PythonSdkInfo(val version: String, val originalName: String) {
   }
 }
 
-public data class PythonLibrary(val sources: List<String>) : WorkspaceModelEntity()
-
-public data class PythonModule(
-  val module: GenericModuleInfo,
-  val sourceRoots: List<GenericSourceRoot>,
-  val resourceRoots: List<ResourceRoot>,
-  val libraries: List<PythonLibrary>,
-  val sdkInfo: PythonSdkInfo?,
-) : WorkspaceModelEntity(), Module {
-  override fun toState(): ModuleState = ModuleState(
-    module = module.toState(),
-    baseDirContentRoot = null,
-    sourceRoots = sourceRoots.map { it.toState() },
-    resourceRoots = resourceRoots.map { it.toState() },
-    libraries = libraries.map { it.toState() },
-    sdkInfo = sdkInfo?.toState(),
-  )
-
-  override fun getModuleName(): String = module.name
-}

@@ -16,12 +16,9 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.KotlinAddend
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleCapabilities
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonLibrary
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -142,18 +139,12 @@ public data class LibraryState(
     sourceJars = sourceJars,
     classJars = classJars,
   )
-
-  internal fun toPythonLibrary(): PythonLibrary = PythonLibrary(sourceJars)
 }
 
 public fun Library.toState(): LibraryState = LibraryState(
   displayName = displayName,
   sourceJars = sourceJars,
   classJars = classJars,
-)
-
-public fun PythonLibrary.toState(): LibraryState = LibraryState(
-  sourceJars = sources,
 )
 
 public data class GenericModuleInfoState(
@@ -211,19 +202,7 @@ public data class ModuleState(
     androidAddendum = androidAddendum?.fromState(),
   )
 
-  public fun toPythonModule(): PythonModule = PythonModule(
-    module = module.fromState(),
-    sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
-    libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
-    resourceRoots = resourceRoots.map { it.toResourceRoot() },
-    sdkInfo = sdkInfo?.fromState(),
-  )
-
-  override fun fromState(): Module =
-    if (module.languageIds.includesPython())
-      toPythonModule()
-    else
-      toJavaModule()
+  override fun fromState(): Module = toJavaModule()
 }
 
 public data class PythonSdkInfoState(
