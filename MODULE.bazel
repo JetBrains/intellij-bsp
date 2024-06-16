@@ -6,10 +6,15 @@ bazel_dep(
     name = "rules_intellij",
 )
 
-git_override(
+#git_override(
+#    module_name = "rules_intellij",
+#    remote = "https://github.com/agluszak/rules_intellij.git",
+#    commit = "edb6cba60bbcce882ba5f3d102741383b856a7d4",
+#)
+
+local_path_override(
     module_name = "rules_intellij",
-    remote = "https://github.com/agluszak/rules_intellij.git",
-    commit = "edb6cba60bbcce882ba5f3d102741383b856a7d4",
+    path = "/home/andrzej.gluszak/code/jetbrains/rules_intellij",
 )
 
 bazel_dep(name = "rules_kotlin", version = "1.9.5")
@@ -26,16 +31,22 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 
 maven.install(
     artifacts = [
-        "org.junit.jupiter:junit-jupiter:5.10.2",
         "ch.epfl.scala:bsp4j:2.2.0-M2",
         "org.junit.jupiter:junit-jupiter:5.10.2",
         "org.junit.platform:junit-platform-console:1.10.2",
+        # todo: this should not be required, use @rules_intellij_maven in the generated source
+        "org.junit.platform:junit-platform-suite-engine:1.10.2",
+        "org.junit.platform:junit-platform-suite-api:1.10.2",
+        # Usually, we'd get this from the JetBrains SDK, but the bundled one not aware of Bazel platforms,
+        # so it fails on certain setups.
+        "net.java.dev.jna:jna:5.14.0",
         "io.kotest:kotest-assertions-api-jvm:5.9.1",
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
         "io.kotest:kotest-common-jvm:5.9.1",
         "org.scala-lang:scala-library:2.13.12",
         "com.google.code.gson:gson:2.10.1",
+
     ],
     generate_compat_repositories = True,
     fail_if_repin_required = True,
@@ -45,4 +56,5 @@ maven.install(
 use_repo(
     maven,
     "maven",
+    jna = "net_java_dev_jna_jna",
 )

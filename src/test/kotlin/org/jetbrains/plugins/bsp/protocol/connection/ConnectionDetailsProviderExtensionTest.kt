@@ -13,6 +13,7 @@ import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExte
 import org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension
 import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.workspace.model.test.framework.registerExtensionPoint
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -111,10 +112,12 @@ class ConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   }
 
   private fun registerExtension(extension: ConnectionDetailsProviderExtension) {
+    registerExtensionPoint(ConnectionDetailsProviderExtension.ep)
     ConnectionDetailsProviderExtension.ep.point.registerExtension(extension, projectModel.disposableRule.disposable)
   }
 
   private fun registerExtensionJavaShim(extension: ConnectionDetailsProviderExtensionJavaShim) {
+    registerExtensionPoint(ConnectionDetailsProviderExtensionJavaShim.ep)
     ConnectionDetailsProviderExtensionJavaShim.ep.point.registerExtension(extension, projectModel.disposableRule.disposable)
   }
 }
