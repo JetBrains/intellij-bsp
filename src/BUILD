@@ -16,6 +16,7 @@ kt_jvm_library(
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",
         "@rules_intellij//third_party/python",
+        "@rules_intellij//third_party/performance",
         "@maven//:com_google_code_gson_gson",
         "@maven//:ch_epfl_scala_bsp4j",
         "//protocol/src:protocol",
@@ -41,16 +42,14 @@ kt_jvm_library(
 )
 
 intellij_integration_test_suite(
-    name = "unit_tests",
+    name = "plugin_tests",
     srcs = glob([
         "test/kotlin/org/jetbrains/plugins/bsp/**/*.kt",
     ]),
     associates = [":plugin"],
-    main_class = "org.junit.platform.console.ConsoleLauncher",
     test_package_root = "org.jetbrains",
     deps = [
         ":test_fixtures",
-        "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
@@ -59,3 +58,17 @@ intellij_integration_test_suite(
     ],
 )
 
+intellij_integration_test_suite(
+    name = "utils_tests",
+    srcs = glob([
+        "test/kotlin/utils/**/*.kt",
+    ]),
+    associates = [":plugin"],
+    test_package_root = "utils",
+    deps = [
+        "@maven//:io_kotest_kotest_assertions_api_jvm",
+        "@maven//:io_kotest_kotest_assertions_core_jvm",
+        "@maven//:io_kotest_kotest_assertions_shared_jvm",
+        "@maven//:io_kotest_kotest_common_jvm",
+    ],
+)
