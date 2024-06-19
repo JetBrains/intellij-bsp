@@ -1,7 +1,6 @@
 package org.jetbrains.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.storage.EntityInformation
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
@@ -204,7 +203,6 @@ public class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>(
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<JvmBinaryJarsEntity> {
     val modifiable = JvmBinaryJarsEntityImpl.Builder(null)
     modifiable.diff = diff
-    modifiable.snapshot = diff
     modifiable.id = createEntityId()
     return modifiable
   }
