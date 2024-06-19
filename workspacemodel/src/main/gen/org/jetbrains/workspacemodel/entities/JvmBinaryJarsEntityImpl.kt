@@ -235,12 +235,6 @@ public class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>(
     return JvmBinaryJarsEntity::class.java
   }
 
-  override fun serialize(ser: EntityInformation.Serializer) {
-  }
-
-  override fun deserialize(de: EntityInformation.Deserializer) {
-  }
-
   override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
     return JvmBinaryJarsEntity(jars, entitySource) {
       parents.filterIsInstance<ModuleEntity>().singleOrNull()?.let { this.module = it }

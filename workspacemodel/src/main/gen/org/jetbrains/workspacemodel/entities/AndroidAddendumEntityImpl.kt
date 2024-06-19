@@ -356,12 +356,6 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     return AndroidAddendumEntity::class.java
   }
 
-  override fun serialize(ser: EntityInformation.Serializer) {
-  }
-
-  override fun deserialize(de: EntityInformation.Deserializer) {
-  }
-
   override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
     return AndroidAddendumEntity(
       androidSdkName,

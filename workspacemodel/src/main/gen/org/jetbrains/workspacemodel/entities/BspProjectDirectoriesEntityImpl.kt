@@ -242,12 +242,6 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
     return BspProjectDirectoriesEntity::class.java
   }
 
-  override fun serialize(ser: EntityInformation.Serializer) {
-  }
-
-  override fun deserialize(de: EntityInformation.Deserializer) {
-  }
-
   override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
     return BspProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, entitySource) {
     }
