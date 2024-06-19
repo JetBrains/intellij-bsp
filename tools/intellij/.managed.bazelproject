@@ -8,6 +8,9 @@ workspace_type: intellij_plugin
 targets:
   //:ijwb_bazel_dev
 
+build_flags:
+  --define=ij_product=intellij-2024.2
+
 additional_languages:
   kotlin
   python
