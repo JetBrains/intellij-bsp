@@ -17,21 +17,18 @@ import com.intellij.platform.workspace.storage.impl.extractOneToOneParent
 import com.intellij.platform.workspace.storage.impl.updateOneToOneParentOfChild
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
+import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-@GeneratedCodeApiVersion(2)
-@GeneratedCodeImplVersion(3)
-public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity,
-  WorkspaceEntityBase(dataSource) {
+@GeneratedCodeApiVersion(3)
+@GeneratedCodeImplVersion(5)
+open class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(
-      ModuleEntity::class.java,
-      AndroidAddendumEntity::class.java,
-      ConnectionId.ConnectionType.ONE_TO_ONE,
-      false
-    )
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -89,17 +86,17 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
   }
 
 
-  public class Builder(result: AndroidAddendumEntityData?) :
-    ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(result),
-    AndroidAddendumEntity.Builder {
-    public constructor() : this(AndroidAddendumEntityData())
+  class Builder(result: AndroidAddendumEntityData?) : ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(
+    result), AndroidAddendumEntity.Builder {
+    constructor() : this(AndroidAddendumEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
+        }
+        else {
           error("Entity AndroidAddendumEntity is already created in a different builder")
         }
       }
@@ -140,7 +137,8 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
           error("Field AndroidAddendumEntity#module should be initialized")
         }
-      } else {
+      }
+      else {
         if (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] == null) {
           error("Field AndroidAddendumEntity#module should be initialized")
         }
@@ -169,12 +167,9 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       if (this.androidSdkName != dataSource.androidSdkName) this.androidSdkName = dataSource.androidSdkName
       if (this.androidTargetType != dataSource.androidTargetType) this.androidTargetType = dataSource.androidTargetType
       if (this.manifest != dataSource?.manifest) this.manifest = dataSource.manifest
-      if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories =
-        dataSource.resourceDirectories.toMutableList()
-      if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage =
-        dataSource.resourceJavaPackage
-      if (this.assetsDirectories != dataSource.assetsDirectories) this.assetsDirectories =
-        dataSource.assetsDirectories.toMutableList()
+      if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories = dataSource.resourceDirectories.toMutableList()
+      if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage = dataSource.resourceJavaPackage
+      if (this.assetsDirectories != dataSource.assetsDirectories) this.assetsDirectories = dataSource.assetsDirectories.toMutableList()
       updateChildToParentReferences(parents)
     }
 
@@ -226,7 +221,8 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         if (collection_resourceDirectories !is MutableWorkspaceList) return collection_resourceDirectories
         if (diff == null || modifiable.get()) {
           collection_resourceDirectories.setModificationUpdateAction(resourceDirectoriesUpdater)
-        } else {
+        }
+        else {
           collection_resourceDirectories.cleanModificationUpdateAction()
         }
         return collection_resourceDirectories
@@ -256,7 +252,8 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         if (collection_assetsDirectories !is MutableWorkspaceList) return collection_assetsDirectories
         if (diff == null || modifiable.get()) {
           collection_assetsDirectories.setModificationUpdateAction(assetsDirectoriesUpdater)
-        } else {
+        }
+        else {
           collection_assetsDirectories.cleanModificationUpdateAction()
         }
         return collection_assetsDirectories
@@ -267,16 +264,16 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         assetsDirectoriesUpdater.invoke(value)
       }
 
-    override var module: ModuleEntity
+    override var module: ModuleEntity.Builder
       get() {
         val _diff = diff
         return if (_diff != null) {
-          _diff.extractOneToOneParent(MODULE_CONNECTION_ID, this) ?: this.entityLinks[EntityLink(
-            false,
-            MODULE_CONNECTION_ID
-          )]!! as ModuleEntity
-        } else {
-          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity
+          @OptIn(EntityStorageInstrumentationApi::class)
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+        }
+        else {
+          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
       }
       set(value) {
@@ -287,11 +284,12 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
           // else you're attaching a new entity to an existing entity that is not modifiable
-          _diff.addEntity(value)
+          _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
-        } else {
+        }
+        else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
@@ -306,13 +304,13 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
   }
 }
 
-public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEntity>() {
-  public lateinit var androidSdkName: String
-  public lateinit var androidTargetType: AndroidTargetType
-  public var manifest: VirtualFileUrl? = null
-  public lateinit var resourceDirectories: MutableList<VirtualFileUrl>
-  public var resourceJavaPackage: String? = null
-  public lateinit var assetsDirectories: MutableList<VirtualFileUrl>
+class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEntity>() {
+  lateinit var androidSdkName: String
+  lateinit var androidTargetType: AndroidTargetType
+  var manifest: VirtualFileUrl? = null
+  lateinit var resourceDirectories: MutableList<VirtualFileUrl>
+  var resourceJavaPackage: String? = null
+  lateinit var assetsDirectories: MutableList<VirtualFileUrl>
 
   internal fun isAndroidSdkNameInitialized(): Boolean = ::androidSdkName.isInitialized
   internal fun isAndroidTargetTypeInitialized(): Boolean = ::androidTargetType.isInitialized
@@ -322,7 +320,6 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<AndroidAddendumEntity> {
     val modifiable = AndroidAddendumEntityImpl.Builder(null)
     modifiable.diff = diff
-    modifiable.snapshot = diff
     modifiable.id = createEntityId()
     return modifiable
   }
@@ -354,17 +351,11 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     return AndroidAddendumEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
-    return AndroidAddendumEntity(
-      androidSdkName,
-      androidTargetType,
-      resourceDirectories,
-      assetsDirectories,
-      entitySource,
-    ) {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+    return AndroidAddendumEntity(androidSdkName, androidTargetType, resourceDirectories, assetsDirectories, entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
       this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
-      parents.filterIsInstance<ModuleEntity>().singleOrNull()?.let { this.module = it }
+      parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }
   }
 

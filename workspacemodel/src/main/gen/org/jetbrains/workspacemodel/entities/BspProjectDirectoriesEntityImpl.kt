@@ -16,10 +16,9 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-@GeneratedCodeApiVersion(2)
-@GeneratedCodeImplVersion(3)
-public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) :
-  BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
+@GeneratedCodeApiVersion(3)
+@GeneratedCodeImplVersion(5)
+open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) : BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
 
@@ -58,17 +57,16 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
   }
 
 
-  public class Builder(result: BspProjectDirectoriesEntityData?) :
-    ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
-    BspProjectDirectoriesEntity.Builder {
-    public constructor() : this(BspProjectDirectoriesEntityData())
+  class Builder(result: BspProjectDirectoriesEntityData?) : ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result), BspProjectDirectoriesEntity.Builder {
+    constructor() : this(BspProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
+        }
+        else {
           error("Entity BspProjectDirectoriesEntity is already created in a different builder")
         }
       }
@@ -160,7 +158,8 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
         if (collection_includedRoots !is MutableWorkspaceList) return collection_includedRoots
         if (diff == null || modifiable.get()) {
           collection_includedRoots.setModificationUpdateAction(includedRootsUpdater)
-        } else {
+        }
+        else {
           collection_includedRoots.cleanModificationUpdateAction()
         }
         return collection_includedRoots
@@ -182,7 +181,8 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
         if (collection_excludedRoots !is MutableWorkspaceList) return collection_excludedRoots
         if (diff == null || modifiable.get()) {
           collection_excludedRoots.setModificationUpdateAction(excludedRootsUpdater)
-        } else {
+        }
+        else {
           collection_excludedRoots.cleanModificationUpdateAction()
         }
         return collection_excludedRoots
@@ -197,10 +197,10 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
   }
 }
 
-public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
-  public lateinit var projectRoot: VirtualFileUrl
-  public lateinit var includedRoots: MutableList<VirtualFileUrl>
-  public lateinit var excludedRoots: MutableList<VirtualFileUrl>
+class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
+  lateinit var projectRoot: VirtualFileUrl
+  lateinit var includedRoots: MutableList<VirtualFileUrl>
+  lateinit var excludedRoots: MutableList<VirtualFileUrl>
 
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
@@ -240,7 +240,7 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
     return BspProjectDirectoriesEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
     return BspProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, entitySource) {
     }
   }

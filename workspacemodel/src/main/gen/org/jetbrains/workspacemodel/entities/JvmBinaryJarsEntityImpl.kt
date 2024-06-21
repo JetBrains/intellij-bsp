@@ -17,21 +17,17 @@ import com.intellij.platform.workspace.storage.impl.extractOneToOneParent
 import com.intellij.platform.workspace.storage.impl.updateOneToOneParentOfChild
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
+import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-@GeneratedCodeApiVersion(2)
-@GeneratedCodeImplVersion(3)
-public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity,
-  WorkspaceEntityBase(dataSource) {
+@GeneratedCodeApiVersion(3)
+@GeneratedCodeImplVersion(5)
+open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(
-      ModuleEntity::class.java,
-      JvmBinaryJarsEntity::class.java,
-      ConnectionId.ConnectionType.ONE_TO_ONE,
-      false
-    )
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, JvmBinaryJarsEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -59,16 +55,17 @@ public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsE
   }
 
 
-  public class Builder(result: JvmBinaryJarsEntityData?) :
-    ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result), JvmBinaryJarsEntity.Builder {
-    public constructor() : this(JvmBinaryJarsEntityData())
+  class Builder(result: JvmBinaryJarsEntityData?) : ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(
+    result), JvmBinaryJarsEntity.Builder {
+    constructor() : this(JvmBinaryJarsEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
+        }
+        else {
           error("Entity JvmBinaryJarsEntity is already created in a different builder")
         }
       }
@@ -98,7 +95,8 @@ public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsE
         if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
           error("Field JvmBinaryJarsEntity#module should be initialized")
         }
-      } else {
+      }
+      else {
         if (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] == null) {
           error("Field JvmBinaryJarsEntity#module should be initialized")
         }
@@ -145,7 +143,8 @@ public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsE
         if (collection_jars !is MutableWorkspaceList) return collection_jars
         if (diff == null || modifiable.get()) {
           collection_jars.setModificationUpdateAction(jarsUpdater)
-        } else {
+        }
+        else {
           collection_jars.cleanModificationUpdateAction()
         }
         return collection_jars
@@ -156,16 +155,16 @@ public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsE
         jarsUpdater.invoke(value)
       }
 
-    override var module: ModuleEntity
+    override var module: ModuleEntity.Builder
       get() {
         val _diff = diff
         return if (_diff != null) {
-          _diff.extractOneToOneParent(MODULE_CONNECTION_ID, this) ?: this.entityLinks[EntityLink(
-            false,
-            MODULE_CONNECTION_ID
-          )]!! as ModuleEntity
-        } else {
-          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity
+          @OptIn(EntityStorageInstrumentationApi::class)
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+        }
+        else {
+          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
       }
       set(value) {
@@ -176,11 +175,12 @@ public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsE
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
           // else you're attaching a new entity to an existing entity that is not modifiable
-          _diff.addEntity(value)
+          _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
-        } else {
+        }
+        else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
@@ -195,8 +195,8 @@ public open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsE
   }
 }
 
-public class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>() {
-  public lateinit var jars: MutableList<VirtualFileUrl>
+class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>() {
+  lateinit var jars: MutableList<VirtualFileUrl>
 
   internal fun isJarsInitialized(): Boolean = ::jars.isInitialized
 
@@ -233,9 +233,9 @@ public class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>(
     return JvmBinaryJarsEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
     return JvmBinaryJarsEntity(jars, entitySource) {
-      parents.filterIsInstance<ModuleEntity>().singleOrNull()?.let { this.module = it }
+      parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }
   }
 

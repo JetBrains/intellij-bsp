@@ -14,25 +14,25 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
   public val excludedRoots: List<VirtualFileUrl>
 
   //region generated code
-  @GeneratedCodeApiVersion(2)
-  public interface Builder : BspProjectDirectoriesEntity, WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
+  @GeneratedCodeApiVersion(3)
+  interface Builder : WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     override var entitySource: EntitySource
-    override var projectRoot: VirtualFileUrl
-    override var includedRoots: MutableList<VirtualFileUrl>
-    override var excludedRoots: MutableList<VirtualFileUrl>
+    var projectRoot: VirtualFileUrl
+    var includedRoots: MutableList<VirtualFileUrl>
+    var excludedRoots: MutableList<VirtualFileUrl>
   }
 
-  public companion object : EntityType<BspProjectDirectoriesEntity, Builder>() {
+  companion object : EntityType<BspProjectDirectoriesEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
-    public operator fun invoke(
+    operator fun invoke(
       projectRoot: VirtualFileUrl,
       includedRoots: List<VirtualFileUrl>,
       excludedRoots: List<VirtualFileUrl>,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
-    ): BspProjectDirectoriesEntity {
+    ): Builder {
       val builder = builder()
       builder.projectRoot = projectRoot
       builder.includedRoots = includedRoots.toMutableWorkspaceList()
@@ -42,12 +42,14 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code
-public fun MutableEntityStorage.modifyEntity(
+fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
   entity: BspProjectDirectoriesEntity,
   modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
-): BspProjectDirectoriesEntity = modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
+): BspProjectDirectoriesEntity {
+  return modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
+}
 //endregion

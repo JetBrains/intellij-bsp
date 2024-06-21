@@ -26,30 +26,30 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val module: ModuleEntity
 
   //region generated code
-  @GeneratedCodeApiVersion(2)
-  public interface Builder : AndroidAddendumEntity, WorkspaceEntity.Builder<AndroidAddendumEntity> {
+  @GeneratedCodeApiVersion(3)
+  interface Builder : WorkspaceEntity.Builder<AndroidAddendumEntity> {
     override var entitySource: EntitySource
-    override var androidSdkName: String
-    override var androidTargetType: AndroidTargetType
-    override var manifest: VirtualFileUrl?
-    override var resourceDirectories: MutableList<VirtualFileUrl>
-    override var resourceJavaPackage: String?
-    override var assetsDirectories: MutableList<VirtualFileUrl>
-    override var module: ModuleEntity
+    var androidSdkName: String
+    var androidTargetType: AndroidTargetType
+    var manifest: VirtualFileUrl?
+    var resourceDirectories: MutableList<VirtualFileUrl>
+    var resourceJavaPackage: String?
+    var assetsDirectories: MutableList<VirtualFileUrl>
+    var module: ModuleEntity.Builder
   }
 
-  public companion object : EntityType<AndroidAddendumEntity, Builder>() {
+  companion object : EntityType<AndroidAddendumEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
-    public operator fun invoke(
+    operator fun invoke(
       androidSdkName: String,
       androidTargetType: AndroidTargetType,
       resourceDirectories: List<VirtualFileUrl>,
       assetsDirectories: List<VirtualFileUrl>,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
-    ): AndroidAddendumEntity {
+    ): Builder {
       val builder = builder()
       builder.androidSdkName = androidSdkName
       builder.androidTargetType = androidTargetType
@@ -60,17 +60,19 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code
-public fun MutableEntityStorage.modifyEntity(
+fun MutableEntityStorage.modifyAndroidAddendumEntity(
   entity: AndroidAddendumEntity,
   modification: AndroidAddendumEntity.Builder.() -> Unit,
-): AndroidAddendumEntity = modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
+): AndroidAddendumEntity {
+  return modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
+}
 
-public var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity?
-  by WorkspaceEntity.extension()
+var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder?
+  by WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)
 //endregion
 
 public val ModuleEntity.androidAddendumEntity: @Child AndroidAddendumEntity? by WorkspaceEntity.extension()
