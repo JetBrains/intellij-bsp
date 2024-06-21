@@ -6,9 +6,11 @@ import com.intellij.facet.impl.FacetUtil
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.platform.workspace.jps.entities.FacetEntity
+import com.intellij.platform.workspace.jps.entities.FacetEntityTypeId
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
+import org.jetbrains.android.facet.AndroidFacetType
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 
@@ -67,7 +69,7 @@ private class AndroidFacetEntityUpdater(
       FacetEntity(
         name = "Android",
         moduleId = parentModuleEntity.symbolicId,
-        facetType = facetType.id.toString(),
+        typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
         entitySource = parentModuleEntity.entitySource,
       ) {
         this.configurationXmlTag = facetConfigurationXml

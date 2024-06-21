@@ -43,7 +43,7 @@ internal open class SourceEntityUpdater(
     builder.addEntity(
       SourceRootEntity(
         url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        rootType = entityToAdd.rootType,
+        rootTypeId = entityToAdd.rootType,
         entitySource = contentRootEntity.entitySource,
       ) {
         this.contentRoot = contentRootEntity

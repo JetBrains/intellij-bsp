@@ -7,12 +7,13 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
-import com.intellij.openapi.module.ModuleTypeId
+import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.diagnostic.telemetry.helpers.use
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -123,7 +124,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
       JavaModule(
         genericModuleInfo = GenericModuleInfo(
           name = libraryName,
-          type = ModuleTypeId.JAVA_MODULE,
+          type = ModuleTypeId(StdModuleTypes.JAVA.id),
           librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
           modulesDependencies = library.dependencies.map {
             IntermediateModuleDependency(

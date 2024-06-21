@@ -42,7 +42,7 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
 
   override fun getResolvedDependency(coordinate: GradleCoordinate, scope: DependencyScopeType): GradleCoordinate? = null
 
-  override fun getDependencyPath(coordinate: GradleCoordinate): Path? = null
+//  override fun getDependencyPath(coordinate: GradleCoordinate): Path? = null
 
   override fun canRegisterDependency(type: DependencyType): CapabilityStatus = CapabilityNotSupported()
 

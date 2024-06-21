@@ -60,7 +60,7 @@ internal class LibraryEntityUpdater(
   private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.sourceJars.map {
       LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUri(Library.formatJarString(it)),
+        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(Library.formatJarString(it)),
         type = LibraryRootTypeId.SOURCES,
       )
     }
@@ -68,7 +68,7 @@ internal class LibraryEntityUpdater(
   private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.classJars.ifEmpty { entityToAdd.iJars }.map {
       LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUri(Library.formatJarString(it)),
+        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(Library.formatJarString(it)),
         type = LibraryRootTypeId.COMPILED,
       )
     }

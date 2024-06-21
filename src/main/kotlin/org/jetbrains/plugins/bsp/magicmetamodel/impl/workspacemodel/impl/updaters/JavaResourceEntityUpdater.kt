@@ -49,7 +49,7 @@ internal class JavaResourceEntityUpdater(
     builder.addEntity(
       SourceRootEntity(
         url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        rootType = entityToAdd.rootType,
+        rootTypeId = entityToAdd.rootType,
         entitySource = parentModuleEntity.entitySource,
       ) {
         this.contentRoot = contentRootEntity
