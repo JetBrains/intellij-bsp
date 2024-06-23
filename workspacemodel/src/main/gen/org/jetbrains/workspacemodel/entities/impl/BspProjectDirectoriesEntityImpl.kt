@@ -1,11 +1,13 @@
-package org.jetbrains.workspacemodel.entities
+package org.jetbrains.workspacemodel.entities.impl
 
+import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.storage.impl.ConnectionId
+import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
@@ -15,10 +17,13 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(5)
-open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) : BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
+@GeneratedCodeImplVersion(6)
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) :
+  BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
 
@@ -57,16 +62,17 @@ open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDir
   }
 
 
-  class Builder(result: BspProjectDirectoriesEntityData?) : ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result), BspProjectDirectoriesEntity.Builder {
-    constructor() : this(BspProjectDirectoriesEntityData())
+  internal class Builder(result: BspProjectDirectoriesEntityData?) :
+    ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
+    BspProjectDirectoriesEntity.Builder {
+    internal constructor() : this(BspProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        }
-        else {
+        } else {
           error("Entity BspProjectDirectoriesEntity is already created in a different builder")
         }
       }
@@ -158,8 +164,7 @@ open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDir
         if (collection_includedRoots !is MutableWorkspaceList) return collection_includedRoots
         if (diff == null || modifiable.get()) {
           collection_includedRoots.setModificationUpdateAction(includedRootsUpdater)
-        }
-        else {
+        } else {
           collection_includedRoots.cleanModificationUpdateAction()
         }
         return collection_includedRoots
@@ -181,8 +186,7 @@ open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDir
         if (collection_excludedRoots !is MutableWorkspaceList) return collection_excludedRoots
         if (diff == null || modifiable.get()) {
           collection_excludedRoots.setModificationUpdateAction(excludedRootsUpdater)
-        }
-        else {
+        } else {
           collection_excludedRoots.cleanModificationUpdateAction()
         }
         return collection_excludedRoots
@@ -197,10 +201,11 @@ open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDir
   }
 }
 
-class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
-  lateinit var projectRoot: VirtualFileUrl
-  lateinit var includedRoots: MutableList<VirtualFileUrl>
-  lateinit var excludedRoots: MutableList<VirtualFileUrl>
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
+  public lateinit var projectRoot: VirtualFileUrl
+  public lateinit var includedRoots: MutableList<VirtualFileUrl>
+  public lateinit var excludedRoots: MutableList<VirtualFileUrl>
 
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized

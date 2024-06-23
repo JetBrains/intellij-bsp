@@ -1,12 +1,15 @@
-package org.jetbrains.workspacemodel.entities
+package org.jetbrains.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.storage.impl.ConnectionId
+import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
+import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -20,14 +23,21 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(5)
-open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity, WorkspaceEntityBase(dataSource) {
+@GeneratedCodeImplVersion(6)
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity,
+  WorkspaceEntityBase(dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, JvmBinaryJarsEntity::class.java,
-                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(
+      ModuleEntity::class.java,
+      JvmBinaryJarsEntity::class.java,
+      ConnectionId.ConnectionType.ONE_TO_ONE,
+      false
+    )
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -55,17 +65,16 @@ open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityDa
   }
 
 
-  class Builder(result: JvmBinaryJarsEntityData?) : ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(
-    result), JvmBinaryJarsEntity.Builder {
-    constructor() : this(JvmBinaryJarsEntityData())
+  internal class Builder(result: JvmBinaryJarsEntityData?) :
+    ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result), JvmBinaryJarsEntity.Builder {
+    internal constructor() : this(JvmBinaryJarsEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        }
-        else {
+        } else {
           error("Entity JvmBinaryJarsEntity is already created in a different builder")
         }
       }
@@ -95,8 +104,7 @@ open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityDa
         if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
           error("Field JvmBinaryJarsEntity#module should be initialized")
         }
-      }
-      else {
+      } else {
         if (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] == null) {
           error("Field JvmBinaryJarsEntity#module should be initialized")
         }
@@ -143,8 +151,7 @@ open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityDa
         if (collection_jars !is MutableWorkspaceList) return collection_jars
         if (diff == null || modifiable.get()) {
           collection_jars.setModificationUpdateAction(jarsUpdater)
-        }
-        else {
+        } else {
           collection_jars.cleanModificationUpdateAction()
         }
         return collection_jars
@@ -160,10 +167,12 @@ open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityDa
         val _diff = diff
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
-          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
-          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
-        }
-        else {
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(
+            MODULE_CONNECTION_ID,
+            this
+          ) as? ModuleEntity.Builder)
+            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+        } else {
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
       }
@@ -179,8 +188,7 @@ open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityDa
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
-        }
-        else {
+        } else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
@@ -195,8 +203,9 @@ open class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityDa
   }
 }
 
-class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>() {
-  lateinit var jars: MutableList<VirtualFileUrl>
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>() {
+  public lateinit var jars: MutableList<VirtualFileUrl>
 
   internal fun isJarsInitialized(): Boolean = ::jars.isInitialized
 
