@@ -15,18 +15,18 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
+  public interface Builder : WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     override var entitySource: EntitySource
     var projectRoot: VirtualFileUrl
     var includedRoots: MutableList<VirtualFileUrl>
     var excludedRoots: MutableList<VirtualFileUrl>
   }
 
-  companion object : EntityType<BspProjectDirectoriesEntity, Builder>() {
+  public companion object : EntityType<BspProjectDirectoriesEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
-    operator fun invoke(
+    public operator fun invoke(
       projectRoot: VirtualFileUrl,
       includedRoots: List<VirtualFileUrl>,
       excludedRoots: List<VirtualFileUrl>,
@@ -42,11 +42,11 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
       return builder
     }
   }
-  //endregion
+//endregion
 }
 
 //region generated code
-fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
+public fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
   entity: BspProjectDirectoriesEntity,
   modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
 ): BspProjectDirectoriesEntity {

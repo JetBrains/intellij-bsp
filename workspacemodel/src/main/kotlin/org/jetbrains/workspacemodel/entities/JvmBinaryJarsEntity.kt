@@ -16,17 +16,17 @@ public interface JvmBinaryJarsEntity : WorkspaceEntity {
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<JvmBinaryJarsEntity> {
+  public interface Builder : WorkspaceEntity.Builder<JvmBinaryJarsEntity> {
     override var entitySource: EntitySource
     var jars: MutableList<VirtualFileUrl>
     var module: ModuleEntity.Builder
   }
 
-  companion object : EntityType<JvmBinaryJarsEntity, Builder>() {
+  public companion object : EntityType<JvmBinaryJarsEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
-    operator fun invoke(
+    public operator fun invoke(
       jars: List<VirtualFileUrl>,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
@@ -38,19 +38,20 @@ public interface JvmBinaryJarsEntity : WorkspaceEntity {
       return builder
     }
   }
-  //endregion
+//endregion
+
+
 }
 
 //region generated code
-fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
+public fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
   entity: JvmBinaryJarsEntity,
   modification: JvmBinaryJarsEntity.Builder.() -> Unit,
 ): JvmBinaryJarsEntity {
   return modifyEntity(JvmBinaryJarsEntity.Builder::class.java, entity, modification)
 }
 
-var ModuleEntity.Builder.jvmBinaryJarsEntity: @Child JvmBinaryJarsEntity.Builder?
-  by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
-
+public var ModuleEntity.Builder.jvmBinaryJarsEntity: @Child JvmBinaryJarsEntity.Builder?
+    by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
 //endregion
 public val ModuleEntity.jvmBinaryJarsEntity: @Child JvmBinaryJarsEntity? by WorkspaceEntity.extension()
