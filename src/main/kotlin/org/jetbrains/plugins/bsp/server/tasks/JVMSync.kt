@@ -39,7 +39,7 @@ import java.util.concurrent.CompletableFuture
 
 internal class JVMSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean =
-    true
+    false
 
   override fun execute(
     project: Project,

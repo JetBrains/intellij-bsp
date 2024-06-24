@@ -48,6 +48,7 @@ public class PythonSdkGetter : PythonSdkGetterExtension {
       pythonSdk.name,
       PythonSdkType.getInstance(),
     )
+
     sdk.homePath = pythonSdk.interpreterUri.safeCastToURI().toPath().toString()
     sdk.versionString // needs to be invoked in order to fetch the version and cache it
     val additionalData = PythonSdkAdditionalData()
