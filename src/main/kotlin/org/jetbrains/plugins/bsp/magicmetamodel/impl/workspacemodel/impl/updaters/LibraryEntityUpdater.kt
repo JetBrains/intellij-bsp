@@ -52,7 +52,8 @@ internal class LibraryEntityUpdater(
       this.excludedRoots = arrayListOf()
     }
 
-    if (builder.contains(LibraryId(entityToAdd.displayName, tableId))) return libraryEntity
+    val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
+    if (foundLibrary != null) return foundLibrary
 
     return builder.addEntity(libraryEntity)
   }

@@ -1,13 +1,13 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.android.AndroidProjectTypes
-import com.intellij.facet.FacetType
 import com.intellij.facet.impl.FacetUtil
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.platform.workspace.jps.entities.FacetEntity
 import com.intellij.platform.workspace.jps.entities.FacetEntityTypeId
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.modifyEntity
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
 import org.jetbrains.android.facet.AndroidFacetType
@@ -49,7 +49,7 @@ private class AndroidFacetEntityUpdater(
     facetState.RES_FOLDER_RELATIVE_PATH = ""
     facetState.ASSETS_FOLDER_RELATIVE_PATH = ""
 
-    return addFacetEntity(facet, parentModuleEntity, facetType)
+    return addFacetEntity(facet, parentModuleEntity)
   }
 
   private fun getAndroidProjectType(androidTargetType: AndroidTargetType?): Int = when (androidTargetType) {
@@ -62,19 +62,20 @@ private class AndroidFacetEntityUpdater(
   private fun addFacetEntity(
     facet: AndroidFacetConfiguration,
     parentModuleEntity: ModuleEntity,
-    facetType: FacetType<AndroidFacet, AndroidFacetConfiguration>,
   ): FacetEntity {
     val facetConfigurationXml = FacetUtil.saveFacetConfiguration(facet)?.let { JDOMUtil.write(it) }
-    return workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(
-      FacetEntity(
+    val entity = FacetEntity(
         name = "Android",
         moduleId = parentModuleEntity.symbolicId,
         typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
         entitySource = parentModuleEntity.entitySource,
       ) {
         this.configurationXmlTag = facetConfigurationXml
-        this.module = parentModuleEntity
-      },
-    )
+      }
+
+    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyEntity(parentModuleEntity) {
+      this.facets += entity
+    }
+    return updatedParentModuleEntity.facets.last()
   }
 }

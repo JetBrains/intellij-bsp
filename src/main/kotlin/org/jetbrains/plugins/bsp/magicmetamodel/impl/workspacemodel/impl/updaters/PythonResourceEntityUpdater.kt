@@ -4,6 +4,7 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+wimport com.intellij.platform.workspace.jps.entities.modifyEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -39,16 +40,19 @@ internal class PythonResourceEntityUpdater(
     builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: ResourceRoot,
-  ): SourceRootEntity =
-    builder.addEntity(
-      SourceRootEntity(
+  ): SourceRootEntity {
+      val entity = SourceRootEntity(
         url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         rootTypeId = ROOT_TYPE,
         entitySource = contentRootEntity.entitySource,
-      ) {
-        this.contentRoot = contentRootEntity
-      },
-    )
+      )
+
+    val updatedContentRootEntity = builder.modifyEntity(contentRootEntity) {
+      this.sourceRoots += entity
+    }
+
+    return updatedContentRootEntity.sourceRoots.last()
+  }
 
   private companion object {
     private val ROOT_TYPE = SourceRootTypeId("python-resource")

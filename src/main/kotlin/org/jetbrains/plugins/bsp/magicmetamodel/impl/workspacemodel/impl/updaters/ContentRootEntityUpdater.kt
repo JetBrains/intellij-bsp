@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.modifyEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -26,22 +27,23 @@ internal class ContentRootEntityUpdater(
     val excludedUrls = entityToAdd.excludedPaths
       .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) }
     val excludes = excludedUrls.map {
-      builder.addEntity(
-        ExcludeUrlEntity(
-          url = it,
-          entitySource = moduleEntity.entitySource,
-        ),
+      ExcludeUrlEntity(
+        url = it,
+        entitySource = moduleEntity.entitySource,
       )
     }
-    return builder.addEntity(
-      ContentRootEntity(
-        url = url,
-        excludedPatterns = ArrayList(),
-        entitySource = moduleEntity.entitySource,
-      ) {
-        this.excludedUrls = excludes
-        this.module = moduleEntity
-      },
-    )
+    val entity = ContentRootEntity(
+      url = url,
+      excludedPatterns = ArrayList(),
+      entitySource = moduleEntity.entitySource,
+    ) {
+      this.excludedUrls = excludes
+    }
+
+    val updatedModuleEntity = builder.modifyEntity(moduleEntity) {
+      contentRoots += entity
+    }
+
+    return updatedModuleEntity.contentRoots.last()
   }
 }
