@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 
-@Disabled("See FIXME")
 class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBaseTest() {
   private lateinit var fileIndex: FileIndex
   private lateinit var fileIndexFacade: FileIndexFacade
