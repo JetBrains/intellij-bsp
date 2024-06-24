@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
@@ -101,7 +101,7 @@ internal class KotlinFacetEntityUpdater(
     parentModuleEntity: ModuleEntity,
     kotlinSettingsEntity: KotlinSettingsEntity.Builder,
   ): KotlinSettingsEntity {
-    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyEntity(parentModuleEntity) {
+    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
       this.kotlinSettings += kotlinSettingsEntity
     }
 

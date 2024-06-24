@@ -7,7 +7,7 @@ import com.intellij.openapi.util.JDOMUtil
 import com.intellij.platform.workspace.jps.entities.FacetEntity
 import com.intellij.platform.workspace.jps.entities.FacetEntityTypeId
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
 import org.jetbrains.android.facet.AndroidFacetType
@@ -65,17 +65,18 @@ private class AndroidFacetEntityUpdater(
   ): FacetEntity {
     val facetConfigurationXml = FacetUtil.saveFacetConfiguration(facet)?.let { JDOMUtil.write(it) }
     val entity = FacetEntity(
-        name = "Android",
-        moduleId = parentModuleEntity.symbolicId,
-        typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
-        entitySource = parentModuleEntity.entitySource,
-      ) {
-        this.configurationXmlTag = facetConfigurationXml
-      }
-
-    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyEntity(parentModuleEntity) {
-      this.facets += entity
+      name = "Android",
+      moduleId = parentModuleEntity.symbolicId,
+      typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
+      entitySource = parentModuleEntity.entitySource,
+    ) {
+      this.configurationXmlTag = facetConfigurationXml
     }
+
+    val updatedParentModuleEntity =
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
+        this.facets += entity
+      }
     return updatedParentModuleEntity.facets.last()
   }
 }

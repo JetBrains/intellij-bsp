@@ -4,7 +4,7 @@ import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
@@ -44,7 +44,7 @@ internal class JavaSourceEntityUpdater(
       entitySource = sourceRoot.entitySource,
     )
 
-    val updatedSourceRoot = builder.modifyEntity(sourceRoot) {
+    val updatedSourceRoot = builder.modifySourceRootEntity(sourceRoot) {
       this.javaSourceRoots += entity
     }
 

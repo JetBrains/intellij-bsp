@@ -61,11 +61,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val sourceRoots = listOf(
           GenericSourceRoot(
             sourcePath = sourcePath1,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ),
           GenericSourceRoot(
             sourcePath = sourcePath2,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ),
         )
 
@@ -138,7 +138,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir1,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ) {
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -154,7 +154,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir2,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ) {
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -223,11 +223,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val sourceRoots1 = listOf(
           GenericSourceRoot(
             sourcePath = sourcePath11,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ),
           GenericSourceRoot(
             sourcePath = sourcePath12,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ),
         )
 
@@ -269,7 +269,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val sourceRoots2 = listOf(
           GenericSourceRoot(
             sourcePath = sourcePath21,
-            rootType = "python-test",
+            rootType = SourceRootTypeId("python-test"),
           ),
         )
 
@@ -358,7 +358,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir11,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ) {},
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
@@ -372,7 +372,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir12,
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ) {},
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
@@ -386,7 +386,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            rootType = "python-test",
+            rootType = SourceRootTypeId("python-test"),
           ) {},
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
@@ -463,7 +463,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val sourceRoots = listOf(
           GenericSourceRoot(
             sourcePath = URI.create("file:///root/dir/example/package/one").toPath(),
-            rootType = "python-source",
+            rootType = SourceRootTypeId("python-source"),
           ),
         )
 

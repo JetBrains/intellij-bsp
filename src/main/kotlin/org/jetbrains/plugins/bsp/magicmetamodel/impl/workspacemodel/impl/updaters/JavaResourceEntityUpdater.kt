@@ -2,12 +2,11 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaResourceRoots
-import com.intellij.java.workspace.entities.modifyEntity
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.platform.workspace.jps.entities.customSourceRootProperties
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
+import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -56,7 +55,7 @@ internal class JavaResourceEntityUpdater(
       entitySource = parentModuleEntity.entitySource,
     )
 
-    val updatedContentRootEntity = builder.modifyEntity(contentRootEntity) {
+    val updatedContentRootEntity = builder.modifyContentRootEntity(contentRootEntity) {
       this.sourceRoots += entity
     }
 
@@ -73,7 +72,7 @@ internal class JavaResourceEntityUpdater(
       entitySource = sourceRoot.entitySource,
     )
 
-    val updatedSourceRoot = builder.modifyEntity(sourceRoot) {
+    val updatedSourceRoot = builder.modifySourceRootEntity(sourceRoot) {
       this.javaResourceRoots += entity
     }
 

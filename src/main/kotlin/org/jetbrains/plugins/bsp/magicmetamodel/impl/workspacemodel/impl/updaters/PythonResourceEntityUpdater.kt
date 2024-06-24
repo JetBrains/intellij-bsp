@@ -4,7 +4,7 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-wimport com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -41,13 +41,13 @@ internal class PythonResourceEntityUpdater(
     contentRootEntity: ContentRootEntity,
     entityToAdd: ResourceRoot,
   ): SourceRootEntity {
-      val entity = SourceRootEntity(
-        url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        rootTypeId = ROOT_TYPE,
-        entitySource = contentRootEntity.entitySource,
-      )
+    val entity = SourceRootEntity(
+      url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+      rootTypeId = ROOT_TYPE,
+      entitySource = contentRootEntity.entitySource,
+    )
 
-    val updatedContentRootEntity = builder.modifyEntity(contentRootEntity) {
+    val updatedContentRootEntity = builder.modifyContentRootEntity(contentRootEntity) {
       this.sourceRoots += entity
     }
 

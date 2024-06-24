@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bsp.protocol.AndroidTargetType.APP
@@ -36,9 +36,10 @@ internal class AndroidAddendumEntityUpdater(
       }
     }
 
-    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyEntity(parentModuleEntity) {
-      this.androidAddendumEntity = entity
-    }
+    val updatedParentModuleEntity =
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
+        this.androidAddendumEntity = entity
+      }
     return updatedParentModuleEntity.androidAddendumEntity ?: error("androidAddendumEntity was not added properly")
   }
 

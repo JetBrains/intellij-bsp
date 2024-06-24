@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity
@@ -18,9 +18,10 @@ internal class JvmBinaryJarsEntityUpdater(
       entitySource = parentModuleEntity.entitySource,
       jars = jvmBinaryJars,
     )
-    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyEntity(parentModuleEntity) {
-      this.jvmBinaryJarsEntity = entity
-    }
+    val updatedParentModuleEntity =
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
+        this.jvmBinaryJarsEntity = entity
+      }
 
     return updatedParentModuleEntity.jvmBinaryJarsEntity ?: error("jvmBinaryJarsEntity was not added properly")
   }

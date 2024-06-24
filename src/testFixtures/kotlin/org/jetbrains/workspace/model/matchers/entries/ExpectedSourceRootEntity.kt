@@ -32,7 +32,7 @@ private fun validateSourceRootEntity(
   expected: ExpectedSourceRootEntity,
 ) {
   actual.url shouldBe expected.sourceRootEntity.url
-  actual.rootType shouldBe expected.sourceRootEntity.rootType
+  actual.rootTypeId shouldBe expected.sourceRootEntity.rootTypeId
 
   actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
     { actualEntity, expectedEntity -> validateJavaSourceRootEntity(actualEntity, expectedEntity) },
