@@ -12,20 +12,10 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedSourceRootEntity(
-  val sourceRootEntity: SourceRootEntity,
-  val contentRootEntity: ContentRootEntity,
+  val sourceRootEntity: SourceRootEntity.Builder,
+  val contentRootEntity: ContentRootEntity.Builder,
   val parentModuleEntity: ModuleEntity,
-) {
-  constructor(
-    sourceRootEntity: SourceRootEntity.Builder,
-    contentRootEntity: ContentRootEntity.Builder,
-    parentModuleEntity: ModuleEntity
-  ) : this(
-    MutableEntityStorage.create().addEntity(sourceRootEntity),
-    MutableEntityStorage.create().addEntity(contentRootEntity),
-    parentModuleEntity
-  )
-}
+)
 
 public infix fun SourceRootEntity.shouldBeEqual(expected: ExpectedSourceRootEntity): Unit =
   validateSourceRootEntity(this, expected)
@@ -59,7 +49,7 @@ private fun validateSourceRootEntity(
 
 private fun validateJavaSourceRootEntity(
   actual: JavaSourceRootPropertiesEntity,
-  expected: JavaSourceRootPropertiesEntity,
+  expected: JavaSourceRootPropertiesEntity.Builder,
 ) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
@@ -67,7 +57,7 @@ private fun validateJavaSourceRootEntity(
 
 private fun validateJavaResourceRootEntity(
   actual: JavaResourceRootPropertiesEntity,
-  expected: JavaResourceRootPropertiesEntity,
+  expected: JavaResourceRootPropertiesEntity.Builder,
 ) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath
