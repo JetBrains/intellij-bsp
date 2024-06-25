@@ -27,7 +27,7 @@ define_kt_toolchain(
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_xmls = [],
-    plugin_xmls = ["//src/main/resources/META-INF:plugin.xml"],
+    plugin_xmls = ["//src:main/resources/META-INF/plugin.xml"],
     visibility = ["//visibility:public"],
     deps = [
         "//workspacemodel/src:workspacemodel",
