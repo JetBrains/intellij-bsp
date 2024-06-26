@@ -9,13 +9,8 @@ bazel_dep(
 git_override(
     module_name = "rules_intellij",
     remote = "https://github.com/agluszak/rules_intellij.git",
-    commit = "486c58afec21f00523abd6144c2da6d03333b5ea",
+    commit = "16d71ea606654fe8504f2350e0dd57819dd43ee7",
 )
-
-#local_path_override(
-#    module_name = "rules_intellij",
-#    path = "/home/andrzej.gluszak/code/jetbrains/rules_intellij",
-#)
 
 bazel_dep(name = "rules_kotlin", version = "1.9.5")
 
@@ -56,5 +51,6 @@ maven.install(
 use_repo(
     maven,
     "maven",
+    # TODO: also should not be required
     jna = "net_java_dev_jna_jna",
 )

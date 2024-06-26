@@ -60,8 +60,5 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   override fun findModulesWithApplicationId(applicationId: String): Collection<Module> = emptyList()
 
-  // TODO make a proper Kotlin override after android plugin update
-  @Override
-  @Suppress("unused")
-  fun isAndroidProject() = true
+  override fun isAndroidProject(): Boolean = true
 }
