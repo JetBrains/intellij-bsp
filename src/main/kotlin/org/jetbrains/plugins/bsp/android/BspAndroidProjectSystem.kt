@@ -25,7 +25,7 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   private val syncManager = BspProjectSystemSyncManager(project)
 
-  override fun getKnownApplicationIds(): Set<String> = TODO()
+  override fun getKnownApplicationIds(): Set<String> = emptySet()
 
   override fun allowsFileCreation(): Boolean = true
 
@@ -58,5 +58,10 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   override fun isNamespaceOrParentPackage(packageName: String): Boolean = false
 
-  override fun findModulesWithApplicationId(applicationId: String): Collection<Module> = TODO("Not implemented")
+  override fun findModulesWithApplicationId(applicationId: String): Collection<Module> = emptyList()
+
+  // TODO make a proper Kotlin override after android plugin update
+  @Override
+  @Suppress("unused")
+  fun isAndroidProject() = true
 }
