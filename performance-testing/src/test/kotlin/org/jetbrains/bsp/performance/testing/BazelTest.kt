@@ -22,7 +22,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
+import java.io.IOException
 import java.net.URI
+import java.nio.file.FileSystem
+import java.nio.file.FileSystemNotFoundException
+import java.nio.file.FileSystems
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
@@ -31,6 +35,7 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.io.path.writeText
+
 
 @OptIn(ExperimentalPathApi::class)
 class BazelTest {
@@ -134,9 +139,25 @@ class BazelTest {
       .trimIndent())
   }
 
+  @Throws(IOException::class)
+  private fun initFileSystem(uri: URI): FileSystem {
+    try {
+      return FileSystems.getFileSystem(uri)
+    } catch (e: FileSystemNotFoundException) {
+      val env: MutableMap<String, String> = HashMap()
+      env["create"] = "true"
+      return FileSystems.newFileSystem(uri, env)
+    }
+  }
+
+
   private fun installBazelPlugin(context: IDETestContext) {
     val bspPluginZip = javaClass.classLoader.getResource(System.getProperty("bsp.benchmark.plugin.zip"))!!
-    context.pluginConfigurator.installPluginFromPath(bspPluginZip.toURI().toPath())
+    val uri = bspPluginZip.toURI()
+    initFileSystem(uri).use {
+      context.pluginConfigurator.installPluginFromPath(uri.toPath())
+    }
+//    context.pluginConfigurator.installPluginFromPath(bspPluginZip.toURI().toPath())
     context.pluginConfigurator.installPluginFromPluginManager("org.jetbrains.bazel", context.ide, "nightly")
   }
 
