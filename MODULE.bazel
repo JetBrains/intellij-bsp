@@ -9,7 +9,7 @@ bazel_dep(
 git_override(
     module_name = "rules_intellij",
     remote = "https://github.com/agluszak/rules_intellij.git",
-    commit = "16d71ea606654fe8504f2350e0dd57819dd43ee7",
+    commit = "4ad6bf6fe38b295947084524d307f2181adc321b",
 )
 
 bazel_dep(name = "rules_kotlin", version = "1.9.5")
