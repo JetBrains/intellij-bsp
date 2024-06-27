@@ -22,13 +22,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
-import java.io.IOException
+import java.io.FileOutputStream
 import java.net.URI
-import java.nio.file.FileSystem
-import java.nio.file.FileSystemNotFoundException
 import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.util.jar.JarFile
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
@@ -139,25 +139,36 @@ class BazelTest {
       .trimIndent())
   }
 
-  @Throws(IOException::class)
-  private fun initFileSystem(uri: URI): FileSystem {
-    try {
-      return FileSystems.getFileSystem(uri)
-    } catch (e: FileSystemNotFoundException) {
-      val env: MutableMap<String, String> = HashMap()
-      env["create"] = "true"
-      return FileSystems.newFileSystem(uri, env)
+  fun extractFileFromJar(jarFilePath: String, fileName: String, destFilePath: String) {
+    JarFile(jarFilePath).use { jarFile ->
+      val jarEntry = jarFile.getJarEntry(fileName)
+      jarFile.getInputStream(jarEntry).use { input ->
+        FileOutputStream(destFilePath).use { output ->
+          input.copyTo(output)
+        }
+      }
     }
   }
 
-
   private fun installBazelPlugin(context: IDETestContext) {
-    val bspPluginZip = javaClass.classLoader.getResource(System.getProperty("bsp.benchmark.plugin.zip"))!!
-    val uri = bspPluginZip.toURI()
-    initFileSystem(uri).use {
-      context.pluginConfigurator.installPluginFromPath(uri.toPath())
+    val pluginZipFilename = System.getProperty("bsp.benchmark.plugin.zip")
+    val zipUrl = javaClass.classLoader.getResource(pluginZipFilename)!!
+    // check if the zip is inside a jar
+    // if it is, it will look something like this: jar:file:/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/e06fcdf30b05e14cf4fddcd75b67a39c/execroot/_main/bazel-out/k8-fastbuild/bin/performance-testing/performance-testing.jar!/plugin.zip
+    // we need to extract it to a temporary file then
+    // This happens when the test is run through bazel
+    if (zipUrl.protocol == "jar") {
+      val jarPath = zipUrl.path.substringAfter("file:").substringBefore("!/")
+      // extract the jar (which is a zip) to a temporary directory
+      val tempDir = createTempDirectory("bsp-plugin")
+      val targetPath = tempDir / pluginZipFilename
+
+      extractFileFromJar(jarPath, pluginZipFilename, targetPath.toString())
+      context.pluginConfigurator.installPluginFromPath(targetPath)
+      tempDir.deleteRecursively()
+    } else {
+      context.pluginConfigurator.installPluginFromPath(zipUrl.toURI().toPath())
     }
-//    context.pluginConfigurator.installPluginFromPath(bspPluginZip.toURI().toPath())
     context.pluginConfigurator.installPluginFromPluginManager("org.jetbrains.bazel", context.ide, "nightly")
   }
 
