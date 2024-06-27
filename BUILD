@@ -53,6 +53,7 @@ intellij_plugin(
         intellij = [],
         intellij_ue = [],
     ),
+    visibility = ["//visibility:public"],
 )
 
 intellij_plugin_debug_target(
@@ -73,5 +74,6 @@ plugin_deploy_zip(
     srcs = [
         ":plugin_jar",
     ],
-    zip_filename = "ijwb_bazel.zip",
+    zip_filename = "plugin.zip",
+    visibility = ["//visibility:public"],
 )

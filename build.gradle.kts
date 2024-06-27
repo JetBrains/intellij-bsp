@@ -37,7 +37,7 @@ dependencies {
   intellijPlatform {
     intellijIdeaCommunity(Platform.version)
     plugins(Platform.plugins)
-//    bundledPlugins(Platform.bundledPlugins)
+    bundledPlugins(Platform.bundledPlugins)
     zipSigner()
     pluginVerifier()
 

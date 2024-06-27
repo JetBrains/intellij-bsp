@@ -52,6 +52,7 @@ class BazelTest {
     val projectName = System.getProperty("bsp.benchmark.project.name") ?: "bazel"
     val testCase = TestCase(IdeProductProvider.IC, projectInfo)
       .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
+      .useEAP()
     val context = Starter.newContext(projectName, testCase)
       .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
     installBazelPlugin(context)
