@@ -27,7 +27,7 @@ define_kt_toolchain(
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_xmls = [],
-    plugin_xmls = ["//src:main/resources/META-INF/plugin.xml"],
+    plugin_xmls = ["//src:main/resources/META-INF/base.xml"],
     visibility = ["//visibility:public"],
     deps = [
         "//workspacemodel/src:workspacemodel",
@@ -39,6 +39,7 @@ intellij_plugin_library(
 
 stamped_plugin_xml(
     name = "stamped_plugin_xml",
+    plugin_id = "org.jetbrains.bsp",
     plugin_name = "Hello World Plugin",
     version = "1",
 )
@@ -67,6 +68,7 @@ repackaged_files(
     name = "plugin_jar",
     srcs = [":plugin"],
     prefix = "ijwb/lib",
+    visibility = ["//visibility:public"],
 )
 
 plugin_deploy_zip(
