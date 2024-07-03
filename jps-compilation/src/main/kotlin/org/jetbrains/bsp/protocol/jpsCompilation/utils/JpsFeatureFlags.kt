@@ -7,8 +7,8 @@ private const val ENABLE_JPS_COMPILATION = "bsp.jps.compilation.enable"
 
 public object JpsFeatureFlags {
   public val isJpsCompilationAsDefaultEnabled: Boolean
-    get() = Registry.`is`(DEFAULT_COMPILE_PROJECT_WITH_JPS, false)
+    get() = Registry.`is`(DEFAULT_COMPILE_PROJECT_WITH_JPS)
 
   public val isJpsCompilationEnabled: Boolean
-    get() = Registry.`is`(ENABLE_JPS_COMPILATION, false)
+    get() = Registry.`is`(ENABLE_JPS_COMPILATION)
 }

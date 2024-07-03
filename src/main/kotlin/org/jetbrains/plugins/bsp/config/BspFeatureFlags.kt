@@ -12,23 +12,23 @@ private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.mod
 
 public object BspFeatureFlags {
   public val isPythonSupportEnabled: Boolean
-    get() = Registry.`is`(PYTHON_SUPPORT, false)
+    get() = Registry.`is`(PYTHON_SUPPORT)
 
   public val isScalaSupportEnabled: Boolean
-    get() = Registry.`is`(SCALA_SUPPORT, false)
+    get() = Registry.`is`(SCALA_SUPPORT)
 
   public val isAndroidSupportEnabled: Boolean
-    get() = Registry.`is`(ANDROID_SUPPORT, false)
+    get() = Registry.`is`(ANDROID_SUPPORT)
 
   public val isBuildProjectOnSyncEnabled: Boolean
-    get() = Registry.`is`(BUILD_PROJECT_ON_SYNC, false)
+    get() = Registry.`is`(BUILD_PROJECT_ON_SYNC)
 
   public val isShortenModuleLibraryNamesEnabled: Boolean
-    get() = Registry.`is`(SHORTEN_MODULE_LIBRARY_NAMES, false)
+    get() = Registry.`is`(SHORTEN_MODULE_LIBRARY_NAMES)
 
   public val isRetrieveTargetsForFileFromAncestorsEnabled: Boolean
-    get() = Registry.`is`(RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS, false)
+    get() = Registry.`is`(RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS)
 
   public val isWrapLibrariesInsideModulesEnabled: Boolean
-    get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES, false)
+    get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES)
 }
