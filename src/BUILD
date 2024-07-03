@@ -29,6 +29,7 @@ kt_jvm_library(
 
 kt_jvm_library(
     name = "test_fixtures",
+    testonly = 1,
     srcs = glob([
         "testFixtures/kotlin/**/*.kt",
     ]),
@@ -40,6 +41,7 @@ kt_jvm_library(
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
         "@maven//:ch_epfl_scala_bsp4j",
+        "@rules_intellij//testing:lib"
     ],
 )
 

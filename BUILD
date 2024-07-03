@@ -62,6 +62,7 @@ intellij_plugin_debug_target(
     deps = [
         ":plugin_jar",
     ],
+    visibility = ["//visibility:public"],
 )
 
 repackaged_files(
