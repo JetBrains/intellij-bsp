@@ -17,6 +17,14 @@ load(
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 
+load("//:versions.bzl", "INTELLIJ_BSP_VERSION")
+
+# Changelog file
+filegroup(
+    name = "changelog",
+    srcs = ["CHANGELOG.md"]
+)
+
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
@@ -32,20 +40,24 @@ intellij_plugin_library(
     deps = [
         "//workspacemodel/src:workspacemodel",
         "//protocol/src:protocol",
-        "//src:plugin",
+        "//src:intellij-bsp",
         "//jps-compilation/src:jps-compilation",
     ],
 )
 
 stamped_plugin_xml(
     name = "stamped_plugin_xml",
+    changelog_file = "CHANGELOG.md",
+    description_file = "description.html",
     plugin_id = "org.jetbrains.bsp",
-    plugin_name = "Hello World Plugin",
-    version = "1",
+    plugin_name = "Build Server Protocol (BSP)",
+    stamp_since_build = True,
+    stamp_until_build = True,
+    version = INTELLIJ_BSP_VERSION,
 )
 
 intellij_plugin(
-    name = "plugin",
+    name = "intellij-bsp",
     plugin_xml = ":stamped_plugin_xml",
     tags = [],
     deps = [
@@ -60,23 +72,23 @@ intellij_plugin(
 intellij_plugin_debug_target(
     name = "ijwb_bazel_dev",
     deps = [
-        ":plugin_jar",
+        ":intellij-bsp_jar",
     ],
     visibility = ["//visibility:public"],
 )
 
 repackaged_files(
-    name = "plugin_jar",
-    srcs = [":plugin"],
-    prefix = "ijwb/lib",
+    name = "intellij-bsp_jar",
+    srcs = [":intellij-bsp"],
+    prefix = "intellij-bsp/lib",
     visibility = ["//visibility:public"],
 )
 
 plugin_deploy_zip(
-    name = "plugin_zip",
+    name = "intellij-bsp_zip",
     srcs = [
-        ":plugin_jar",
+        ":intellij-bsp_jar",
     ],
-    zip_filename = "plugin.zip",
+    zip_filename = "intellij-bsp.zip",
     visibility = ["//visibility:public"],
 )

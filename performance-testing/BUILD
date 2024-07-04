@@ -1,6 +1,6 @@
 load("//rules/kotlin:junit5.bzl", "kt_test")
 
-PLUGIN_ZIP = "plugin.zip"
+PLUGIN_ZIP = "intellij-bsp.zip"
 PLATFORM_VERSION = "242.18071.24"
 
 kt_test(
@@ -21,7 +21,7 @@ kt_test(
         "-Dbsp.benchmark.platform.version=%s" % PLATFORM_VERSION,
         "-Dbsp.benchmark.plugin.zip=%s" % PLUGIN_ZIP,
     ],
-    resources = ["//:plugin_zip"],
+    resources = ["//:intellij-bsp_zip"],
     tags = ["manual"],
     size = "large",
 )

@@ -5,7 +5,7 @@ load("//rules/kotlin:junit5.bzl", "kt_test")
 exports_files(["main/resources/META-INF/base.xml"])
 
 kt_jvm_library(
-    name = "plugin",
+    name = "intellij-bsp",
     srcs = glob([
         "main/kotlin/**/*.java",
         "main/kotlin/**/*.kt",
@@ -34,7 +34,7 @@ kt_jvm_library(
         "testFixtures/kotlin/**/*.kt",
     ]),
     deps = [
-        ":plugin",
+        ":intellij-bsp",
         "@maven//:org_junit_jupiter_junit_jupiter",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
@@ -50,7 +50,7 @@ intellij_integration_test_suite(
     srcs = glob([
         "test/kotlin/org/jetbrains/plugins/bsp/**/*.kt",
     ]),
-    associates = [":plugin"],
+    associates = [":intellij-bsp"],
     test_package_root = "org.jetbrains",
     deps = [
         ":test_fixtures",
@@ -61,7 +61,7 @@ intellij_integration_test_suite(
         "@maven//:ch_epfl_scala_bsp4j",
     ],
     runtime_deps = [
-        "//:plugin",
+        "//:intellij-bsp",
     ],
 )
 
@@ -70,7 +70,7 @@ intellij_integration_test_suite(
     srcs = glob([
         "test/kotlin/utils/**/*.kt",
     ]),
-    associates = [":plugin"],
+    associates = [":intellij-bsp"],
     test_package_root = "utils",
     deps = [
         "@maven//:io_kotest_kotest_assertions_api_jvm",
