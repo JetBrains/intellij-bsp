@@ -1,7 +1,7 @@
 load("//rules/kotlin:junit5.bzl", "kt_test")
 
 PLUGIN_ZIP = "intellij-bsp.zip"
-PLATFORM_VERSION = "242.18071.24"
+PLATFORM_VERSION = "242.19890.14"
 
 kt_test(
     name = "performance-testing",
