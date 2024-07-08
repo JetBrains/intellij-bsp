@@ -5,6 +5,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -24,17 +25,9 @@ import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.FileOutputStream
 import java.net.URI
-import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.util.jar.JarFile
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
-import kotlin.io.path.exists
-import kotlin.io.path.toPath
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
 
 @OptIn(ExperimentalPathApi::class)
@@ -48,6 +41,11 @@ class BazelTest {
         URI(teamcityUrl).normalize()
       }
       bindSingleton<CIServer>(overrides = true) { TeamCityCIServer() }
+      System.getProperty("bsp.benchmark.intellij.bsp.root")?.let { intellijBspRoot ->
+        bindSingleton<GlobalPaths>(overrides = true) {
+          object : GlobalPaths(Path.of(intellijBspRoot)) {}
+        }
+      }
     }
   }
 
