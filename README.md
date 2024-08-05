@@ -1,11 +1,23 @@
-[![JetBrains team project](http://jb.gg/badges/team.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
-[![TeamCity build status](https://bazel.teamcity.com/app/rest/builds/buildType:id:Bazel_IntellijBsp_IntellijBspResults/statusIcon.svg)](https://bazel.teamcity.com/project/Bazel_IntellijBsp?branch=%3Cdefault%3E&buildTypeTab=overview&mode=builds)
-# Build Server Protocol for IntelliJ IDEA
+# [ARCHIVED] Build Server Protocol client for IntelliJ IDEA
 
-<!-- Plugin description -->
-## Build Server Protocol client
+⚠️ **This repository has been archived and is no longer maintained.**
 
-Allows importing projects into IntelliJ IDEA using Build Server Protocol.
+The code from this project has been moved to our new monorepo:
 
-Used by [experimental Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel-by-jetbrains-experimental-).
-<!-- Plugin description end -->
+**[Project Hirschgarten](https://github.com/JetBrains/hirschgarten)**
+
+Please refer to the new repository for the latest updates, issues, and pull requests.
+
+## Why was this repository archived?
+
+We've consolidated our projects into a monorepo structure to follow The Bazel Way.
+
+## What should I do if I was using this repository?
+
+If you were using or referencing this repository:
+
+1. Update your references to point to [Project Hirschgarten](https://github.com/JetBrains/hirschgarten).
+2. Check the [migration guide](https://github.com/JetBrains/hirschgarten/blob/main/docs/guides/MONOREPO_MIGRATION_GUIDE.md).
+3. If you have any open issues or pull requests, please recreate them in the new repository.
+
+Thank you for your understanding and continued support!
